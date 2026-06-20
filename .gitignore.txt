@@ -1,0 +1,16 @@
+# Build
+bin/
+obj/
+.vs/
+
+# Visual Studio
+*.user
+*.suo
+
+# Credenciais — nunca vão para o GitHub
+appsettings.json
+appsettings.Development.json
+
+# Sistema
+.DS_Store
+Thumbs.db
