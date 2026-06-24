@@ -1,5 +1,7 @@
 ﻿using LisAeroGest.Data;
 using LisAeroGest.Data.Entities;
+using LisAeroGest.Data.Interfaces;
+using LisAeroGest.Data.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +26,11 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     // Confirmação de email obrigatória para login
     options.SignIn.RequireConfirmedEmail = true;
 
+    // Lockout
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+
+
     // Utilizador
     options.User.RequireUniqueEmail = true;
 })
@@ -40,7 +47,12 @@ builder.Services.AddAuthentication(options =>
     // Redireciona para login quando não autenticado
     options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Account/NotAuthorized";
-})
+    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    options.SlidingExpiration = true;
+});
+
+builder.Services.AddAuthentication()
 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
@@ -58,6 +70,24 @@ builder.Services.AddAuthentication(options =>
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<IAirportRepository, AirportRepository>();
+builder.Services.AddScoped<IAirlineRepository, AirlineRepository>();
+builder.Services.AddScoped<IGateRepository, GateRepository>();
+builder.Services.AddScoped<IAircraftRepository, AircraftRepository>();
+builder.Services.AddScoped<IFlightRepository, FlightRepository>();
+builder.Services.AddScoped<IPassengerRepository, PassengerRepository>();
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+
+// ─── HttpClient (para OpenWeatherMap) ───────────────────────────────────────
+builder.Services.AddHttpClient();
+
+// ─── Session (para carrinho de bilhetes) ────────────────────────────────────
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 var app = builder.Build();
 
@@ -74,6 +104,10 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseSession();
+
+app.UseAuthentication();
+
 app.UseAuthorization();
 
 app.MapControllerRoute(
@@ -86,13 +120,17 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
-        var context = services.GetRequiredService<DataContext>();
-        await context.Database.MigrateAsync();
+        var seedDb = new SeedDb(
+            services.GetRequiredService<DataContext>(),
+            services.GetRequiredService<UserManager<User>>(),
+            services.GetRequiredService<RoleManager<IdentityRole>>()
+        );
+        await seedDb.SeedAsync();
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Erro ao aplicar migrations.");
+        logger.LogError(ex, "Erro ao fazer seed da base de dados.");
     }
 }
 
