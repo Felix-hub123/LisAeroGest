@@ -2,6 +2,7 @@
 using LisAeroGest.Data.Entities;
 using LisAeroGest.Data.Interfaces;
 using LisAeroGest.Data.Repositories;
+using LisAeroGest.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -44,15 +45,11 @@ builder.Services.AddAuthentication(options =>
 })
 .AddCookie(options =>
 {
-    // Redireciona para login quando não autenticado
     options.LoginPath = "/Account/Login";
-    options.AccessDeniedPath = "/Account/NotAuthorized";
     options.AccessDeniedPath = "/Account/AccessDenied";
     options.ExpireTimeSpan = TimeSpan.FromHours(8);
     options.SlidingExpiration = true;
-});
-
-builder.Services.AddAuthentication()
+})
 .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
@@ -77,6 +74,9 @@ builder.Services.AddScoped<IAircraftRepository, AircraftRepository>();
 builder.Services.AddScoped<IFlightRepository, FlightRepository>();
 builder.Services.AddScoped<IPassengerRepository, PassengerRepository>();
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+builder.Services.AddScoped<IUserHelper, UserHelper>();
+builder.Services.AddScoped<IBlobHelper, BlobHelper>();
+builder.Services.AddTransient<IMailHelper, MailHelper>();
 
 // ─── HttpClient (para OpenWeatherMap) ───────────────────────────────────────
 builder.Services.AddHttpClient();

@@ -1,8 +1,93 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model LisAeroGest.Models.HomeBoardViewModel
+@{
+    ViewData["Title"] = "Painel de Voos";
+    var culture = new System.Globalization.CultureInfo("pt-PT");
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- Hero Section -->
+<div class="hero-section rounded-4 mb-4 p-5 text-white"
+     style="background: linear-gradient(135deg, #0d3d6b 0%, #1F5C99 60%, #2e86de 100%);">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="display-5 fw-bold mb-1">
+                <i class="bi bi-airplane-fill me-3"></i>Aeroporto de Lisboa
+            </h1>
+            <p class="fs-5 mb-1 opacity-75">Humberto Delgado Airport — LIS</p>
+            <p class="mb-0 opacity-50">
+                <i class="bi bi-calendar3 me-1"></i>
+                @DateTime.Now.ToString("dddd, dd 'de' MMMM 'de' yyyy", culture)
+            </p>
+        </div>
+        <div class="col-md-4 text-end d-none d-md-block">
+            <i class="bi bi-airplane" style="font-size: 6rem; opacity: 0.15;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Estatísticas rápidas -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm h-100 text-center py-3">
+            <div class="card-body">
+                <i class="bi bi-airplane text-primary fs-2"></i>
+                <h4 class="fw-bold mt-2 mb-0">@Model.Departures.Count()</h4>
+                <small class="text-muted">Partidas Hoje</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm h-100 text-center py-3">
+            <div class="card-body">
+                <i class="bi bi-airplane-fill text-success fs-2"></i>
+                <h4 class="fw-bold mt-2 mb-0">@Model.Arrivals.Count()</h4>
+                <small class="text-muted">Chegadas Hoje</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm h-100 text-center py-3">
+            <div class="card-body">
+                <i class="bi bi-check-circle text-success fs-2"></i>
+                <h4 class="fw-bold mt-2 mb-0">@Model.ActiveFlightsCount</h4>
+                <small class="text-muted">Em Operação</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm h-100 text-center py-3">
+            <div class="card-body">
+                <i class="bi bi-exclamation-triangle text-warning fs-2"></i>
+                <h4 class="fw-bold mt-2 mb-0">@Model.DisruptedFlightsCount</h4>
+                <small class="text-muted">Perturbados</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs Partidas / Chegadas -->
+<ul class="nav nav-tabs mb-0">
+    <li class="nav-item">
+        <button class="nav-link active fw-semibold px-4" data-bs-toggle="tab" data-bs-target="#departures">
+            <i class="bi bi-airplane me-2"></i>Partidas
+            <span class="badge bg-primary ms-1">@Model.Departures.Count()</span>
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link fw-semibold px-4" data-bs-toggle="tab" data-bs-target="#arrivals">
+            <i class="bi bi-airplane-fill me-2"></i>Chegadas
+            <span class="badge bg-secondary ms-1">@Model.Arrivals.Count()</span>
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content border border-top-0 rounded-bottom shadow-sm bg-white">
+    <div class="tab-pane fade show active p-0" id="departures">
+        @{ ViewData["Type"] = "Departures"; }
+        <partial name="_FlightTable" model="Model.Departures" view-data="ViewData" />
+    </div>
+
+    <div class="tab-pane fade p-0" id="arrivals">
+        @{ ViewData["Type"] = "Arrivals"; }
+        <partial name="_FlightTable" model="Model.Arrivals" view-data="ViewData" />
+    </div>
 </div>

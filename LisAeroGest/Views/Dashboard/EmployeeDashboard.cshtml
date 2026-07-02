@@ -1,0 +1,95 @@
+﻿@{
+    ViewData["Title"] = "Dashboard — Funcionário";
+}
+
+<div class="container-fluid mt-4">
+
+    <!-- Cabeçalho -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-person-badge text-primary me-2"></i>Dashboard
+            </h2>
+            <p class="text-muted mb-0">
+                Bem-vindo, <strong>@User.Identity!.Name</strong> —
+                <span class="badge bg-info text-dark">Funcionário</span>
+            </p>
+        </div>
+        <div class="text-muted small">
+            <i class="bi bi-calendar3 me-1"></i>
+            @DateTime.Now.ToString("dddd, dd 'de' MMMM 'de' yyyy",
+            new System.Globalization.CultureInfo("pt-PT"))
+        </div>
+    </div>
+
+    <!-- Operações do Dia -->
+    <h5 class="text-muted fw-semibold text-uppercase small mb-3">
+        <i class="bi bi-lightning me-1"></i>Operações do Dia
+    </h5>
+    <div class="row g-3 mb-4">
+
+        <div class="col-6 col-md-3">
+            <a asp-controller="CheckIn" asp-action="Index"
+               class="card text-decoration-none text-dark shadow-sm h-100 border-0">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-person-check text-success fs-1"></i>
+                    <p class="fw-semibold mt-2 mb-0">Check-in Presencial</p>
+                    <small class="text-muted">Balcão de check-in</small>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <a asp-controller="Flight" asp-action="Index"
+               class="card text-decoration-none text-dark shadow-sm h-100 border-0">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-airplane text-primary fs-1"></i>
+                    <p class="fw-semibold mt-2 mb-0">Gestão de Voos</p>
+                    <small class="text-muted">Estados dos voos</small>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <a asp-controller="Gate" asp-action="Index"
+               class="card text-decoration-none text-dark shadow-sm h-100 border-0">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-door-open text-warning fs-1"></i>
+                    <p class="fw-semibold mt-2 mb-0">Gates</p>
+                    <small class="text-muted">Estado dos gates</small>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <a asp-controller="Home" asp-action="Index"
+               class="card text-decoration-none text-dark shadow-sm h-100 border-0">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-display text-info fs-1"></i>
+                    <p class="fw-semibold mt-2 mb-0">Painel de Voos</p>
+                    <small class="text-muted">Ecrã público</small>
+                </div>
+            </a>
+        </div>
+
+    </div>
+
+    <!-- Comunicação -->
+    <h5 class="text-muted fw-semibold text-uppercase small mb-3">
+        <i class="bi bi-chat me-1"></i>Comunicação
+    </h5>
+    <div class="row g-3">
+
+        <div class="col-6 col-md-3">
+            <a asp-controller="Forum" asp-action="Index"
+               class="card text-decoration-none text-dark shadow-sm h-100 border-0">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-chat-dots text-danger fs-1"></i>
+                    <p class="fw-semibold mt-2 mb-0">Fórum Interno</p>
+                    <small class="text-muted">Discussão interna</small>
+                </div>
+            </a>
+        </div>
+
+    </div>
+</div>

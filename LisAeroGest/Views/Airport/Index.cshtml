@@ -1,0 +1,92 @@
+﻿@model IEnumerable<LisAeroGest.Data.Entities.Airport>
+
+@{
+    ViewData["Title"] = "Aeroportos";
+}
+
+<div class="container-fluid mt-4">
+
+    <!-- Cabeçalho -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-geo-alt-fill text-primary me-2"></i>Aeroportos
+            </h2>
+            <span class="text-muted small">@Model.Count() aeroportos registados</span>
+        </div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-2"></i>Novo Aeroporto
+        </a>
+    </div>
+
+    <!-- Alertas -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Tabela -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-3">Imagem</th>
+                            <th>Nome</th>
+                            <th>Cidade</th>
+                            <th>País</th>
+                            <th>IATA</th>
+                            <th>Taxa (€)</th>
+                            <th class="text-end pe-3">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var airport in Model)
+                        {
+                            <tr>
+                                <td class="ps-3">
+                                    <img src="@airport.ImageFullPath"
+                                         alt="@airport.Name"
+                                         class="rounded"
+                                         style="width:48px; height:48px; object-fit:cover;" />
+                                </td>
+                                <td class="fw-semibold">@airport.Name</td>
+                                <td>@airport.City</td>
+                                <td>@airport.Country</td>
+                                <td>
+                                    <span class="badge bg-primary fs-6">@airport.IATACode</span>
+                                </td>
+                                <td>@airport.DefaultFee.ToString("F2") €</td>
+                                <td class="text-end pe-3">
+                                    <a asp-action="Details" asp-route-id="@airport.Id"
+                                       class="btn btn-sm btn-outline-info me-1">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@airport.Id"
+                                       class="btn btn-sm btn-outline-warning me-1">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@airport.Id"
+                                       class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

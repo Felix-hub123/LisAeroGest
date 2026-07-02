@@ -3,58 +3,74 @@ using LisAeroGest.Data.Interfaces;
 
 namespace LisAeroGest.Helpers
 {
+
+    /// <summary>
+    /// Implementação do helper para Azure Blob Storage.
+    /// Se a connection string não estiver configurada, o upload é ignorado
+    /// e a entidade fica com ImageId vazio — usando a imagem noimage.png local.
+    /// </summary>
     public class BlobHelper : IBlobHelper
     {
-        private readonly BlobServiceClient _blobServiceClient;
+        private readonly BlobServiceClient? _blobServiceClient;
+        private readonly bool _isConfigured;
 
         /// <summary>
-        /// Inicializa o cliente do Azure Blob Storage com a connection string do appsettings.json.
+        /// Inicializa o BlobHelper verificando se o Azure Blob Storage está configurado.
         /// </summary>
         /// <param name="configuration">Configuração da aplicação injetada pelo DI.</param>
         /// <returns>
-        /// Instância de <see cref="BlobHelper"/> com o <see cref="BlobServiceClient"/> configurado.
+        /// Instância de <see cref="BlobHelper"/> configurada para usar o Azure
+        /// se a connection string estiver definida, ou modo local caso contrário.
         /// </returns>
         public BlobHelper(IConfiguration configuration)
         {
             var connectionString = configuration["AzureStorage:ConnectionString"];
-            _blobServiceClient = new BlobServiceClient(connectionString);
+            _isConfigured = !string.IsNullOrWhiteSpace(connectionString);
+
+            if (_isConfigured)
+                _blobServiceClient = new BlobServiceClient(connectionString);
         }
 
-        /// <inheritdoc/>
+       
         public async Task<Guid> UploadBlobAsync(IFormFile file, string containerName)
         {
+            if (!_isConfigured) return Guid.Empty;
+
             using var stream = file.OpenReadStream();
             return await UploadBlobAsync(stream, containerName);
         }
 
-        /// <inheritdoc/>
+      
         public async Task<Guid> UploadBlobAsync(byte[] file, string containerName)
         {
+            if (!_isConfigured) return Guid.Empty;
+
             using var stream = new MemoryStream(file);
             return await UploadBlobAsync(stream, containerName);
         }
 
-        /// <inheritdoc/>
+       
         public async Task<Guid> UploadBlobAsync(Stream stream, string containerName)
         {
-            // Gera um GUID único para identificar o ficheiro no storage
+            if (!_isConfigured) return Guid.Empty;
+
             var guid = Guid.NewGuid();
 
-            // Obtém ou cria o container no Azure
-            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            var containerClient = _blobServiceClient!.GetBlobContainerClient(containerName);
             await containerClient.CreateIfNotExistsAsync();
 
-            // Faz upload com o GUID como nome do blob
             var blobClient = containerClient.GetBlobClient(guid.ToString());
             await blobClient.UploadAsync(stream, overwrite: true);
 
             return guid;
         }
 
-        /// <inheritdoc/>
+       
         public async Task DeleteBlobAsync(Guid id, string containerName)
         {
-            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            if (!_isConfigured) return;
+
+            var containerClient = _blobServiceClient!.GetBlobContainerClient(containerName);
             var blobClient = containerClient.GetBlobClient(id.ToString());
             await blobClient.DeleteIfExistsAsync();
         }
