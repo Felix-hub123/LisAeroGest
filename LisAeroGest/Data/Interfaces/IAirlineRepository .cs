@@ -7,5 +7,6 @@ namespace LisAeroGest.Data.Interfaces
         Task<Airline?> GetByIATACodeAsync(string iataCode);
         Task<Airline?> GetWithFlightsAsync(int id);
         IQueryable<Airline> GetAllQueryable();
+        Task<bool> IsUsedInFlightsAsync(int airlineId);
     }
 }

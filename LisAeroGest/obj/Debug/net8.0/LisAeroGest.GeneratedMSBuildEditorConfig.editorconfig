@@ -60,6 +60,26 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxSZXNldFBhc3N3b3JkQ29uZmlybWF0aW9uLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/Airline/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWlybGluZVxDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/Airline/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWlybGluZVxEZWxldGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/Airline/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWlybGluZVxEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/Airline/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWlybGluZVxFZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/Airline/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWlybGluZVxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/Airport/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWlycG9ydFxDcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -90,6 +110,26 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/Dashboard/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/Gate/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcR2F0ZVxDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/Gate/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcR2F0ZVxEZWxldGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/Gate/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcR2F0ZVxEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/Gate/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcR2F0ZVxFZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/Gate/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcR2F0ZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/Home/Index.cshtml]

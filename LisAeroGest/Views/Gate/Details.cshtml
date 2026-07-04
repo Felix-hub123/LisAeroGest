@@ -1,0 +1,67 @@
+﻿@model LisAeroGest.Data.Entities.Gate
+@{
+    ViewData["Title"] = "Detalhes do Gate";
+    var badgeClass = Model.Status switch
+    {
+        "Available" => "bg-success",
+        "Occupied" => "bg-danger",
+        "Maintenance" => "bg-warning text-dark",
+        _ => "bg-secondary"
+    };
+    var statusText = Model.Status switch
+    {
+        "Available" => "Disponível",
+        "Occupied" => "Ocupado",
+        "Maintenance" => "Em Manutenção",
+        _ => Model.Status
+    };
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <div class="d-flex align-items-center mb-4">
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <h2 class="fw-bold mb-0">
+                    <i class="bi bi-info-circle-fill text-info me-2"></i>Detalhes do Gate
+                </h2>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th class="text-muted" style="width:35%">Número</th>
+                            <td>
+                                <span class="badge bg-dark fs-6">@Model.GateNumber</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Terminal</th>
+                            <td class="fw-semibold">@Model.Terminal</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Estado</th>
+                            <td>
+                                <span class="badge @badgeClass">@statusText</span>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="d-flex gap-2 mt-3">
+                        <a asp-action="Edit" asp-route-id="@Model.Id"
+                           class="btn btn-warning">
+                            <i class="bi bi-pencil me-2"></i>Editar
+                        </a>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Voltar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

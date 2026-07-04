@@ -1,0 +1,57 @@
+﻿@model LisAeroGest.Data.Entities.Gate
+@{
+    ViewData["Title"] = "Eliminar Gate";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <div class="d-flex align-items-center mb-4">
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <h2 class="fw-bold mb-0 text-danger">
+                    <i class="bi bi-trash-fill me-2"></i>Eliminar Gate
+                </h2>
+            </div>
+
+            <div class="card shadow-sm border-danger">
+                <div class="card-body p-4">
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Tem a certeza que pretende eliminar este gate?
+                        Esta operação não pode ser revertida.
+                    </div>
+
+                    <table class="table table-borderless">
+                        <tr>
+                            <th class="text-muted" style="width:35%">Número</th>
+                            <td>
+                                <span class="badge bg-dark fs-6">@Model.GateNumber</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Terminal</th>
+                            <td class="fw-semibold">@Model.Terminal</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Estado</th>
+                            <td>@Model.Status</td>
+                        </tr>
+                    </table>
+
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex gap-2 mt-3">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash me-2"></i>Confirmar Eliminação
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

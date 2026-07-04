@@ -16,5 +16,11 @@ namespace LisAeroGest.Data.Repositories
 
         public IQueryable<Airline> GetAllQueryable()
             => _dbSet.AsQueryable();
+
+        /// <summary>
+        /// Verifica se existe algum voo associado a esta companhia aérea.
+        /// </summary>
+        public async Task<bool> IsUsedInFlightsAsync(int airlineId)
+            => await _context.Flights.AnyAsync(f => f.AirlineId == airlineId);
     }
 }

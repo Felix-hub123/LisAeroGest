@@ -77,6 +77,7 @@ builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<IUserHelper, UserHelper>();
 builder.Services.AddScoped<IBlobHelper, BlobHelper>();
 builder.Services.AddTransient<IMailHelper, MailHelper>();
+builder.Services.AddScoped<IImageHelper, ImageHelper>();
 
 // ─── HttpClient (para OpenWeatherMap) ───────────────────────────────────────
 builder.Services.AddHttpClient();
