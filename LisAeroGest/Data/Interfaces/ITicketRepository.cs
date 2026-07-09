@@ -9,5 +9,10 @@ namespace LisAeroGest.Data.Interfaces
         Task<IEnumerable<Ticket>> GetByFlightAsync(int flightId);
         Task<IEnumerable<Ticket>> GetPendingCheckInAsync(int flightId);
         IQueryable<Ticket> GetAllQueryable();
+
+        Task AddTempAsync(TicketTemp temp);
+        Task DeleteTempAsync(TicketTemp temp);
+        Task<TicketTemp?> GetTempByIdAsync(int id);
+        Task<IEnumerable<TicketTemp>> GetTempByUserAsync(int passengerId);
     }
 }

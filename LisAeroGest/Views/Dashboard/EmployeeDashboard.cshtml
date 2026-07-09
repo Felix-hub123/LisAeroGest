@@ -1,18 +1,16 @@
 ﻿@{
-    ViewData["Title"] = "Dashboard — Funcionário";
+    ViewData["Title"] = "Dashboard Operacional";
 }
 
 <div class="container-fluid mt-4">
-
-    <!-- Cabeçalho -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold mb-1">
-                <i class="bi bi-person-badge text-primary me-2"></i>Dashboard
+                <i class="bi bi-person-badge text-primary me-2"></i>Dashboard Operacional
             </h2>
             <p class="text-muted mb-0">
                 Bem-vindo, <strong>@User.Identity!.Name</strong> —
-                <span class="badge bg-info text-dark">Funcionário</span>
+                <span class="badge bg-info">Funcionário</span>
             </p>
         </div>
         <div class="text-muted small">
@@ -22,14 +20,62 @@
         </div>
     </div>
 
-    <!-- Operações do Dia -->
-    <h5 class="text-muted fw-semibold text-uppercase small mb-3">
-        <i class="bi bi-lightning me-1"></i>Operações do Dia
-    </h5>
     <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm text-center py-3" style="background: linear-gradient(135deg, #0d3d6b, #1F5C99);">
+                <div class="card-body text-white">
+                    <i class="bi bi-airplane fs-1"></i>
+                    <h3 class="fw-bold mt-2">@ViewBag.TotalFlights</h3>
+                    <small>Total de Voos</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm text-center py-3" style="background: linear-gradient(135deg, #1a6b3c, #28a745);">
+                <div class="card-body text-white">
+                    <i class="bi bi-play-circle fs-1"></i>
+                    <h3 class="fw-bold mt-2">@ViewBag.ActiveFlights</h3>
+                    <small>Voos Ativos</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm text-center py-3" style="background: linear-gradient(135deg, #3d1a6b, #6f42c1);">
+                <div class="card-body text-white">
+                    <i class="bi bi-ticket-perforated fs-1"></i>
+                    <h3 class="fw-bold mt-2">@ViewBag.TotalTickets</h3>
+                    <small>Bilhetes Vendidos</small>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <h5 class="text-muted fw-semibold text-uppercase small mb-3">
+        <i class="bi bi-clipboard me-1"></i>Operações
+    </h5>
+    <div class="row g-3">
         <div class="col-6 col-md-3">
-            <a asp-controller="CheckIn" asp-action="Index"
+            <a asp-controller="Flight" asp-action="Index"
+               class="card text-decoration-none text-dark shadow-sm h-100 border-0">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-calendar3 text-primary fs-1"></i>
+                    <p class="fw-semibold mt-2 mb-0">Voos</p>
+                    <small class="text-muted">Gerir voos</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-controller="Gate" asp-action="Index"
+               class="card text-decoration-none text-dark shadow-sm h-100 border-0">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-door-open text-warning fs-1"></i>
+                    <p class="fw-semibold mt-2 mb-0">Gates</p>
+                    <small class="text-muted">Gerir gates</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-controller="CheckIn" asp-action="EmployeeCheckIn"
                class="card text-decoration-none text-dark shadow-sm h-100 border-0">
                 <div class="card-body text-center py-4">
                     <i class="bi bi-person-check text-success fs-1"></i>
@@ -38,48 +84,6 @@
                 </div>
             </a>
         </div>
-
-        <div class="col-6 col-md-3">
-            <a asp-controller="Flight" asp-action="Index"
-               class="card text-decoration-none text-dark shadow-sm h-100 border-0">
-                <div class="card-body text-center py-4">
-                    <i class="bi bi-airplane text-primary fs-1"></i>
-                    <p class="fw-semibold mt-2 mb-0">Gestão de Voos</p>
-                    <small class="text-muted">Estados dos voos</small>
-                </div>
-            </a>
-        </div>
-
-        <div class="col-6 col-md-3">
-            <a asp-controller="Gate" asp-action="Index"
-               class="card text-decoration-none text-dark shadow-sm h-100 border-0">
-                <div class="card-body text-center py-4">
-                    <i class="bi bi-door-open text-warning fs-1"></i>
-                    <p class="fw-semibold mt-2 mb-0">Gates</p>
-                    <small class="text-muted">Estado dos gates</small>
-                </div>
-            </a>
-        </div>
-
-        <div class="col-6 col-md-3">
-            <a asp-controller="Home" asp-action="Index"
-               class="card text-decoration-none text-dark shadow-sm h-100 border-0">
-                <div class="card-body text-center py-4">
-                    <i class="bi bi-display text-info fs-1"></i>
-                    <p class="fw-semibold mt-2 mb-0">Painel de Voos</p>
-                    <small class="text-muted">Ecrã público</small>
-                </div>
-            </a>
-        </div>
-
-    </div>
-
-    <!-- Comunicação -->
-    <h5 class="text-muted fw-semibold text-uppercase small mb-3">
-        <i class="bi bi-chat me-1"></i>Comunicação
-    </h5>
-    <div class="row g-3">
-
         <div class="col-6 col-md-3">
             <a asp-controller="Forum" asp-action="Index"
                class="card text-decoration-none text-dark shadow-sm h-100 border-0">
@@ -90,6 +94,5 @@
                 </div>
             </a>
         </div>
-
     </div>
 </div>

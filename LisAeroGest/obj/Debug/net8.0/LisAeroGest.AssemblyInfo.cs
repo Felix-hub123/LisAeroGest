@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LisAeroGest")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+590683d29b5182cc8febc1e079ea2cc4c0869be1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1be158e20e74b521eca694c5f38b6f18ac73cac1")]
 [assembly: System.Reflection.AssemblyProductAttribute("LisAeroGest")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LisAeroGest")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

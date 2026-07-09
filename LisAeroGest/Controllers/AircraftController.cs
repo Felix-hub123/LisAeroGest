@@ -52,28 +52,29 @@ namespace LisAeroGest.Controllers
         /// <returns>Redirecionamento para a Index em caso de sucesso, ou a própria View com erros.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(AircraftViewModel model)
+        // Alterado de 'model' para 'viewModel'
+        public async Task<IActionResult> Create(AircraftViewModel viewModel)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid) return View(viewModel);
 
             var imageId = Guid.Empty;
-            if (model.ImageFile != null)
-                imageId = await _imageHelper.UploadImageAsync(model.ImageFile, "aircraft");
+            if (viewModel.ImageFile != null)
+                imageId = await _imageHelper.UploadImageAsync(viewModel.ImageFile, "aircraft");
 
             var aircraft = new Aircraft
             {
-                Brand = model.Brand,
-                Model = model.Model,
-                EconomySeats = model.EconomySeats,
-                BusinessSeats = model.BusinessSeats,
-                IsAvailable = model.IsAvailable,
+                Brand = viewModel.Brand,
+                Model = viewModel.Model, // Aqui o C# já percebe que este 'Model' é a propriedade
+                EconomySeats = viewModel.EconomySeats,
+                BusinessSeats = viewModel.BusinessSeats,
+                IsAvailable = viewModel.IsAvailable,
                 ImageId = imageId
             };
 
             await _aircraftRepository.AddAsync(aircraft);
             await _aircraftRepository.SaveAsync();
 
-            TempData["Success"] = "Aeronave adicionada à frota com sucesso!";
+            TempData["Success"] = "Aeronave adicionada com sucesso!";
             return RedirectToAction(nameof(Index));
         }
 
@@ -110,30 +111,29 @@ namespace LisAeroGest.Controllers
         /// <returns>Redirecionamento para a Index ou View com erros.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(AircraftViewModel model)
+        public async Task<IActionResult> Edit(AircraftViewModel viewModel)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid) return View(viewModel);
 
-            var aircraft = await _aircraftRepository.GetByIdAsync(model.Id);
+            var aircraft = await _aircraftRepository.GetByIdAsync(viewModel.Id);
             if (aircraft == null) return NotFound();
 
-            if (model.ImageFile != null)
+            if (viewModel.ImageFile != null)
             {
-                // Elimina a imagem antiga antes de guardar a nova
                 await _imageHelper.DeleteImageAsync(aircraft.ImageId, "aircraft");
-                aircraft.ImageId = await _imageHelper.UploadImageAsync(model.ImageFile, "aircraft");
+                aircraft.ImageId = await _imageHelper.UploadImageAsync(viewModel.ImageFile, "aircraft");
             }
 
-            aircraft.Brand = model.Brand;
-            aircraft.Model = model.Model;
-            aircraft.EconomySeats = model.EconomySeats;
-            aircraft.BusinessSeats = model.BusinessSeats;
-            aircraft.IsAvailable = model.IsAvailable;
+            aircraft.Brand = viewModel.Brand;
+            aircraft.Model = viewModel.Model;
+            aircraft.EconomySeats = viewModel.EconomySeats;
+            aircraft.BusinessSeats = viewModel.BusinessSeats;
+            aircraft.IsAvailable = viewModel.IsAvailable;
 
             await _aircraftRepository.UpdateAsync(aircraft);
             await _aircraftRepository.SaveAsync();
 
-            TempData["Success"] = "Dados da aeronave atualizados com sucesso!";
+            TempData["Success"] = "Aeronave atualizada com sucesso!";
             return RedirectToAction(nameof(Index));
         }
 
@@ -172,6 +172,13 @@ namespace LisAeroGest.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+
+            var isUsed = await _aircraftRepository.IsUsedInFlightsAsync(id);
+            if (isUsed)
+            {
+                TempData["Error"] = "Não é possível eliminar esta aeronave pois está associada a voos.";
+                return RedirectToAction(nameof(Index));
+            }
             var aircraft = await _aircraftRepository.GetByIdAsync(id);
             if (aircraft == null) return NotFound();
 

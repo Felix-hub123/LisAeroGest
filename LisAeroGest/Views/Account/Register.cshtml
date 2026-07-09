@@ -57,6 +57,34 @@
                             </div>
                             <span asp-validation-for="Password" class="text-danger small"></span>
                         </div>
+                        <div class="mb-3">
+                            <label asp-for="DocumentType" class="form-label fw-semibold"></label>
+                            <select asp-for="DocumentType" class="form-select" required>
+                                <option value="">Selecione...</option>
+                                <option value="Cartão de Cidadão">Cartão de Cidadão</option>
+                                <option value="Passaporte">Passaporte</option>
+                                <option value="Autorização de Residência">Autorização de Residência</option>
+                            </select>
+                            <span asp-validation-for="DocumentType" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="DocumentNumber" class="form-label fw-semibold"></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+                                <input asp-for="DocumentNumber" class="form-control" placeholder="Número do documento" />
+                            </div>
+                            <span asp-validation-for="DocumentNumber" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="BirthDate" class="form-label fw-semibold"></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                                <input asp-for="BirthDate" class="form-control" type="date" />
+                            </div>
+                            <span asp-validation-for="BirthDate" class="text-danger small"></span>
+                        </div>
 
                         <div class="mb-4">
                             <label asp-for="ConfirmPassword" class="form-label fw-semibold"></label>

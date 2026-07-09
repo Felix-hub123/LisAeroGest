@@ -48,5 +48,29 @@ namespace LisAeroGest.Data.Repositories
                 .Include(t => t.Flight)
                 .Include(t => t.Seat)
                 .AsQueryable();
+
+        public async Task AddTempAsync(TicketTemp temp)
+         => await _context.TicketsTemp.AddAsync(temp);
+
+        public async Task DeleteTempAsync(TicketTemp temp)
+        {
+            _context.TicketsTemp.Remove(temp);
+            await Task.CompletedTask;
+        }
+
+        public async Task<TicketTemp?> GetTempByIdAsync(int id)
+            => await _context.TicketsTemp
+                .Include(t => t.Flight).ThenInclude(f => f!.Airline)
+                .Include(t => t.Seat)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+        public async Task<IEnumerable<TicketTemp>> GetTempByUserAsync(int passengerId)
+            => await _context.TicketsTemp
+                .Include(t => t.Flight).ThenInclude(f => f!.Airline)
+                .Include(t => t.Flight).ThenInclude(f => f!.OriginAirport)
+                .Include(t => t.Flight).ThenInclude(f => f!.DestinationAirport)
+                .Include(t => t.Seat)
+                .Where(t => t.PassengerId == passengerId && t.ExpiresAt > DateTime.UtcNow)
+                .ToListAsync();
     }
 }

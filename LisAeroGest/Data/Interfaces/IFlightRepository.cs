@@ -9,6 +9,8 @@ namespace LisAeroGest.Data.Interfaces
         Task<IEnumerable<Flight>> SearchAsync(int originId, int destinationId, DateTime date);
         Task<IEnumerable<Flight>> GetDepartureBoardAsync();
         Task<IEnumerable<Flight>> GetArrivalBoardAsync();
+        Task<IEnumerable<Flight>> GetAvailableFlightsAsync(string? origin, string? destination, DateTime? date);
         IQueryable<Flight> GetAllQueryable();
+
     }
 }

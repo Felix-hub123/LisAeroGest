@@ -28,6 +28,55 @@
                                 <i class="bi bi-house me-1"></i>Início
                             </a>
                         </li>
+                        @if (User.Identity!.IsAuthenticated && User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-gear me-1"></i>Gestão
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Airport" asp-action="Index"><i class="bi bi-geo-alt me-2"></i>Aeroportos</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Airline" asp-action="Index"><i class="bi bi-building me-2"></i>Companhias</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Gate" asp-action="Index"><i class="bi bi-door-open me-2"></i>Gates</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Aircraft" asp-action="Index"><i class="bi bi-airplane me-2"></i>Aeronaves</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Flight" asp-action="Index"><i class="bi bi-signpost-2 me-2"></i>Voos</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Forum" asp-action="Index"><i class="bi bi-chat-dots me-2"></i>Fórum</a></li>
+                                    <li><a class="dropdown-item" asp-controller="CheckIn" asp-action="EmployeeCheckIn"><i class="bi bi-person-check me-2"></i>Check-in Presencial</a></li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li><a class="dropdown-item" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-bar-chart me-2"></i>Dashboard</a></li>
+                                </ul>
+                            </li>
+                        }
+                        @if (User.Identity!.IsAuthenticated && User.IsInRole("Employee"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-clipboard me-1"></i>Operacional
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Flight" asp-action="Index"><i class="bi bi-signpost-2 me-2"></i>Voos</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Gate" asp-action="Index"><i class="bi bi-door-open me-2"></i>Gates</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Forum" asp-action="Index"><i class="bi bi-chat-dots me-2"></i>Fórum</a></li>
+                                    <li><a class="dropdown-item" asp-controller="CheckIn" asp-action="EmployeeCheckIn"><i class="bi bi-person-check me-2"></i>Check-in Presencial</a></li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li><a class="dropdown-item" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-bar-chart me-2"></i>Dashboard</a></li>
+                                </ul>
+                            </li>
+                        }
+                        @if (User.Identity!.IsAuthenticated && User.IsInRole("Passenger"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-ticket me-1"></i>Passageiro
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Shop" asp-action="Index"><i class="bi bi-cart me-2"></i>Comprar Bilhetes</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Shop" asp-action="MyTickets"><i class="bi bi-ticket-perforated me-2"></i>Os Meus Bilhetes</a></li>
+                                    <li><a class="dropdown-item" asp-controller="CheckIn" asp-action="Index"><i class="bi bi-check2-square me-2"></i>Check-in Online</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-bar-chart me-2"></i>Dashboard</a></li>
+                                </ul>
+                            </li>
+                        }
                     </ul>
                     <ul class="navbar-nav ms-auto">
                         @if (User.Identity!.IsAuthenticated)

@@ -63,5 +63,28 @@ namespace LisAeroGest.Data.Repositories
                 .Include(f => f.DestinationAirport)
                 .Include(f => f.Gate)
                 .AsQueryable();
+
+        public async Task<IEnumerable<Flight>> GetAvailableFlightsAsync(string? origin, string? destination, DateTime? date)
+        {
+            var query = _dbSet
+                .Include(f => f.Airline)
+                .Include(f => f.OriginAirport)
+                .Include(f => f.DestinationAirport)
+                .Include(f => f.Aircraft)
+                .Where(f => f.Status != "Cancelled" && f.DepartureTime > DateTime.UtcNow);
+
+            if (!string.IsNullOrEmpty(origin))
+                query = query.Where(f => f.OriginAirport!.IATACode == origin);
+
+            if (!string.IsNullOrEmpty(destination))
+                query = query.Where(f => f.DestinationAirport!.IATACode == destination);
+
+            if (date.HasValue)
+                query = query.Where(f => f.DepartureTime.Date == date.Value.Date);
+
+            return await query.OrderBy(f => f.DepartureTime).ToListAsync();
+        }
+
+
     }
 }

@@ -8,5 +8,7 @@ namespace LisAeroGest.Data.Interfaces
         Task<IEnumerable<Aircraft>> GetAvailableAsync();
         IQueryable<Aircraft> GetAllQueryable();
 
+        Task<bool> IsUsedInFlightsAsync(int aircraftId);
+
     }
 }

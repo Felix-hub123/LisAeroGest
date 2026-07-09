@@ -11,6 +11,7 @@ namespace LisAeroGest.Controllers
         private readonly IUserHelper _userHelper;
         private readonly IMailHelper _mailHelper;
         private readonly IConfiguration _configuration;
+        private readonly IPassengerRepository _passengerRepository;
 
         /// <summary>
         /// Inicializa o AccountController com as dependências necessárias.
@@ -18,6 +19,7 @@ namespace LisAeroGest.Controllers
         /// <param name="userHelper">Helper de gestão de utilizadores do Identity.</param>
         /// <param name="mailHelper">Helper de envio de emails transacionais.</param>
         /// <param name="configuration">Configuração da aplicação para leitura de settings.</param>
+        /// <param name="passengerRepository">Repositório para gestão de passageiros.</param>
         /// <returns>
         /// Instância de <see cref="AccountController"/> pronta a processar
         /// pedidos de autenticação e gestão de conta.
@@ -25,11 +27,13 @@ namespace LisAeroGest.Controllers
         public AccountController(
             IUserHelper userHelper,
             IMailHelper mailHelper,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IPassengerRepository passengerRepository)
         {
             _userHelper = userHelper;
             _mailHelper = mailHelper;
             _configuration = configuration;
+            _passengerRepository = passengerRepository;
         }
 
         // ─── Login ───────────────────────────────────────────────────────────
@@ -42,7 +46,7 @@ namespace LisAeroGest.Controllers
         public IActionResult Login()
         {
             if (User.Identity!.IsAuthenticated)
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Dashboard");
 
             return View();
         }
@@ -75,7 +79,7 @@ namespace LisAeroGest.Controllers
                     return RedirectToAction("Index", "Dashboard");
 
                 // Passenger vai para a página inicial
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Dashboard");
             }
 
             if (result.IsLockedOut)
@@ -118,7 +122,7 @@ namespace LisAeroGest.Controllers
         public IActionResult Register()
         {
             if (User.Identity!.IsAuthenticated)
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Dashboard");
 
             return View();
         }
@@ -165,6 +169,21 @@ namespace LisAeroGest.Controllers
 
             // Atribui a role Passenger
             await _userHelper.AddUserToRoleAsync(user, "Passenger");
+            // Cria o registo de passageiro associado ao utilizador
+            var passenger = new Passenger
+            {
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                DocumentType = model.DocumentType,
+                DocumentNumber = model.DocumentNumber,
+                BirthDate = model.BirthDate,
+                UserId = user.Id,
+                RegistrationDate = DateTime.UtcNow
+            };
+
+            await _passengerRepository.AddAsync(passenger);
+            await _passengerRepository.SaveAsync();
+
 
             // Envia email de confirmação
             var token = await _userHelper.GenerateEmailConfirmationTokenAsync(user);

@@ -95,6 +95,17 @@
         </div>
 
         <div class="col-6 col-md-3">
+            <a asp-controller="User" asp-action="Create"
+               class="card text-decoration-none text-dark shadow-sm h-100 border-0">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-person-plus text-success fs-1"></i>
+                    <p class="fw-semibold mt-2 mb-0">Criar Utilizador</p>
+                    <small class="text-muted">Adicionar funcionário/admin</small>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-3">
             <a asp-controller="Forum" asp-action="Index"
                class="card text-decoration-none text-dark shadow-sm h-100 border-0">
                 <div class="card-body text-center py-4">
@@ -106,7 +117,7 @@
         </div>
 
         <div class="col-6 col-md-3">
-            <a asp-controller="Dashboard" asp-action="Statistics"
+            <a asp-controller="Dashboard" asp-action="Index"
                class="card text-decoration-none text-dark shadow-sm h-100 border-0">
                 <div class="card-body text-center py-4">
                     <i class="bi bi-bar-chart-fill text-success fs-1"></i>
@@ -125,7 +136,7 @@
     <div class="row g-3">
 
         <div class="col-6 col-md-3">
-            <a asp-controller="CheckIn" asp-action="Index"
+            <a asp-controller="CheckIn" asp-action="EmployeeCheckIn"
                class="card text-decoration-none text-dark shadow-sm h-100 border-0">
                 <div class="card-body text-center py-4">
                     <i class="bi bi-person-check text-success fs-1"></i>

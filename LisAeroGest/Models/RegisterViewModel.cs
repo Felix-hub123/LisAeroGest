@@ -59,5 +59,18 @@ namespace LisAeroGest.Models
         [MaxLength(200, ErrorMessage = "A morada não pode exceder 200 caracteres.")]
         [Display(Name = "Morada")]
         public string? Address { get; set; }
+
+
+        [Required(ErrorMessage = "O tipo de documento é obrigatório.")]
+        [Display(Name = "Tipo de Documento")]
+        public string? DocumentType { get; set; }
+
+        [Required(ErrorMessage = "O número do documento é obrigatório.")]
+        [Display(Name = "Número do Documento")]
+        public string? DocumentNumber { get; set; }
+
+        [Display(Name = "Data de Nascimento")]
+        [DataType(DataType.Date)]
+        public DateTime? BirthDate { get; set; }
     }
 }

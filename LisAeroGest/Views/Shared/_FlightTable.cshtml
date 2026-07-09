@@ -1,7 +1,6 @@
 ﻿@model IEnumerable<LisAeroGest.Data.Entities.Flight>
 @using LisAeroGest.Helpers
 @{
-    // O parâmetro "Type" diz à tabela se deve mostrar Destino (partidas) ou Origem (chegadas)
     string type = ViewData["Type"]?.ToString() ?? "Departures";
     bool isDeparture = type == "Departures";
 }
@@ -24,6 +23,7 @@ else
                     <th>@(isDeparture ? "Destino" : "Origem")</th>
                     <th>@(isDeparture ? "Partida" : "Chegada")</th>
                     <th>Gate</th>
+                    @if (!isDeparture) { <th>Tapete</th> }
                     <th>Estado</th>
                 </tr>
             </thead>
@@ -62,6 +62,21 @@ else
                                 <span class="text-muted">—</span>
                             }
                         </td>
+                        @if (!isDeparture)
+                        {
+                            <td>
+                                <span class="badge bg-info text-dark">
+                                    @{
+                                        int HashSafe(int h) => h & int.MaxValue;
+                                        var gate = flight.Gate;
+                                        var belt = gate != null
+                                            ? (HashSafe(gate.GateNumber.GetHashCode()) % 6 + 1).ToString()
+                                            : (HashSafe(flight.FlightNumber?.GetHashCode() ?? 1) % 6 + 1).ToString();
+                                    }
+                                    <i class="bi bi-luggage me-1"></i>Tapete @belt
+                                </span>
+                            </td>
+                        }
                         <td>
                             <span class="badge @FlightStatusHelper.GetBadgeClass(flight.Status)">
                                 @FlightStatusHelper.GetStatusText(flight.Status)

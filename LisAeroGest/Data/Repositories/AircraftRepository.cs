@@ -16,5 +16,8 @@ namespace LisAeroGest.Data.Repositories
 
         public IQueryable<Aircraft> GetAllQueryable()
             => _dbSet.AsQueryable();
+
+        public async Task<bool> IsUsedInFlightsAsync(int aircraftId)
+         => await _context.Flights.AnyAsync(f => f.AircraftId == aircraftId);
     }
 }
