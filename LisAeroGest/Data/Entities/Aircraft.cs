@@ -54,8 +54,9 @@ namespace LisAeroGest.Data.Entities
         /// URL completo da imagem da aeronave.
         /// </summary>
         public string ImageFullPath => ImageId == Guid.Empty
-            ? "/images/aircraft/noimage.png"
-            : $"https://lisaerogest.blob.core.windows.net/aircraft/{ImageId}";
+           ? "/images/aircraft/noimage.png"
+
+           : $"/images/aircraft/{ImageId}.png";
 
         /// <summary>
         /// Indica se a aeronave está disponível para operar voos.

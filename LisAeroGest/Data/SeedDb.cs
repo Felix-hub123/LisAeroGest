@@ -36,6 +36,7 @@ namespace LisAeroGest.Data
             await SeedAdminAsync();
             await SeedAirportsAsync();
             await SeedAirlinesAsync();
+            await SeedEmployeeAsync();
             await SeedGatesAsync();
             await SeedAircraftsAsync();
             await SeedFlightsAsync();
@@ -77,6 +78,36 @@ namespace LisAeroGest.Data
                 var result = await _userManager.CreateAsync(user, "Admin123!");
                 if (result.Succeeded)
                     await _userManager.AddToRoleAsync(user, "Admin");
+            }
+        }
+
+        /// <summary>
+        /// Cria um funcionário de teste se ainda não existir.
+        /// </summary>
+        /// <returns>
+        /// Utilizador com role Employee criado e confirmado,
+        /// pronto a fazer login sem necessidade de confirmação de email.
+        /// </returns>
+        private async Task SeedEmployeeAsync()
+        {
+            var email = "funcionario@lisaerogest.pt";
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+            {
+                user = new User
+                {
+                    FirstName = "João",
+                    LastName = "Funcionário",
+                    Email = email,
+                    UserName = email,
+                    EmailConfirmed = true,
+                    IsPasswordSet = true
+                };
+
+                var result = await _userManager.CreateAsync(user, "Employee123!");
+                if (result.Succeeded)
+                    await _userManager.AddToRoleAsync(user, "Employee");
             }
         }
 

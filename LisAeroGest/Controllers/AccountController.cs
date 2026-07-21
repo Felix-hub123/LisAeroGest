@@ -69,6 +69,7 @@ namespace LisAeroGest.Controllers
                 if (Request.Query.Keys.Contains("ReturnUrl"))
                     return Redirect(Request.Query["ReturnUrl"].First()!);
 
+
                 // Redireciona consoante a role do utilizador
                 var loggedUser = await _userHelper.GetUserByEmailAsync(model.Username!);
 
@@ -78,8 +79,11 @@ namespace LisAeroGest.Controllers
                 if (await _userHelper.IsUserInRoleAsync(loggedUser!, "Employee"))
                     return RedirectToAction("Index", "Dashboard");
 
+                if (await _userHelper.IsUserInRoleAsync(loggedUser!, "Employee"))
+                    return RedirectToAction("Index", "Dashboard");
+
                 // Passenger vai para a página inicial
-                return RedirectToAction("Index", "Dashboard");
+                return RedirectToAction("Index", "Home");
             }
 
             if (result.IsLockedOut)

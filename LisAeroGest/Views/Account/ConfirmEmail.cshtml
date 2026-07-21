@@ -1,35 +1,152 @@
 ﻿@{
-    ViewData["Title"] = "Confirmação de Email";
+    ViewData["Title"] = "Confirmação de Email — LisAeroGest";
+
+    var mensagem = ViewBag.Message as string ?? "";
+    var isSucesso = mensagem.Contains("sucesso", StringComparison.OrdinalIgnoreCase);
+    var isErro = !isSucesso && !string.IsNullOrEmpty(mensagem);
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white text-center py-3">
-                    <h4 class="mb-0">
-                        <i class="bi bi-envelope-check me-2"></i>Confirmação de Email
-                    </h4>
-                </div>
-                <div class="card-body p-4 text-center">
+@functions {
+    string BgGrad()
+    {
+        var mensagem = ViewBag.Message as string ?? "";
+        if (mensagem.Contains("sucesso", StringComparison.OrdinalIgnoreCase))
+            return "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)";
+        if (!string.IsNullOrEmpty(mensagem))
+            return "linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%)";
+        return "";  // usa o default da .auth-bg
+    }
+}
 
-                    @if (ViewBag.Message != null && ViewBag.Message.ToString().Contains("sucesso"))
+<div class="auth-bg" style="@(string.IsNullOrEmpty(BgGrad()) ? "" : $"background: {BgGrad()};")">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-9 col-lg-7 col-xl-5">
+                <div class="card @(isSucesso ? "success-card" : isErro ? "denied-card" : "auth-card")">
+
+                    @* ---- Header consoante o estado ---- *@
+                    @if (isSucesso)
                     {
-                        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
-                        <h5 class="mt-3 text-success">Email Confirmado!</h5>
+                        <div class="success-header">
+                            <div class="success-checkmark pulse-success">
+                                <i class="bi bi-check-lg"></i>
+                            </div>
+                            <h1>Email Confirmado</h1>
+                            <p>A sua conta está activa</p>
+                            <div class="auth-wave">
+                                <svg viewBox="0 0 1440 60" preserveAspectRatio="none">
+                                    <path d="M0,32 C360,80 720,0 1080,32 C1260,48 1380,32 1440,32 L1440,60 L0,60 Z" fill="white" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="card-body success-body">
+                            <i class="bi bi-envelope-check success-icon-big bounce-in"></i>
+                            <h4 class="mt-3 mb-2">Tudo certo!</h4>
+                        </div>
+                    }
+                    else if (isErro)
+                    {
+                        <div class="denied-header">
+                            <div class="shield-icon-wrap pulse-shield">
+                                <i class="bi bi-x-lg"></i>
+                            </div>
+                            <h1>Erro na Confirmação</h1>
+                            <p>Não foi possível confirmar o email</p>
+                            <div class="auth-wave">
+                                <svg viewBox="0 0 1440 60" preserveAspectRatio="none">
+                                    <path d="M0,32 C360,80 720,0 1080,32 C1260,48 1380,32 1440,32 L1440,60 L0,60 Z" fill="white" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="card-body denied-body">
+                            <i class="bi bi-x-octagon-fill text-danger shake-once" style="font-size: 3.5rem;"></i>
+                            <h4 class="mt-3 mb-2">O link expirou ou é inválido</h4>
+                        </div>
                     }
                     else
                     {
-                        <i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>
-                        <h5 class="mt-3 text-danger">Erro na Confirmação</h5>
+                        <div class="auth-header">
+                            <div class="auth-logo">
+                                <i class="bi bi-envelope-check"></i>
+                            </div>
+                            <h1>Confirmação de Email</h1>
+                            <p>A processar o seu pedido</p>
+                            <div class="auth-wave">
+                                <svg viewBox="0 0 1440 60" preserveAspectRatio="none">
+                                    <path d="M0,32 C360,80 720,0 1080,32 C1260,48 1380,32 1440,32 L1440,60 L0,60 Z" fill="white" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="card-body auth-body text-center">
+                            <h4 class="mt-2 mb-2">A confirmar...</h4>
+                        </div>
                     }
 
-                    <p class="text-muted mt-2">@ViewBag.Message</p>
+                    @* ---- Corpo comum: mensagem + acções ---- *@
+                    <div class="card-body @(isSucesso ? "success-body" : isErro ? "denied-body" : "auth-body text-center")" style="padding-top: 0;">
 
-                    <a asp-action="Login" class="btn btn-primary mt-3">
-                        <i class="bi bi-box-arrow-in-right me-2"></i>Ir para o Login
-                    </a>
+                        <p class="@(isSucesso ? "success-message" : isErro ? "denied-message" : "text-muted") mb-4">
+                            @mensagem
+                        </p>
+
+                        @if (isSucesso)
+                        {
+                            <p class="success-detail">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Já pode iniciar sessão com a sua conta. Bem-vindo ao LisAeroGest!
+                            </p>
+                        }
+                        else if (isErro)
+                        {
+                            <p class="denied-detail">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Os links de confirmação expiram após 24 horas. Pode pedir um novo abaixo.
+                            </p>
+                        }
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                            <a asp-controller="Account" asp-action="Login" class="btn btn-primary-grad btn-action">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Ir para o Login
+                            </a>
+                            @if (isErro)
+                            {
+                                <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary btn-action">
+                                    <i class="bi bi-person-plus me-2"></i>Criar nova conta
+                                </a>
+                            }
+                            @if (!isSucesso)
+                            {
+                                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-action">
+                                    <i class="bi bi-house me-2"></i>Voltar ao Início
+                                </a>
+                            }
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <div class="text-start small">
+                            <p class="mb-1 text-muted">
+                                <i class="bi bi-clock me-1"></i>
+                                @DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")
+                            </p>
+                            <p class="mb-0 @(isSucesso ? "text-success" : isErro ? "text-danger" : "text-muted")">
+                                <i class="bi bi-@(isSucesso ? "check2-circle" : isErro ? "x-circle" : "info-circle") me-1"></i>
+                                @(isSucesso ? "Confirmação processada com sucesso" :
+                                                                isErro ? "Confirmação falhada" :
+                                                                "A processar...")
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-white text-center py-3 border-0">
+                        <span class="text-muted small">&copy; @DateTime.Now.Year LisAeroGest · CINEL</span>
+                    </div>
                 </div>
+
+                <p class="text-center text-muted small mt-3 mb-0">
+                    <i class="bi bi-shield-check me-1"></i>
+                    A segurança da sua conta é a nossa prioridade.
+                </p>
             </div>
         </div>
     </div>

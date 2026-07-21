@@ -40,13 +40,7 @@ namespace LisAeroGest.Data.Entities
         /// </summary>
         public Guid ImageId { get; set; }
 
-        /// <summary>
-        /// URL completo do logótipo da companhia aérea.
-        /// </summary>
-        public string ImageFullPath => ImageId == Guid.Empty
-            ? "/images/airlines/noimage.png"
-            : $"https://lisaerogest.blob.core.windows.net/airlines/{ImageId}";
-
+       
         /// <summary>
         /// Lista de voos operados por esta companhia aérea.
         /// </summary>

@@ -9,14 +9,34 @@ namespace LisAeroGest.Data.Repositories
         public PassengerRepository(DataContext context) : base(context) { }
 
         public async Task<Passenger?> GetByUserIdAsync(string userId)
-            => await _dbSet.FirstOrDefaultAsync(p => p.UserId == userId);
+
+           => await _dbSet.FirstOrDefaultAsync(p => p.UserId == userId);
+
 
         public async Task<Passenger?> GetWithTicketsAsync(int id)
+
             => await _dbSet
+
                 .Include(p => p.User)
+
                 .FirstOrDefaultAsync(p => p.Id == id);
 
+
+        public async Task<Passenger?> GetWithTicketsAndFlightsAsync(int id)
+
+            => await _dbSet
+
+                .Include(p => p.User)
+
+                .Include(p => p.Tickets)
+
+                    .ThenInclude(t => t.Flight)
+
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+
         public IQueryable<Passenger> GetAllQueryable()
+
             => _dbSet.Include(p => p.User).AsQueryable();
     }
 }

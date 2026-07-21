@@ -301,6 +301,60 @@ namespace LisAeroGest.Migrations
                     b.ToTable("Gates");
                 });
 
+            modelBuilder.Entity("LisAeroGest.Data.Entities.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ColorClass")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Icon")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Link")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("LisAeroGest.Data.Entities.Passenger", b =>
                 {
                     b.Property<int>("Id")
@@ -785,6 +839,17 @@ namespace LisAeroGest.Migrations
                     b.Navigation("CreatedBy");
                 });
 
+            modelBuilder.Entity("LisAeroGest.Data.Entities.Notification", b =>
+                {
+                    b.HasOne("LisAeroGest.Data.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("LisAeroGest.Data.Entities.Passenger", b =>
                 {
                     b.HasOne("LisAeroGest.Data.Entities.User", "User")
@@ -828,7 +893,7 @@ namespace LisAeroGest.Migrations
                         .IsRequired();
 
                     b.HasOne("LisAeroGest.Data.Entities.Passenger", "Passenger")
-                        .WithMany()
+                        .WithMany("Tickets")
                         .HasForeignKey("PassengerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -947,6 +1012,11 @@ namespace LisAeroGest.Migrations
             modelBuilder.Entity("LisAeroGest.Data.Entities.ForumTopic", b =>
                 {
                     b.Navigation("Comments");
+                });
+
+            modelBuilder.Entity("LisAeroGest.Data.Entities.Passenger", b =>
+                {
+                    b.Navigation("Tickets");
                 });
 #pragma warning restore 612, 618
         }

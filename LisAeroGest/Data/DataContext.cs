@@ -61,6 +61,13 @@ namespace LisAeroGest.Data
         /// </summary>
         public DbSet<ForumComment> ForumComments { get; set; }
 
+
+
+        /// <summary>
+        /// Tabela de notificações do sistema.
+        /// </summary>
+        public DbSet<Notification> Notifications { get; set; }
+
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
         }
@@ -162,10 +169,10 @@ namespace LisAeroGest.Data
 
             // Bilhete — Passageiro
             modelBuilder.Entity<Ticket>()
-                .HasOne(t => t.Passenger)
-                .WithMany()
-                .HasForeignKey(t => t.PassengerId)
-                .OnDelete(DeleteBehavior.Restrict);
+              .HasOne(t => t.Passenger)
+              .WithMany(p => p.Tickets)  // ← adiciona p => p.Tickets
+              .HasForeignKey(t => t.PassengerId)
+              .OnDelete(DeleteBehavior.Restrict);
 
             // Bilhete — Voo
             modelBuilder.Entity<Ticket>()
@@ -247,6 +254,13 @@ namespace LisAeroGest.Data
                 .HasForeignKey(c => c.CreatedByUserId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Notificação — User (destinatário)
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.User)
+                .WithMany()
+                .HasForeignKey(n => n.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
             #endregion
         }
 

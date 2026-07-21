@@ -16,6 +16,14 @@
         /// <param name="imageId">O Guid da imagem.</param>
         /// <param name="folder">A pasta onde a imagem está guardada.</param>
         Task DeleteImageAsync(Guid imageId, string folder);
+
+        /// <summary>
+
+        /// Devolve o URL completo da imagem. Se o ID for vazio, devolve o placeholder.
+
+        /// </summary>
+
+        string GetImageUrl(Guid imageId, string folder, string placeholderName = "noimage");
     }
 }
 

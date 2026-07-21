@@ -1,5 +1,4 @@
-﻿using LisAeroGest.Data.Entities;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LisAeroGest.Data.Entities
@@ -40,8 +39,9 @@ namespace LisAeroGest.Data.Entities
         /// URL completo da imagem de perfil.
         /// </summary>
         public string ImageFullPath => ImageId == Guid.Empty
-            ? "/images/users/noimage.png"
-            : $"https://lisaerogest.blob.core.windows.net/users/{ImageId}";
+            ? "/images/passenger/noimage.png"
+
+            : $"/images/passenger/{ImageId}.png";
 
         /// <summary>
         /// Data em que o passageiro se registou na plataforma.
@@ -79,6 +79,14 @@ namespace LisAeroGest.Data.Entities
         /// Navegação para o utilizador associado.
         /// </summary>
         public User? User { get; set; }
+
+        /// <summary>
+
+        /// Lista de bilhetes associados a este passageiro.
+
+        /// </summary>
+
+        public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
 
         /// <summary>
         /// Indica se o registo foi eliminado logicamente.

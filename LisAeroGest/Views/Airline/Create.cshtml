@@ -1,7 +1,28 @@
 ﻿@model LisAeroGest.Models.AirlineViewModel
+
+
 @{
+
     ViewData["Title"] = "Nova Companhia Aérea";
+
 }
+
+
+<!-- Breadcrumb -->
+
+<nav aria-label="breadcrumb" class="mt-3">
+
+    <ol class="breadcrumb">
+
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Início</a></li>
+
+        <li class="breadcrumb-item"><a asp-controller="Airline" asp-action="Index">Companhias</a></li>
+
+        <li class="breadcrumb-item active">Nova</li>
+
+    </ol>
+
+</nav>
 
 <div class="container mt-4">
     <div class="row justify-content-center">

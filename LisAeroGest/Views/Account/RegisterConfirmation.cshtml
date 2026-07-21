@@ -1,29 +1,101 @@
 ﻿@{
-    ViewData["Title"] = "Registo Concluído";
+    ViewData["Title"] = "Registo Concluído — LisAeroGest";
+    var mensagem = ViewBag.Message as string ?? "Enviámos um email de confirmação para a sua caixa de correio.";
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm border-success">
-                <div class="card-header bg-success text-white text-center py-3">
-                    <h4 class="mb-0">
-                        <i class="bi bi-check-circle-fill me-2"></i>Registo Concluído
-                    </h4>
+<div class="auth-bg" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-9 col-lg-7 col-xl-5">
+                <div class="card success-card">
+                    <div class="success-header">
+                        <div class="success-checkmark pulse-success">
+                            <i class="bi bi-envelope-check-fill"></i>
+                        </div>
+                        <h1>Registo Concluído</h1>
+                        <p>Só falta confirmar o seu email</p>
+                        <div class="auth-wave">
+                            <svg viewBox="0 0 1440 60" preserveAspectRatio="none">
+                                <path d="M0,32 C360,80 720,0 1080,32 C1260,48 1380,32 1440,32 L1440,60 L0,60 Z" fill="white" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="card-body success-body">
+                        <i class="bi bi-envelope-paper-heart success-icon-big bounce-in"></i>
+
+                        <h4 class="mt-3 mb-2">Verifique o seu email!</h4>
+
+                        <p class="success-message">@mensagem</p>
+
+                        <p class="success-detail">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Após confirmar o email, poderá iniciar sessão na plataforma
+                            e comprar bilhetes, fazer check-in e gerir as suas viagens.
+                        </p>
+
+                        @* ---- Passos seguintes (timeline) ---- *@
+                        <div class="timeline-steps text-start my-4">
+                            <div class="step done">
+                                <div class="step-icon"><i class="bi bi-check-lg"></i></div>
+                                <div class="step-content">
+                                    <strong>Conta criada</strong>
+                                    <small class="d-block text-muted">Os seus dados foram guardados com sucesso</small>
+                                </div>
+                            </div>
+                            <div class="step current">
+                                <div class="step-icon"><i class="bi bi-envelope"></i></div>
+                                <div class="step-content">
+                                    <strong>Confirme o email</strong>
+                                    <small class="d-block text-muted">Clique no link que enviámos</small>
+                                </div>
+                            </div>
+                            <div class="step">
+                                <div class="step-icon"><i class="bi bi-airplane"></i></div>
+                                <div class="step-content">
+                                    <strong>Pronto a voar!</strong>
+                                    <small class="d-block text-muted">Faça login e compre o seu primeiro bilhete</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <a asp-controller="Account" asp-action="Login" class="btn btn-primary-grad btn-action">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Ir para o Login
+                            </a>
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-success btn-action">
+                                <i class="bi bi-house me-2"></i>Voltar ao Início
+                            </a>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <div class="text-start small">
+                            <p class="mb-1 text-muted">
+                                <i class="bi bi-clock me-1"></i>
+                                @DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")
+                            </p>
+                            <p class="mb-1 text-muted">
+                                <i class="bi bi-question-circle me-1"></i>
+                                Não recebeu o email? Verifique a pasta de <strong>spam</strong> ou
+                                <a asp-controller="Account" asp-action="RecoverPassword">reenvie aqui</a>.
+                            </p>
+                            <p class="mb-0 text-success">
+                                <i class="bi bi-shield-check me-1"></i>
+                                A sua conta está protegida por encriptação
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-white text-center py-3 border-0">
+                        <span class="text-muted small">&copy; @DateTime.Now.Year LisAeroGest · CINEL</span>
+                    </div>
                 </div>
-                <div class="card-body p-4 text-center">
-                    <i class="bi bi-envelope-check-fill text-success" style="font-size: 4rem;"></i>
-                    <h5 class="mt-3">Verifique o seu email!</h5>
-                    <p class="text-muted">
-                        @ViewBag.Message
-                    </p>
-                    <p class="text-muted small">
-                        Após confirmar o email, poderá fazer login na plataforma.
-                    </p>
-                    <a asp-action="Login" class="btn btn-primary mt-2">
-                        <i class="bi bi-box-arrow-in-right me-2"></i>Ir para o Login
-                    </a>
-                </div>
+
+                <p class="text-center text-muted small mt-3 mb-0">
+                    <i class="bi bi-heart-fill text-danger me-1"></i>
+                    Obrigado por se juntar à família LisAeroGest!
+                </p>
             </div>
         </div>
     </div>

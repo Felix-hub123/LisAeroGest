@@ -1,13 +1,20 @@
 ﻿@model LisAeroGest.Models.AirportViewModel
-
 @{
     ViewData["Title"] = "Novo Aeroporto";
 }
 
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mt-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Início</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Airport" asp-action="Index">Aeroportos</a></li>
+        <li class="breadcrumb-item active">Novo</li>
+    </ol>
+</nav>
+
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-7">
-
             <div class="d-flex align-items-center mb-4">
                 <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3">
                     <i class="bi bi-arrow-left"></i>
@@ -20,6 +27,7 @@
             <div class="card shadow-sm">
                 <div class="card-body p-4">
                     <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                         <div class="row">

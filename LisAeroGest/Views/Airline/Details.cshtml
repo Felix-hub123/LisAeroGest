@@ -1,25 +1,37 @@
-﻿@model LisAeroGest.Data.Entities.Airline
+﻿@using LisAeroGest.Data.Interfaces
+@model LisAeroGest.Data.Entities.Airline
+@inject IImageHelper ImageHelper
+
 @{
     ViewData["Title"] = "Detalhes da Companhia Aérea";
 }
 
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mt-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Início</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Airline" asp-action="Index">Companhias</a></li>
+        <li class="breadcrumb-item active">Detalhes</li>
+    </ol>
+</nav>
+
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-7">
-
             <div class="d-flex align-items-center mb-4">
                 <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3">
                     <i class="bi bi-arrow-left"></i>
                 </a>
                 <h2 class="fw-bold mb-0">
-                    <i class="bi bi-info-circle-fill text-info me-2"></i>Detalhes da Companhia Aérea
+                    <i class="bi bi-info-circle-fill text-info me-2"></i>Detalhes da Companhia
                 </h2>
             </div>
 
             <div class="card shadow-sm">
                 <div class="card-body p-4">
                     <div class="text-center mb-4">
-                        <img src="@Model.ImageFullPath" alt="@Model.Name"
+                        <img src="@ImageHelper.GetImageUrl(Model.ImageId, "airlines")"
+                             alt="@Model.Name"
                              class="rounded shadow-sm"
                              style="height:120px; object-fit:cover;" />
                     </div>
@@ -46,11 +58,13 @@
                     </table>
 
                     <div class="d-flex gap-2 mt-3">
-                        <a asp-action="Edit" asp-route-id="@Model.Id"
-                           class="btn btn-warning">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
                             <i class="bi bi-pencil me-2"></i>Editar
                         </a>
-                        <a asp-action="Index" class="btn btn-outline-secondary">
+                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+                            <i class="bi bi-trash me-2"></i>Eliminar
+                        </a>
+                        <a asp-action="Index" class="btn btn-outline-secondary ms-auto">
                             <i class="bi bi-arrow-left me-2"></i>Voltar
                         </a>
                     </div>

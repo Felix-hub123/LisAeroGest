@@ -50,14 +50,7 @@ namespace LisAeroGest.Data.Entities
         /// </summary>
         public Guid ImageId { get; set; }
 
-        /// <summary>
-        /// URL completo da imagem do aeroporto.
-        /// Devolve imagem padrão se não tiver imagem definida.
-        /// </summary>
-        public string ImageFullPath => ImageId == Guid.Empty
-            ? "/images/airports/noimage.png"
-            : $"https://lisaerogest.blob.core.windows.net/airports/{ImageId}";
-
+      
         /// <summary>
         /// Indica se o aeroporto foi eliminado logicamente.
         /// </summary>
