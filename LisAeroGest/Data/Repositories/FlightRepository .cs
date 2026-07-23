@@ -9,14 +9,14 @@ namespace LisAeroGest.Data.Repositories
         public FlightRepository(DataContext context) : base(context) { }
 
         public async Task<Flight?> GetWithDetailsAsync(int id)
-            => await _dbSet
-                .Include(f => f.Airline)
-                .Include(f => f.OriginAirport)
-                .Include(f => f.DestinationAirport)
-                .Include(f => f.Aircraft)
-                .Include(f => f.Gate)
-                .Include(f => f.Seats)
-                .FirstOrDefaultAsync(f => f.Id == id);
+     => await _dbSet
+         .Include(f => f.Airline)
+         .Include(f => f.OriginAirport)
+         .Include(f => f.DestinationAirport)
+         .Include(f => f.Aircraft)
+         .ThenInclude(a => a!.Seats) 
+         .Include(f => f.Gate)
+         .FirstOrDefaultAsync(f => f.Id == id);
 
         public async Task<IEnumerable<Flight>> GetByAirlineAsync(int airlineId)
             => await _dbSet

@@ -72,5 +72,38 @@ namespace LisAeroGest.Data.Repositories
                 .Include(t => t.Seat)
                 .Where(t => t.PassengerId == passengerId && t.ExpiresAt > DateTime.UtcNow)
                 .ToListAsync();
+
+
+
+        public async Task<IEnumerable<Ticket>> SearchForCheckInAsync(string searchCriteria)
+        {
+            if (string.IsNullOrWhiteSpace(searchCriteria))
+            {
+                return Enumerable.Empty<Ticket>();
+            }
+
+            var term = searchCriteria.Trim().ToLower();
+
+            return await _context.Tickets
+                .Include(t => t.Flight)
+                    .ThenInclude(f => f!.OriginAirport)
+                .Include(t => t.Flight)
+                    .ThenInclude(f => f!.DestinationAirport)
+                .Include(t => t.Passenger)
+                    .ThenInclude(p => p!.User)
+                .Include(t => t.Seat)
+                .Where(t =>
+                    // Pesquisa por ID do bilhete (se for número)
+                    t.Id.ToString() == term ||
+                    // Pesquisa por Nome Completo do passageiro
+                    (t.Passenger != null && t.Passenger.User != null && t.Passenger.User.FullName.ToLower().Contains(term)) ||
+                    // Pesquisa por E-mail do passageiro
+                    (t.Passenger != null && t.Passenger.User != null && t.Passenger.User.Email!.ToLower().Contains(term)) ||
+                    // Pesquisa por Número do Voo
+                    (t.Flight != null && t.Flight.FlightNumber.ToLower().Contains(term))
+                )
+                .OrderByDescending(t => t.PurchaseDate)
+                .ToListAsync();
+        }
     }
 }

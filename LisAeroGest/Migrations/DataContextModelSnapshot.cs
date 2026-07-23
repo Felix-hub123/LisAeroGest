@@ -136,6 +136,38 @@ namespace LisAeroGest.Migrations
                     b.ToTable("Airports");
                 });
 
+            modelBuilder.Entity("LisAeroGest.Data.Entities.BoardingPass", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Gate")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("IssuedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("QRCode")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("SequenceNumber")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TicketId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TicketId");
+
+                    b.ToTable("BoardingPasses");
+                });
+
             modelBuilder.Entity("LisAeroGest.Data.Entities.Flight", b =>
                 {
                     b.Property<int>("Id")
@@ -767,6 +799,17 @@ namespace LisAeroGest.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("LisAeroGest.Data.Entities.BoardingPass", b =>
+                {
+                    b.HasOne("LisAeroGest.Data.Entities.Ticket", "Ticket")
+                        .WithMany()
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ticket");
                 });
 
             modelBuilder.Entity("LisAeroGest.Data.Entities.Flight", b =>

@@ -75,6 +75,13 @@ namespace LisAeroGest.Data.Entities
         /// </summary>
         public string? CreatedByUserId { get; set; }
 
+
+        /// <summary>
+        /// Propriedade utilitária para verificar se o check-in já foi realizado.
+        /// </summary>
+        [NotMapped]
+        public bool HasCheckedIn => Status == "CheckedIn" || CheckInDate.HasValue;
+
         /// <summary>
         /// Indica se o bilhete foi eliminado logicamente.
         /// </summary>

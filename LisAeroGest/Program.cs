@@ -86,7 +86,7 @@ builder.Services.AddScoped<WeatherService>();
 builder.Services.AddScoped<ISeatRepository, SeatRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IForumTopicRepository, ForumTopicRepository>();
-
+builder.Services.AddScoped<IBoardingPassRepository, BoardingPassRepository>();
 // ─── HttpClient (para OpenWeatherMap) ───────────────────────────────────────
 builder.Services.AddHttpClient();
 

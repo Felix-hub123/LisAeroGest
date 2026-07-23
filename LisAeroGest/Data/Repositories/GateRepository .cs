@@ -38,5 +38,9 @@ namespace LisAeroGest.Data.Repositories
         /// Devolve todos os gates como IQueryable para queries personalizadas.
         /// </summary>
         IQueryable<Gate> GetAllQueryable();
+
+        Task<bool> IsGateOccupiedAsync(int gateId, DateTime departureTime, DateTime arrivalTime, int? currentFlightId = null);
+
+
     }
 }

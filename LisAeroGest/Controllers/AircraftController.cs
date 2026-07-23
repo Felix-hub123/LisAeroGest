@@ -1,5 +1,5 @@
-﻿using LisAeroGest.Data.Entities;
-using LisAeroGest.Data.Interfaces;
+﻿using LisAeroGest.Data.Interfaces;
+using LisAeroGest.Helpers;
 using LisAeroGest.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,16 +15,22 @@ namespace LisAeroGest.Controllers
     {
         private readonly IAircraftRepository _aircraftRepository;
         private readonly IImageHelper _imageHelper;
+        private readonly IConverterHelper _converterHelper;
 
         /// <summary>
         /// Inicializa o AircraftController com as dependências necessárias.
         /// </summary>
         /// <param name="aircraftRepository">Repositório para acesso aos dados das aeronaves.</param>
         /// <param name="imageHelper">Helper para gestão de imagens (Local/Cloud).</param>
-        public AircraftController(IAircraftRepository aircraftRepository, IImageHelper imageHelper)
+        /// <param name="converterHelper">Helper para conversão entre ViewModels e Entidades.</param>
+        public AircraftController(
+            IAircraftRepository aircraftRepository,
+            IImageHelper imageHelper,
+            IConverterHelper converterHelper)
         {
             _aircraftRepository = aircraftRepository;
             _imageHelper = imageHelper;
+            _converterHelper = converterHelper;
         }
 
         /// <summary>
@@ -48,11 +54,10 @@ namespace LisAeroGest.Controllers
         /// Processa a criação de uma nova aeronave.
         /// Faz o upload da imagem se fornecida e guarda os dados na base de dados.
         /// </summary>
-        /// <param name="model">Modelo com os dados da nova aeronave.</param>
+        /// <param name="viewModel">Modelo com os dados da nova aeronave.</param>
         /// <returns>Redirecionamento para a Index em caso de sucesso, ou a própria View com erros.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        // Alterado de 'model' para 'viewModel'
         public async Task<IActionResult> Create(AircraftViewModel viewModel)
         {
             if (!ModelState.IsValid) return View(viewModel);
@@ -61,15 +66,8 @@ namespace LisAeroGest.Controllers
             if (viewModel.ImageFile != null)
                 imageId = await _imageHelper.UploadImageAsync(viewModel.ImageFile, "aircraft");
 
-            var aircraft = new Aircraft
-            {
-                Brand = viewModel.Brand,
-                Model = viewModel.Model, // Aqui o C# já percebe que este 'Model' é a propriedade
-                EconomySeats = viewModel.EconomySeats,
-                BusinessSeats = viewModel.BusinessSeats,
-                IsAvailable = viewModel.IsAvailable,
-                ImageId = imageId
-            };
+            // Mapeamento delegado ao ConverterHelper
+            var aircraft = _converterHelper.ToAircraft(viewModel, imageId);
 
             await _aircraftRepository.AddAsync(aircraft);
             await _aircraftRepository.SaveAsync();
@@ -89,16 +87,8 @@ namespace LisAeroGest.Controllers
             var aircraft = await _aircraftRepository.GetByIdAsync(id);
             if (aircraft == null) return NotFound();
 
-            var model = new AircraftViewModel
-            {
-                Id = aircraft.Id,
-                Brand = aircraft.Brand,
-                Model = aircraft.Model,
-                EconomySeats = aircraft.EconomySeats,
-                BusinessSeats = aircraft.BusinessSeats,
-                IsAvailable = aircraft.IsAvailable,
-                ImageId = aircraft.ImageId
-            };
+            // Mapeamento delegado ao ConverterHelper
+            var model = _converterHelper.ToAircraftViewModel(aircraft);
 
             return View(model);
         }
@@ -107,8 +97,7 @@ namespace LisAeroGest.Controllers
         /// Processa a atualização dos dados de uma aeronave.
         /// Gere a substituição da imagem se um novo ficheiro for enviado.
         /// </summary>
-        /// <param name="model">Modelo com os dados atualizados.</param>
-        /// <returns>Redirecionamento para a Index ou View com erros.</returns>
+        /// <param name="viewModel">Modelo com os dados atualizados.</param>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(AircraftViewModel viewModel)
@@ -118,17 +107,15 @@ namespace LisAeroGest.Controllers
             var aircraft = await _aircraftRepository.GetByIdAsync(viewModel.Id);
             if (aircraft == null) return NotFound();
 
+            var imageId = aircraft.ImageId;
             if (viewModel.ImageFile != null)
             {
                 await _imageHelper.DeleteImageAsync(aircraft.ImageId, "aircraft");
-                aircraft.ImageId = await _imageHelper.UploadImageAsync(viewModel.ImageFile, "aircraft");
+                imageId = await _imageHelper.UploadImageAsync(viewModel.ImageFile, "aircraft");
             }
 
-            aircraft.Brand = viewModel.Brand;
-            aircraft.Model = viewModel.Model;
-            aircraft.EconomySeats = viewModel.EconomySeats;
-            aircraft.BusinessSeats = viewModel.BusinessSeats;
-            aircraft.IsAvailable = viewModel.IsAvailable;
+            // Delegamos a atribuição de propriedades ao ConverterHelper
+            _converterHelper.UpdateAircraftFromViewModel(aircraft, viewModel, imageId);
 
             await _aircraftRepository.UpdateAsync(aircraft);
             await _aircraftRepository.SaveAsync();
@@ -147,6 +134,7 @@ namespace LisAeroGest.Controllers
         {
             var aircraft = await _aircraftRepository.GetWithSeatsAsync(id);
             if (aircraft == null) return NotFound();
+
             return View(aircraft);
         }
 
@@ -160,11 +148,12 @@ namespace LisAeroGest.Controllers
         {
             var aircraft = await _aircraftRepository.GetByIdAsync(id);
             if (aircraft == null) return NotFound();
+
             return View(aircraft);
         }
 
         /// <summary>
-        /// Processa a eliminação (Soft Delete) da aeronave após confirmação.
+        /// Processa a eliminação da aeronave após confirmação se não estiver associada a voos.
         /// </summary>
         /// <param name="id">ID da aeronave a eliminar.</param>
         /// <returns>Redirecionamento para a Index.</returns>
@@ -172,13 +161,13 @@ namespace LisAeroGest.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-
             var isUsed = await _aircraftRepository.IsUsedInFlightsAsync(id);
             if (isUsed)
             {
                 TempData["Error"] = "Não é possível eliminar esta aeronave pois está associada a voos.";
                 return RedirectToAction(nameof(Index));
             }
+
             var aircraft = await _aircraftRepository.GetByIdAsync(id);
             if (aircraft == null) return NotFound();
 

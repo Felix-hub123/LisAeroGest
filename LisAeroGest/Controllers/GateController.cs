@@ -1,5 +1,6 @@
 ﻿using LisAeroGest.Data.Entities;
 using LisAeroGest.Data.Repositories;
+using LisAeroGest.Helpers;
 using LisAeroGest.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,13 +9,15 @@ namespace LisAeroGest.Controllers
     public class GateController : Controller
     {
         private readonly IGateRepository _gateRepository;
+        private readonly IConverterHelper _converterHelper;
 
         /// <summary>
         /// Inicializa o GateController com as dependências necessárias.
         /// </summary>
-        public GateController(IGateRepository gateRepository)
+        public GateController(IGateRepository gateRepository, IConverterHelper converterHelper)
         {
             _gateRepository = gateRepository;
+            _converterHelper = converterHelper;
         }
 
         /// <summary>
@@ -35,8 +38,7 @@ namespace LisAeroGest.Controllers
             => View(new GateViewModel());
 
         /// <summary>
-        /// Processa o formulário de criação de novo gate.
-        /// Verifica número de gate duplicado.
+        /// Processa o formulário de criação de novo gate utilizando o ConverterHelper.
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -53,12 +55,8 @@ namespace LisAeroGest.Controllers
                 return View(model);
             }
 
-            var gate = new Gate
-            {
-                GateNumber = model.GateNumber!.ToUpper(),
-                Terminal = model.Terminal,
-                Status = model.Status
-            };
+            // Delega a conversão para o ConverterHelper
+            var gate = _converterHelper.ToGate(model, isEdit: false);
 
             await _gateRepository.AddAsync(gate);
             await _gateRepository.SaveAsync();
@@ -68,7 +66,7 @@ namespace LisAeroGest.Controllers
         }
 
         /// <summary>
-        /// Apresenta o formulário de edição de um gate existente.
+        /// Apresenta o formulário de edição de um gate existente via ConverterHelper.
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
@@ -77,14 +75,7 @@ namespace LisAeroGest.Controllers
             if (gate == null)
                 return NotFound();
 
-            var model = new GateViewModel
-            {
-                Id = gate.Id,
-                GateNumber = gate.GateNumber,
-                Terminal = gate.Terminal,
-                Status = gate.Status
-            };
-
+            var model = _converterHelper.ToGateViewModel(gate);
             return View(model);
         }
 
@@ -110,6 +101,7 @@ namespace LisAeroGest.Controllers
                 return View(model);
             }
 
+            // Atualiza as propriedades com base no model (ou podes converter)
             gate.GateNumber = model.GateNumber!.ToUpper();
             gate.Terminal = model.Terminal;
             gate.Status = model.Status;
@@ -123,6 +115,7 @@ namespace LisAeroGest.Controllers
 
         /// <summary>
         /// Apresenta a página de confirmação de eliminação de um gate.
+        /// Se a tua View de Delete espera ViewModel, usa o ConverterHelper.
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
@@ -131,12 +124,13 @@ namespace LisAeroGest.Controllers
             if (gate == null)
                 return NotFound();
 
-            return View(gate);
+            // Se a view de Delete usar o modelo convertido:
+            var model = _converterHelper.ToGateViewModel(gate);
+            return View(model);
         }
 
         /// <summary>
         /// Processa a eliminação lógica de um gate.
-        /// Impede a eliminação se estiver associado a voos.
         /// </summary>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -161,7 +155,7 @@ namespace LisAeroGest.Controllers
         }
 
         /// <summary>
-        /// Apresenta os detalhes de um gate.
+        /// Apresenta os detalhes de um gate mapeados para ViewModel.
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> Details(int id)
@@ -170,7 +164,8 @@ namespace LisAeroGest.Controllers
             if (gate == null)
                 return NotFound();
 
-            return View(gate);
+            var model = _converterHelper.ToGateViewModel(gate);
+            return View(model);
         }
     }
 }

@@ -124,8 +124,20 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWlycG9ydFxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/CheckIn/BoardingPass.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2hlY2tJblxCb2FyZGluZ1Bhc3MuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/CheckIn/Confirmation.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2hlY2tJblxDb25maXJtYXRpb24uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/CheckIn/Desk.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2hlY2tJblxEZXNrLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/CheckIn/DeskResults.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2hlY2tJblxEZXNrUmVzdWx0cy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/CheckIn/EmployeeCheckIn.cshtml]
@@ -138,6 +150,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/CheckIn/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2hlY2tJblxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/CheckIn/MyTickets.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2hlY2tJblxNeVRpY2tldHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Felix/Desktop/LisAeroGest/LisAeroGest/Views/Dashboard/AdminDashboard.cshtml]

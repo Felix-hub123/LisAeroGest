@@ -50,5 +50,29 @@ namespace LisAeroGest.Data.Interfaces
         /// </summary>
         public IQueryable<Gate> GetAllQueryable()
             => _dbSet.AsQueryable();
+
+
+        // Implementação da verificação de ocupação do Gate:
+        public async Task<bool> IsGateOccupiedAsync(int gateId, DateTime departureTime, DateTime arrivalTime, int? currentFlightId = null)
+        {
+            // Margem de segurança operacional de 30 minutos entre voos
+            var startMargin = departureTime.AddMinutes(-30);
+            var endMargin = arrivalTime.AddMinutes(30);
+
+            var query = _context.Flights
+                .Where(f => f.GateId == gateId && f.Status != "Cancelled");
+
+            // Se for uma edição de voo, ignora o próprio voo
+            if (currentFlightId.HasValue)
+            {
+                query = query.Where(f => f.Id != currentFlightId.Value);
+            }
+
+            // Verifica se existe algum voo agendado nesse portão cuja janela temporal se sobreponha
+            return await query.AnyAsync(f =>
+                (f.DepartureTime >= startMargin && f.DepartureTime <= endMargin) ||
+                (f.ArrivalTime >= startMargin && f.ArrivalTime <= endMargin) ||
+                (f.DepartureTime <= startMargin && f.ArrivalTime >= endMargin));
+        }
     }
 }

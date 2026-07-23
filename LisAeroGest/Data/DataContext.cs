@@ -62,6 +62,8 @@ namespace LisAeroGest.Data
         public DbSet<ForumComment> ForumComments { get; set; }
 
 
+        public DbSet<BoardingPass> BoardingPasses { get; set; }
+
 
         /// <summary>
         /// Tabela de notificações do sistema.
@@ -261,6 +263,12 @@ namespace LisAeroGest.Data
                 .WithMany()
                 .HasForeignKey(n => n.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<BoardingPass>()
+    .HasOne(bp => bp.Ticket)
+    .WithOne()
+    .HasForeignKey<BoardingPass>(bp => bp.TicketId)
+    .IsRequired(false); // <--- Define como opcional
             #endregion
         }
 

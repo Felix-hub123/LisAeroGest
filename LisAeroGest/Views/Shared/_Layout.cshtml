@@ -1,29 +1,18 @@
 ﻿<!DOCTYPE html>
-
 <html lang="pt">
-
 <head>
-
     <meta charset="utf-8" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <title>@ViewData["Title"] - LisAeroGest</title>
-
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-
     <link rel="stylesheet" href="~/LisAeroGest.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/AdminDashboard.css" />
-
-    <!-- Ligar o CSS -->
     <link rel="stylesheet" href="~/css/flightboard.css" />
-
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
 </head>
 
 <body class="d-flex flex-column min-vh-100">
@@ -59,7 +48,6 @@
                                     <li><a class="dropdown-item" asp-controller="Flight" asp-action="Index"><i class="bi bi-signpost-2 me-2"></i>Voos</a></li>
                                     <li><a class="dropdown-item" asp-controller="Forum" asp-action="Index"><i class="bi bi-chat-dots me-2"></i>Fórum</a></li>
                                     <li><a class="dropdown-item" asp-controller="CheckIn" asp-action="EmployeeCheckIn"><i class="bi bi-person-check me-2"></i>Check-in Presencial</a></li>
-                                    <!-- ➜ Adiciona aqui: -->
                                     <li>
                                         <a class="dropdown-item position-relative" asp-controller="Notification" asp-action="Index">
                                             <i class="bi bi-bell me-2"></i>Notificações
@@ -83,7 +71,6 @@
                                     <li><a class="dropdown-item" asp-controller="Gate" asp-action="Index"><i class="bi bi-door-open me-2"></i>Gates</a></li>
                                     <li><a class="dropdown-item" asp-controller="Forum" asp-action="Index"><i class="bi bi-chat-dots me-2"></i>Fórum</a></li>
                                     <li><a class="dropdown-item" asp-controller="CheckIn" asp-action="EmployeeCheckIn"><i class="bi bi-person-check me-2"></i>Check-in Presencial</a></li>
-                                    <!-- ➜ Adiciona aqui: -->
                                     <li>
                                         <a class="dropdown-item position-relative" asp-controller="Notification" asp-action="Index">
                                             <i class="bi bi-bell me-2"></i>Notificações
@@ -115,8 +102,7 @@
                         @if (User.Identity!.IsAuthenticated)
                         {
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-white" href="#"
-                                   role="button" data-bs-toggle="dropdown">
+                                <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
                                     <i class="bi bi-person-circle me-1"></i>@User.Identity.Name
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
@@ -156,12 +142,13 @@
         </nav>
     </header>
 
-    <main role="main" style="flex: 1 0 auto;">
+    <!-- Adicionado flex-grow-1 e pb-4 para dar margem antes do footer -->
+    <main role="main" class="flex-grow-1 pb-4">
         @RenderBody()
     </main>
 
-   
-    <footer class="border-top footer text-muted py-3" style="margin-top: auto; flex-shrink: 0;">
+
+    <footer class="border-top bg-light text-muted py-3 mt-auto">
         <div class="container text-center">
             <i class="bi bi-airplane me-1"></i>
             &copy; @DateTime.Now.Year LisAeroGest — Aeroporto de Lisboa
@@ -170,26 +157,22 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    @section Scripts {
-        <script>
-            async function loadNotifCount() {
-                try {
-                    const response = await fetch('/Notification/GetUnreadCount');
-                    const data = await response.json();
-                    const badge = document.getElementById('notifBadge');
-                    if (badge && data.count > 0) {
-                        badge.textContent = data.count;
-                        badge.style.display = 'inline';
-                    }
-                } catch (e) { }
-            }
-            loadNotifCount();
-            setInterval(loadNotifCount, 30000);
-        </script>
-    }
 
 
-@await RenderSectionAsync("Scripts", required: false)
+    <script>
+        async function loadNotifCount() {
+            try {
+                const r = await fetch('/Notification/GetUnreadCount');
+                const d = await r.json();
+                const b = document.getElementById('notifBadge');
+                if (b && d.count > 0) { b.textContent = d.count; b.style.display = 'inline'; }
+            } catch (e) {}
+        }
+        loadNotifCount();
+        setInterval(loadNotifCount, 30000);
+        AOS.init();
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-
