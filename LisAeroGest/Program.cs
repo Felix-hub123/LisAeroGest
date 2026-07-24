@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ── Base de Dados ────────────────────────────────────────────────────────────
 builder.Services.AddDbContext<DataContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // ── Identity ─────────────────────────────────────────────────────────────────
 builder.Services.AddIdentity<User, IdentityRole>(options =>
