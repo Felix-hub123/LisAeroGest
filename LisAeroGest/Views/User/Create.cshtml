@@ -1,0 +1,30 @@
+﻿@{
+    ViewData["Title"] = "Criar Utilizador";
+}
+
+<h1 class="mb-4"><i class="bi bi-person-plus me-2"></i>Criar Utilizador</h1>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            <div class="mb-3">
+                <label class="form-label">Nome</label>
+                <input name="firstName" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Apelido</label>
+                <input name="lastName" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input name="email" type="email" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Role</label>
+                <select name="role" class="form-select" asp-items="ViewBag.Roles" required></select>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Criar</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>

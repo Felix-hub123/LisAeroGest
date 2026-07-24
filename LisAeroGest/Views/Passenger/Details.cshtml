@@ -1,0 +1,104 @@
+﻿@model LisAeroGest.Data.Entities.Passenger
+@{
+    ViewData["Title"] = $"Passageiro: {Model.FullName}";
+}
+
+<div class="container mt-4">
+    <div class="d-flex align-items-center mb-4">
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <h2 class="fw-bold mb-0">
+            <i class="bi bi-person-badge-fill text-info me-2"></i>@Model.FullName
+        </h2>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row g-3">
+        <div class="col-md-5">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-person-circle me-2"></i>Dados Pessoais
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Nome:</dt>
+                        <dd class="col-sm-7 fw-semibold">@Model.FullName</dd>
+
+                        <dt class="col-sm-5">Documento:</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge bg-secondary">@Model.DocumentType</span>
+                            @Model.DocumentNumber
+                        </dd>
+
+                        <dt class="col-sm-5">Data Nasc.:</dt>
+                        <dd class="col-sm-7">@(Model.BirthDate?.ToString("dd/MM/yyyy") ?? "—")</dd>
+
+                        <dt class="col-sm-5">Email:</dt>
+                        <dd class="col-sm-7">@Model.User?.Email</dd>
+
+                        <dt class="col-sm-5">Registado em:</dt>
+                        <dd class="col-sm-7">@Model.RegistrationDate.ToString("dd/MM/yyyy")</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-secondary text-white">
+                    <i class="bi bi-ticket-perforated me-2"></i>Bilhetes
+                </div>
+                <div class="card-body">
+                    @if (Model.Tickets == null || !Model.Tickets.Any())
+                    {
+                        <p class="text-muted mb-0">Sem bilhetes associados.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Voo</th>
+                                        <th>Estado</th>
+                                        <th>Preço</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var ticket in Model.Tickets)
+                                    {
+                                        <tr>
+                                            <td>@ticket.Flight?.FlightNumber</td>
+                                            <td><span class="badge bg-secondary">@ticket.Status</span></td>
+                                            <td>@ticket.TotalPrice.ToString("C")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3 d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+            <i class="bi bi-pencil me-2"></i>Editar
+        </a>
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+                <i class="bi bi-trash me-2"></i>Eliminar
+            </a>
+        }
+    </div>
+</div>

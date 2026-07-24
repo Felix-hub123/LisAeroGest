@@ -1,0 +1,233 @@
+/* ============================================
+   FLIGHT BOARD — Painel de Voos Público
+   ============================================ */
+
+/* Wrapper principal do Flightboard para evitar colisão com o footer */
+.flightboard-wrapper {
+    margin-bottom: 3rem; /* Espaço de segurança em relação ao footer */
+}
+
+/* Hero Section */
+.hero-section {
+    position: relative;
+    overflow: hidden;
+    background-size: cover !important;
+    background-position: center !important;
+    margin-bottom: 2rem; /* Espaçamento inferior garantido */
+    border-radius: 12px;
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(13,61,107,0.85) 0%, rgba(31,92,153,0.75) 100%);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+/* Relógio Digital */
+.digital-clock {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    padding: 12px 20px;
+    text-align: center;
+}
+
+.clock-time {
+    font-family: 'Courier New', monospace;
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 2px;
+}
+
+.clock-date {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.7);
+}
+
+/* KPI Cards */
+.kpi-card {
+    border-radius: 12px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+    .kpi-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1) !important;
+    }
+
+/* Ticker de Avisos */
+.boarding-ticker {
+    background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+    border-radius: 8px;
+    padding: 10px 0;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.ticker-inner {
+    display: flex;
+    gap: 3rem;
+    animation: tickerScroll 30s linear infinite;
+    white-space: nowrap;
+}
+
+.ticker-item {
+    color: white;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ticker-badge {
+    background: rgba(255,255,255,0.25);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+}
+
+@keyframes tickerScroll {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* Destinos Cards */
+.destinations-section {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.dest-card {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+    .dest-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+
+.dest-image {
+    height: 100px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.dest-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(255,255,255,0.95);
+    color: #0d3d6b;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.dest-info {
+    padding: 0.75rem;
+}
+
+/* Flight Table Container */
+.flight-table-container {
+    margin-bottom: 3rem; /* Impede que a tabela cole no footer */
+}
+
+.flight-table {
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+    .flight-table thead {
+        background: #0d3d6b;
+        color: white;
+    }
+
+        .flight-table thead th {
+            font-weight: 600;
+            border: none;
+            padding: 12px 16px;
+        }
+
+    .flight-table tbody td {
+        padding: 12px 16px;
+        vertical-align: middle;
+        border-color: #e9ecef;
+    }
+
+    .flight-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+/* Live Indicator */
+.live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.live-dot {
+    width: 10px;
+    height: 10px;
+    background: #198754;
+    border-radius: 50%;
+    position: relative;
+}
+
+    .live-dot::before {
+        content: "";
+        position: absolute;
+        inset: -4px;
+        background: #198754;
+        border-radius: 50%;
+        opacity: 0.5;
+        animation: pulse 1.5s infinite;
+    }
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 1rem !important;
+    }
+
+    .digital-clock {
+        margin-top: 1rem;
+    }
+
+    .flight-table {
+        font-size: 0.8rem;
+    }
+}

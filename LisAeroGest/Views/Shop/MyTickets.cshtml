@@ -1,0 +1,62 @@
+﻿@model IEnumerable<LisAeroGest.Data.Entities.Ticket>
+@{
+    ViewData["Title"] = "Os Meus Bilhetes";
+}
+
+<h1 class="mb-4"><i class="bi bi-ticket-perforated me-2"></i>Os Meus Bilhetes</h1>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-1"></i>Não tem bilhetes comprados.
+        <a asp-action="Index" class="alert-link">Comprar bilhetes</a>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-primary">
+                <tr>
+                    <th>Voo</th>
+                    <th>Rota</th>
+                    <th>Data</th>
+                    <th>Lugar</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Compra</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ticket in Model)
+                {
+                    <tr>
+                        <td>@ticket.Flight?.FlightNumber</td>
+                        <td>@ticket.Flight?.OriginAirport?.IATACode → @ticket.Flight?.DestinationAirport?.IATACode</td>
+                        <td>@ticket.Flight?.DepartureTime.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@ticket.Seat?.Code</td>
+                        <td class="fw-bold">€@ticket.TotalPrice.ToString("F2")</td>
+                        <td>
+                            @switch (ticket.Status)
+                            {
+                                case "Paid":
+                                    <span class="badge bg-success">Pago</span>
+                                    break;
+                                case "CheckedIn":
+                                    <span class="badge bg-info">Check-in Feito</span>
+                                    break;
+                                case "Cancelled":
+                                    <span class="badge bg-danger">Cancelado</span>
+                                    break;
+                                default:
+                                    <span class="badge bg-secondary">@ticket.Status</span>
+                                    break;
+                            }
+                        </td>
+                        <td>@ticket.PurchaseDate.ToString("dd/MM/yyyy")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

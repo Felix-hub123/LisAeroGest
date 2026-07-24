@@ -1,0 +1,174 @@
+﻿@{
+    ViewData["Title"] = "O Meu Dashboard";
+    var passenger = ViewBag.Passenger as LisAeroGest.Data.Entities.Passenger;
+    var upcoming = ViewBag.UpcomingTickets as IEnumerable<LisAeroGest.Data.Entities.Ticket>;
+    var past = ViewBag.PastTickets as IEnumerable<LisAeroGest.Data.Entities.Ticket>;
+}
+
+<div class="container py-4">
+
+    <!-- Cabeçalho -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">
+            <i class="bi bi-person-circle me-2"></i>O Meu Dashboard
+        </h1>
+        <a asp-controller="Shop" asp-action="Index" class="btn btn-primary">
+            <i class="bi bi-cart-plus me-1"></i>Comprar Bilhete
+        </a>
+    </div>
+
+    <!-- Boas-vindas -->
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-body">
+            <h5 class="mb-1">Bem-vindo, @passenger?.FirstName!</h5>
+            <p class="text-muted mb-0">
+                <i class="bi bi-person-vcard me-1"></i>
+                Documento: <strong>@passenger?.DocumentType</strong> — @passenger?.DocumentNumber
+            </p>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm text-center py-3"
+                 style="background: linear-gradient(135deg, #0d3d6b, #1F5C99);">
+                <div class="card-body text-white">
+                    <i class="bi bi-ticket-perforated fs-1"></i>
+                    <h3 class="fw-bold mt-2">@upcoming?.Count()</h3>
+                    <small>Próximos Voos</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm text-center py-3"
+                 style="background: linear-gradient(135deg, #3d1a6b, #6f42c1);">
+                <div class="card-body text-white">
+                    <i class="bi bi-clock-history fs-1"></i>
+                    <h3 class="fw-bold mt-2">@past?.Count()</h3>
+                    <small>Voos Realizados</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Próximos Voos -->
+    @if (upcoming != null && upcoming.Any())
+    {
+        <h5 class="mb-3">
+            <i class="bi bi-airplane-engines me-1"></i>Próximos Voos
+        </h5>
+
+        <div class="row g-3 mb-4">
+            @foreach (var ticket in upcoming)
+            {
+                var podeCheckIn = ticket.Status == "Paid"
+                && ticket.Flight?.DepartureTime > DateTime.UtcNow
+                && ticket.Flight?.DepartureTime <= DateTime.UtcNow.AddHours(48)
+                && ticket.Flight?.Status != "Cancelled";
+
+                <div class="col-12">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-2 text-center">
+                                    <div class="fs-2 fw-bold text-primary">
+                                        @ticket.Flight?.DepartureTime.ToString("HH:mm")
+                                    </div>
+                                    <small class="text-muted text-uppercase">
+                                        @ticket.Flight?.DepartureTime.ToString("dd MMM")
+                                    </small>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <strong class="text-primary">@ticket.Flight?.FlightNumber</strong>
+                                        <span class="badge bg-light text-dark">
+                                            @ticket.Flight?.Airline?.Name
+                                        </span>
+                                    </div>
+                                    <div class="fs-5">
+                                        <strong>@ticket.Flight?.OriginAirport?.IATACode</strong>
+                                        <i class="bi bi-arrow-right mx-2 text-muted"></i>
+                                        <strong>@ticket.Flight?.DestinationAirport?.IATACode</strong>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="bi bi-geo-alt me-1"></i>
+                                        @ticket.Flight?.OriginAirport?.City →
+                                        @ticket.Flight?.DestinationAirport?.City
+                                        <span class="ms-2">
+                                            <i class="bi bi-door-open me-1"></i>
+                                            Gate @ticket.Flight?.Gate?.GateNumber
+                                        </span>
+                                        <span class="ms-2">
+                                            <i class="bi bi-person me-1"></i>
+                                            Lugar @ticket.Seat?.Code
+                                        </span>
+                                    </small>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <span class="badge @(ticket.Status == "CheckedIn" ? "bg-success" : "bg-warning text-dark") mb-2">
+                                        @ticket.Status
+                                    </span>
+                                    <div class="btn-group-vertical btn-group-sm w-100" role="group">
+                                        @if (ticket.Status == "CheckedIn")
+                                        {
+                                            <a asp-controller="CheckIn" asp-action="Confirmation"
+                                               asp-route-ticketId="@ticket.Id"
+                                               class="btn btn-outline-primary">
+                                                <i class="bi bi-eye me-1"></i>Cartão de Embarque
+                                            </a>
+                                        }
+                                        @if (podeCheckIn)
+                                        {
+                                            <a asp-controller="CheckIn" asp-action="Index"
+                                               class="btn btn-success">
+                                                <i class="bi bi-check-circle me-1"></i>Fazer Check-in
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-1"></i>
+            Não tens próximos voos. Que tal
+            <a asp-controller="Shop" asp-action="Index" class="alert-link">comprar um bilhete</a>?
+        </div>
+    }
+
+    <!-- Histórico -->
+    @if (past != null && past.Any())
+    {
+        <h5 class="mb-3">
+            <i class="bi bi-clock-history me-1"></i>Histórico de Voos
+        </h5>
+
+        <div class="list-group mb-4">
+            @foreach (var ticket in past)
+            {
+                <div class="list-group-item text-muted">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <strong>@ticket.Flight?.FlightNumber</strong> —
+                            @ticket.Flight?.OriginAirport?.IATACode →
+                            @ticket.Flight?.DestinationAirport?.IATACode
+                            <br />
+                            <small>
+                                <i class="bi bi-calendar3 me-1"></i>
+                                @ticket.Flight?.DepartureTime.ToString("dd/MM/yyyy HH:mm")
+                            </small>
+                        </div>
+                        <span class="badge bg-secondary align-self-center">@ticket.Status</span>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

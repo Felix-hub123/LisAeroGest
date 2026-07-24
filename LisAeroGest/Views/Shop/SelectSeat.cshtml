@@ -1,0 +1,296 @@
+﻿@model LisAeroGest.Data.Entities.Flight
+
+@{
+    ViewData["Title"] = "Escolha o seu Lugar";
+
+    // Procura os assentos na Aircraft ou diretamente no Flight
+    var seats = (Model.Aircraft?.Seats?.Any() == true
+                    ? Model.Aircraft.Seats
+                    : Model.Seats)
+                ?.Where(s => !s.WasDeleted)
+                ?.OrderBy(s => s.Code)
+                ?.ToList() ?? new List<LisAeroGest.Data.Entities.Seat>();
+
+    var reservedSeatIds = ViewBag.ReservedSeatIds as List<int> ?? new List<int>();
+}
+
+<!-- Mapa da Cabine -->
+<div class="card p-4">
+    <h3 class="h5 mb-3"><i class="bi bi-airplane"></i> Mapa da Cabine (@Model.Aircraft?.Model)</h3>
+
+    @if (!seats.Any())
+    {
+        <div class="alert alert-warning text-center">
+            Nenhum mapa de assentos disponível para esta aeronave.
+        </div>
+    }
+    else
+    {
+        <div class="seat-map-grid">
+            @foreach (var seat in seats)
+            {
+                var isOccupied = !seat.IsAvailable || reservedSeatIds.Contains(seat.Id);
+                var seatClassCss = seat.SeatClass == "Business" ? "business-seat" : "economy-seat";
+
+                <button type="button"
+                        class="btn seat-btn @seatClassCss @(isOccupied ? "disabled btn-danger" : "btn-outline-primary")"
+                        data-seat-id="@seat.Id"
+                        data-seat-code="@seat.Code"
+                        data-seat-price="@seat.BasePrice"
+                        @(isOccupied ? "disabled" : "")>
+                    @seat.Code
+                </button>
+            }
+        </div>
+    }
+</div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <form asp-action="AddToCart" method="post" id="seatForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="flightId" value="@Model.Id" />
+        <input type="hidden" id="selectedSeatId" name="seatId" value="" required />
+
+        <div class="row g-4">
+            <!-- Coluna do Mapa de Assentos (Cabine) -->
+            <div class="col-lg-7">
+                <div class="card shadow-sm border-0 rounded-4 p-4 text-center bg-light">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-airplane me-2"></i>Mapa da Cabine (@(Model.Aircraft?.Model ?? "Aeronave"))</h5>
+
+                    <!-- Legenda de Cores -->
+                    <div class="d-flex justify-content-center gap-3 mb-4 flex-wrap">
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="seat-legend legend-available"></span> <small>Livre</small>
+                        </div>
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="seat-legend legend-selected"></span> <small>Selecionado</small>
+                        </div>
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="seat-legend legend-occupied"></span> <small>Ocupado</small>
+                        </div>
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="seat-legend legend-business"></span> <small>Executive/Business</small>
+                        </div>
+                    </div>
+
+                    <!-- Diagrama do Avião -->
+                    <div class="airplane-fuselage bg-white p-4 mx-auto rounded-5 shadow-inner border" style="max-width: 450px;">
+                        <div class="cockpit mb-4 p-2 bg-secondary text-white rounded-top-5 small fw-bold">
+                            FRENTE DA AERONAVE / CABINE DE PILOTAGEM
+                        </div>
+
+                        <div class="cabin-layout d-flex flex-column gap-2">
+                            @if (!seats.Any())
+                            {
+                                <div class="p-4 text-muted">Nenhum mapa de assentos disponível para esta aeronave.</div>
+                            }
+                            else
+                            {
+                                <div class="row row-cols-6 g-2 justify-content-center align-items-center">
+                                    @foreach (var seat in seats)
+                                    {
+                                        bool isOccupied = !seat.IsAvailable || reservedSeatIds.Contains(seat.Id);
+                                        bool isBusiness = seat.SeatClass?.ToLower() == "business" || seat.SeatClass?.ToLower() == "executiva";
+
+                                        <div class="col text-center">
+                                            <button type="button"
+                                                    class="btn seat-btn w-100 @(isOccupied ? "seat-occupied" : (isBusiness ? "seat-business" : "seat-available"))"
+                                                    data-seat-id="@seat.Id"
+                                                    data-seat-code="@seat.Code"
+                                                    data-seat-class="@seat.SeatClass"
+                                                    data-seat-price="@seat.BasePrice"
+                                                    @(isOccupied ? "disabled" : "")
+                                                    onclick="selectSeat(this)">
+                                                @seat.Code
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna de Opções Extras & Confirmação -->
+            <div class="col-lg-5">
+                <div class="card shadow-sm border-0 rounded-4 sticky-top" style="top: 20px;">
+                    <div class="card-header bg-dark text-white p-3 rounded-top-4">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-sliders me-2"></i>Personalize a sua Viagem</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <!-- Lugar Selecionado -->
+                        <div class="p-3 bg-light rounded-3 mb-4 text-center">
+                            <small class="text-muted d-block uppercase fw-semibold">Lugar Escolhido</small>
+                            <h3 class="fw-bold text-primary mb-0" id="seatDisplay">Nenhum Selecionado</h3>
+                            <small class="text-muted" id="seatClassDisplay">Clique num assento no mapa</small>
+                        </div>
+
+                        <!-- Opções Adicionais -->
+                        <h6 class="fw-bold mb-3"><i class="bi bi-plus-circle me-1"></i>Serviços Adicionais</h6>
+
+                        <div class="form-check card p-3 mb-3 border-0 bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <input class="form-check-input" type="checkbox" id="extraLuggage" name="extraLuggage" value="true" onchange="updateTotal()">
+                                    <label class="form-check-label fw-semibold ms-2" for="extraLuggage">
+                                        Bagagem de Porão Extra (+23kg)
+                                    </label>
+                                </div>
+                                <span class="fw-bold text-success">+30,00 €</span>
+                            </div>
+                        </div>
+
+                        <div class="form-check card p-3 mb-4 border-0 bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <input class="form-check-input" type="checkbox" id="mealIncluded" name="mealIncluded" value="true" onchange="updateTotal()">
+                                    <label class="form-check-label fw-semibold ms-2" for="mealIncluded">
+                                        Refeição Quente a Bordo
+                                    </label>
+                                </div>
+                                <span class="fw-bold text-success">+15,00 €</span>
+                            </div>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <!-- Preço Total -->
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <span class="fs-5 fw-bold">Preço Estimado</span>
+                            <span class="fs-3 fw-bold text-success" id="totalPriceDisplay">@Model.BasePrice.ToString("C2")</span>
+                        </div>
+
+                        <!-- Botão de Submissão -->
+                        <button type="submit" id="btnSubmit" class="btn btn-success btn-lg w-100 fw-bold shadow-sm" disabled>
+                            <i class="bi bi-cart-plus me-2"></i> Reservar por 15 Minutos
+                        </button>
+                        <small class="text-muted d-block text-center mt-2 fs-7">
+                            <i class="bi bi-clock me-1"></i> O lugar ficará bloqueado temporariamente no seu carrinho.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Estilos para o Mapa de Assentos -->
+<style>
+    .seat-btn {
+        font-size: 0.75rem;
+        font-weight: bold;
+        padding: 8px 4px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .seat-available {
+        background-color: #e9ecef;
+        color: #495057;
+        border: 1px solid #ced4da;
+    }
+
+        .seat-available:hover {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+    .seat-business {
+        background-color: #fff3cd;
+        color: #664d03;
+        border: 1px solid #ffe69c;
+    }
+
+        .seat-business:hover {
+            background-color: #ffc107;
+            color: black;
+        }
+
+    .seat-occupied {
+        background-color: #dc3545 !important;
+        color: white !important;
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .seat-selected {
+        background-color: #198754 !important;
+        color: white !important;
+        border-color: #146c43 !important;
+        transform: scale(1.1);
+        box-shadow: 0 0 8px rgba(25, 135, 84, 0.5);
+    }
+
+    .seat-legend {
+        width: 16px;
+        height: 16px;
+        display: inline-block;
+        border-radius: 4px;
+    }
+
+    .legend-available {
+        background-color: #e9ecef;
+        border: 1px solid #ced4da;
+    }
+
+    .legend-selected {
+        background-color: #198754;
+    }
+
+    .legend-occupied {
+        background-color: #dc3545;
+    }
+
+    .legend-business {
+        background-color: #fff3cd;
+        border: 1px solid #ffe69c;
+    }
+
+    .fs-7 {
+        font-size: 0.75rem;
+    }
+</style>
+
+<!-- Lógica JS para Seleção e Cálculo do Total -->
+@section Scripts {
+    <script>
+        let baseFlightPrice = @Model.BasePrice.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        let selectedSeatPrice = 0;
+
+        function selectSeat(btn) {
+            document.querySelectorAll('.seat-btn').forEach(b => b.classList.remove('seat-selected'));
+
+            btn.classList.add('seat-selected');
+
+            const seatId = btn.getAttribute('data-seat-id');
+            const seatCode = btn.getAttribute('data-seat-code');
+            const seatClass = btn.getAttribute('data-seat-class');
+            selectedSeatPrice = parseFloat(btn.getAttribute('data-seat-price')) || 0;
+
+            document.getElementById('selectedSeatId').value = seatId;
+            document.getElementById('seatDisplay').innerText = seatCode;
+            document.getElementById('seatClassDisplay').innerText = 'Classe: ' + seatClass;
+
+            document.getElementById('btnSubmit').disabled = false;
+
+            updateTotal();
+        }
+
+        function updateTotal() {
+            let extraLuggage = document.getElementById('extraLuggage').checked ? 30 : 0;
+            let mealIncluded = document.getElementById('mealIncluded').checked ? 15 : 0;
+
+            let total = baseFlightPrice + selectedSeatPrice + extraLuggage + mealIncluded;
+
+            document.getElementById('totalPriceDisplay').innerText = total.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+        }
+    </script>
+}

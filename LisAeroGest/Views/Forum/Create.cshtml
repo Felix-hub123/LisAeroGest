@@ -1,0 +1,37 @@
+﻿@model LisAeroGest.Data.Entities.ForumTopic
+@{
+    ViewData["Title"] = "Novo Tópico";
+}
+
+<h1 class="mb-4"><i class="bi bi-plus-circle me-2"></i>Novo Tópico</h1>
+
+<form asp-action="Create" method="post">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="mb-3">
+                <label asp-for="Title" class="form-label">Título</label>
+                <input asp-for="Title" class="form-control" required />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Category" class="form-label">Categoria</label>
+                <select asp-for="Category" class="form-select" required>
+                    <option value="">Selecione uma categoria</option>
+                    <option value="Operações">Operações</option>
+                    <option value="Manutenção">Manutenção</option>
+                    <option value="Segurança">Segurança</option>
+                    <option value="Administrativo">Administrativo</option>
+                    <option value="Geral">Geral</option>
+                </select>
+                <span asp-validation-for="Category" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Content" class="form-label">Conteúdo</label>
+                <textarea asp-for="Content" class="form-control" rows="6" required></textarea>
+                <span asp-validation-for="Content" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-send me-1"></i>Criar Tópico</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,178 @@
+﻿<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - LisAeroGest</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/LisAeroGest.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/AdminDashboard.css" />
+    <link rel="stylesheet" href="~/css/flightboard.css" />
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-dark bg-primary border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-airplane-fill me-2"></i>LisAeroGest
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-white" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house me-1"></i>Início
+                            </a>
+                        </li>
+                        @if (User.Identity!.IsAuthenticated && User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-gear me-1"></i>Gestão
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Airport" asp-action="Index"><i class="bi bi-geo-alt me-2"></i>Aeroportos</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Airline" asp-action="Index"><i class="bi bi-building me-2"></i>Companhias</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Gate" asp-action="Index"><i class="bi bi-door-open me-2"></i>Gates</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Aircraft" asp-action="Index"><i class="bi bi-airplane me-2"></i>Aeronaves</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Flight" asp-action="Index"><i class="bi bi-signpost-2 me-2"></i>Voos</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Forum" asp-action="Index"><i class="bi bi-chat-dots me-2"></i>Fórum</a></li>
+                                    <li><a class="dropdown-item" asp-controller="CheckIn" asp-action="EmployeeCheckIn"><i class="bi bi-person-check me-2"></i>Check-in Presencial</a></li>
+                                    <li>
+                                        <a class="dropdown-item position-relative" asp-controller="Notification" asp-action="Index">
+                                            <i class="bi bi-bell me-2"></i>Notificações
+                                            <span id="notifBadge" class="position-absolute top-50 translate-middle badge rounded-pill bg-danger"
+                                                  style="font-size: 0.6rem; right: 0.75rem; display: none;">0</span>
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li><a class="dropdown-item" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-bar-chart me-2"></i>Dashboard</a></li>
+                                </ul>
+                            </li>
+                        }
+                        @if (User.Identity!.IsAuthenticated && User.IsInRole("Employee"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-clipboard me-1"></i>Operacional
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Flight" asp-action="Index"><i class="bi bi-signpost-2 me-2"></i>Voos</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Gate" asp-action="Index"><i class="bi bi-door-open me-2"></i>Gates</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Forum" asp-action="Index"><i class="bi bi-chat-dots me-2"></i>Fórum</a></li>
+                                    <li><a class="dropdown-item" asp-controller="CheckIn" asp-action="EmployeeCheckIn"><i class="bi bi-person-check me-2"></i>Check-in Presencial</a></li>
+                                    <li>
+                                        <a class="dropdown-item position-relative" asp-controller="Notification" asp-action="Index">
+                                            <i class="bi bi-bell me-2"></i>Notificações
+                                            <span id="notifBadge" class="position-absolute top-50 translate-middle badge rounded-pill bg-danger"
+                                                  style="font-size: 0.6rem; right: 0.75rem; display: none;">0</span>
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li><a class="dropdown-item" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-bar-chart me-2"></i>Dashboard</a></li>
+                                </ul>
+                            </li>
+                        }
+                        @if (User.Identity!.IsAuthenticated && User.IsInRole("Passenger"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-ticket me-1"></i>Passageiro
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Shop" asp-action="Index"><i class="bi bi-cart me-2"></i>Comprar Bilhetes</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Shop" asp-action="MyTickets"><i class="bi bi-ticket-perforated me-2"></i>Os Meus Bilhetes</a></li>
+                                    <li><a class="dropdown-item" asp-controller="CheckIn" asp-action="Index"><i class="bi bi-check2-square me-2"></i>Check-in Online</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-bar-chart me-2"></i>Dashboard</a></li>
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                    <ul class="navbar-nav ms-auto">
+                        @if (User.Identity!.IsAuthenticated)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-person-circle me-1"></i>@User.Identity.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" asp-action="ChangePassword" asp-controller="Account">
+                                            <i class="bi bi-shield-lock me-2"></i>Alterar Password
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>
+                                        <form asp-action="Logout" asp-controller="Account" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-action="Login" asp-controller="Account">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-action="Register" asp-controller="Account">
+                                    <i class="bi bi-person-plus me-1"></i>Registar
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Adicionado flex-grow-1 e pb-4 para dar margem antes do footer -->
+    <main role="main" class="flex-grow-1 pb-4">
+        @RenderBody()
+    </main>
+
+
+    <footer class="border-top bg-light text-muted py-3 mt-auto">
+        <div class="container text-center">
+            <i class="bi bi-airplane me-1"></i>
+            &copy; @DateTime.Now.Year LisAeroGest — Aeroporto de Lisboa
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+
+    <script>
+        async function loadNotifCount() {
+            try {
+                const r = await fetch('/Notification/GetUnreadCount');
+                const d = await r.json();
+                const b = document.getElementById('notifBadge');
+                if (b && d.count > 0) { b.textContent = d.count; b.style.display = 'inline'; }
+            } catch (e) {}
+        }
+        loadNotifCount();
+        setInterval(loadNotifCount, 30000);
+        AOS.init();
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

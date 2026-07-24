@@ -1,0 +1,73 @@
+﻿@model LisAeroGest.Data.Entities.Flight
+@using LisAeroGest.Helpers
+
+@{
+    ViewData["Title"] = $"Detalhes do Voo {Model.FlightNumber}";
+    var duration = Model.ArrivalTime - Model.DepartureTime;
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-info text-white py-3 d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Voo @Model.FlightNumber
+                    </h4>
+                    <span class="badge @FlightStatusHelper.GetBadgeClass(Model.Status) fs-6">
+                        @Model.Status
+                    </span>
+                </div>
+                <div class="card-body p-4">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5 fw-bold text-muted">Número do Voo</dt>
+                        <dd class="col-sm-7 font-monospace fw-bold">@Model.FlightNumber</dd>
+
+                        <dt class="col-sm-5 fw-bold text-muted">Companhia Aérea</dt>
+                        <dd class="col-sm-7">@(Model.Airline?.Name ?? "N/A")</dd>
+
+                        <dt class="col-sm-5 fw-bold text-muted">Origem</dt>
+                        <dd class="col-sm-7">@(Model.OriginAirport?.Name ?? "N/A")</dd>
+
+                        <dt class="col-sm-5 fw-bold text-muted">Destino</dt>
+                        <dd class="col-sm-7">@(Model.DestinationAirport?.Name ?? "N/A")</dd>
+
+                        <dt class="col-sm-5 fw-bold text-muted">Partida Prevista</dt>
+                        <dd class="col-sm-7">@Model.DepartureTime.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                        <dt class="col-sm-5 fw-bold text-muted">Chegada Prevista</dt>
+                        <dd class="col-sm-7">@Model.ArrivalTime.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                        <dt class="col-sm-5 fw-bold text-muted">Duração Estimada</dt>
+                        <dd class="col-sm-7">@($"{duration.Hours}h {duration.Minutes}m")</dd>
+
+                        <dt class="col-sm-5 fw-bold text-muted">Aeronave</dt>
+                        <dd class="col-sm-7">@(Model.Aircraft?.Model ?? "Não atribuída")</dd>
+
+                        <dt class="col-sm-5 fw-bold text-muted">Gate</dt>
+                        <dd class="col-sm-7">@(Model.Gate?.GateNumber ?? "Não atribuída")</dd>
+
+                        <dt class="col-sm-5 fw-bold text-muted">Preço Base</dt>
+                        <dd class="col-sm-7 fw-bold text-success">@Model.BasePrice.ToString("C")</dd>
+
+                        <dt class="col-sm-5 fw-bold text-muted">Assentos Configurados</dt>
+                        <dd class="col-sm-7">@(Model.Seats?.Count ?? 0) lugares</dd>
+                    </dl>
+                </div>
+                <div class="card-footer bg-light p-3 d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Voltar
+                    </a>
+                    <div>
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning me-2">
+                            <i class="bi bi-pencil me-1"></i>Editar
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i>Eliminar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

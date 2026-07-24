@@ -1,0 +1,112 @@
+﻿@model LisAeroGest.Models.FlightViewModel
+
+@{
+    ViewData["Title"] = "Editar Voo";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-9 col-lg-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-warning text-dark py-3">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-pencil-square me-2"></i>Editar Voo @Model.FlightNumber
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="FlightNumber" class="form-label fw-bold"></label>
+                                <input asp-for="FlightNumber" class="form-control text-uppercase" style="text-transform: uppercase;" />
+                                <span asp-validation-for="FlightNumber" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mt-3 mt-md-0">
+                                <label asp-for="AirlineId" class="form-label fw-bold"></label>
+                                <select asp-for="AirlineId" class="form-select" asp-items="Model.Airlines"></select>
+                                <span asp-validation-for="AirlineId" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="OriginAirportId" class="form-label fw-bold"></label>
+                                <select asp-for="OriginAirportId" class="form-select" asp-items="Model.Airports"></select>
+                                <span asp-validation-for="OriginAirportId" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mt-3 mt-md-0">
+                                <label asp-for="DestinationAirportId" class="form-label fw-bold"></label>
+                                <select asp-for="DestinationAirportId" class="form-select" asp-items="Model.Airports"></select>
+                                <span asp-validation-for="DestinationAirportId" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="DepartureTime" class="form-label fw-bold"></label>
+                                <input asp-for="DepartureTime" class="form-control" type="datetime-local" value="@Model.DepartureTime.ToString("yyyy-MM-ddTHH:mm")" />
+                                <span asp-validation-for="DepartureTime" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mt-3 mt-md-0">
+                                <label asp-for="ArrivalTime" class="form-label fw-bold"></label>
+                                <input asp-for="ArrivalTime" class="form-control" type="datetime-local" value="@Model.ArrivalTime.ToString("yyyy-MM-ddTHH:mm")" />
+                                <span asp-validation-for="ArrivalTime" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="AircraftId" class="form-label fw-bold"></label>
+                                <select asp-for="AircraftId" class="form-select" asp-items="Model.Aircrafts"></select>
+                                <span asp-validation-for="AircraftId" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mt-3 mt-md-0">
+                                <label asp-for="GateId" class="form-label fw-bold"></label>
+                                <select asp-for="GateId" class="form-select" asp-items="Model.Gates">
+                                    <option value="">-- Sem Gate Atribuída --</option>
+                                </select>
+                                <span asp-validation-for="GateId" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="BasePrice" class="form-label fw-bold"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">€</span>
+                                    <input asp-for="BasePrice" class="form-control" type="number" step="0.01" />
+                                </div>
+                                <span asp-validation-for="BasePrice" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mt-3 mt-md-0">
+                                <label asp-for="Status" class="form-label fw-bold"></label>
+                                <select asp-for="Status" class="form-select" asp-items="Model.Statuses"></select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i>Voltar
+                            </a>
+                            <button type="submit" class="btn btn-warning px-4">
+                                <i class="bi bi-save me-1"></i>Guardar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

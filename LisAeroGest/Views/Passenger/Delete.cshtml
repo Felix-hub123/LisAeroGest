@@ -1,0 +1,50 @@
+﻿@model LisAeroGest.Data.Entities.Passenger
+@{
+    ViewData["Title"] = "Eliminar Passageiro";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="d-flex align-items-center mb-4">
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <h2 class="fw-bold mb-0 text-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Eliminar Passageiro
+                </h2>
+            </div>
+
+            <div class="card shadow-sm border-danger">
+                <div class="card-body p-4">
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        Tem a certeza que pretende eliminar este passageiro?
+                    </div>
+
+                    <dl class="row">
+                        <dt class="col-sm-4">Nome:</dt>
+                        <dd class="col-sm-8 fw-bold">@Model.FullName</dd>
+
+                        <dt class="col-sm-4">Documento:</dt>
+                        <dd class="col-sm-8">@Model.DocumentType — @Model.DocumentNumber</dd>
+
+                        <dt class="col-sm-4">Email:</dt>
+                        <dd class="col-sm-8">@Model.User?.Email</dd>
+                    </dl>
+
+                    <form asp-action="Delete" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash me-2"></i>Confirmar
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

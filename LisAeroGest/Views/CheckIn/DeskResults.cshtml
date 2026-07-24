@@ -1,0 +1,107 @@
+﻿@model IEnumerable<LisAeroGest.Data.Entities.Ticket>
+
+@{
+    ViewData["Title"] = "Resultados da Pesquisa - Balcão";
+    var searchTerm = ViewBag.SearchTerm as string;
+}
+
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-card-checklist me-2"></i>Resultados da Pesquisa</h2>
+            <p class="text-muted mb-0">Critério de pesquisa: <span class="badge bg-secondary fs-6">@searchTerm</span></p>
+        </div>
+        <a asp-action="Desk" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Nova Pesquisa
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="card text-center p-5 shadow-sm border-0 rounded-4">
+            <div class="card-body">
+                <i class="bi bi-person-x text-muted display-1 mb-3"></i>
+                <h4>Nenhum bilhete encontrado</h4>
+                <p class="text-muted">Não foram localizadas reservas correspondentes ao critério "@searchTerm".</p>
+                <a asp-action="Desk" class="btn btn-warning fw-bold mt-2">Tentar Novamente</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive shadow-sm rounded-4 border-0">
+            <table class="table table-hover align-middle mb-0 bg-white">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Bilhete #</th>
+                        <th>Passageiro</th>
+                        <th>Voo / Rota</th>
+                        <th>Data & Hora</th>
+                        <th>Lugar</th>
+                        <th>Estado Check-in</th>
+                        <th class="text-end">Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ticket in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold">#@ticket.Id</td>
+                            <td>
+                                <div><strong>@ticket.Passenger?.User?.FullName</strong></div>
+                                <small class="text-muted">@ticket.Passenger?.User?.Email</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary me-1">@ticket.Flight?.FlightNumber</span>
+                                <small class="fw-bold">
+                                    @ticket.Flight?.OriginAirport?.IATACode ➔ @ticket.Flight?.DestinationAirport?.IATACode
+                                </small>
+                            </td>
+                            <td>
+                                <small class="d-block">@ticket.Flight?.DepartureTime.ToString("dd/MM/yyyy")</small>
+                                <strong class="text-dark">@ticket.Flight?.DepartureTime.ToString("HH:mm")</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">
+                                    @ticket.Seat?.Code (@ticket.Seat?.SeatClass)
+                                </span>
+                            </td>
+                            <td>
+                                @if (ticket.HasCheckedIn)
+                                {
+                                    <span class="badge bg-success px-3 py-2">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Confirmado
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark px-3 py-2">
+                                        <i class="bi bi-clock-history me-1"></i> Pendente
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                @if (!ticket.HasCheckedIn)
+                                {
+                                    <form asp-action="ConfirmDeskCheckIn" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="ticketId" value="@ticket.Id" />
+                                        <button type="submit" class="btn btn-success btn-sm fw-bold shadow-sm">
+                                            <i class="bi bi-check2-square me-1"></i> Fazer Check-In
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <a asp-action="BoardingPass" asp-route-ticketId="@ticket.Id" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-qr-code-scan me-1"></i> Ver Cartão
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

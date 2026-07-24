@@ -1,0 +1,102 @@
+﻿@model LisAeroGest.Models.PassengerViewModel
+@{
+    ViewData["Title"] = "Criar Perfil de Passageiro";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="d-flex align-items-center mb-4">
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <h2 class="fw-bold mb-0">
+                    <i class="bi bi-person-plus-fill text-primary me-2"></i>Criar Perfil de Passageiro
+                </h2>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="UserId" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        @if (!string.IsNullOrEmpty(Model.UserEmail))
+                        {
+                            <div class="alert alert-secondary">
+                                <i class="bi bi-envelope me-2"></i>
+                                A associar ao utilizador: <strong>@Model.UserEmail</strong>
+                            </div>
+                        }
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FirstName" class="form-label fw-semibold"></label>
+                                <input asp-for="FirstName" class="form-control" />
+                                <span asp-validation-for="FirstName" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="LastName" class="form-label fw-semibold"></label>
+                                <input asp-for="LastName" class="form-control" />
+                                <span asp-validation-for="LastName" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="DocumentType" class="form-label fw-semibold"></label>
+                                <select asp-for="DocumentType" class="form-select" asp-items="@Model.DocumentTypes">
+                                    <option value="">— Selecione —</option>
+                                </select>
+                                <span asp-validation-for="DocumentType" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="DocumentNumber" class="form-label fw-semibold"></label>
+                                <input asp-for="DocumentNumber" class="form-control" />
+                                <span asp-validation-for="DocumentNumber" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="BirthDate" class="form-label fw-semibold"></label>
+                                <input asp-for="BirthDate" class="form-control" type="date" />
+                                <span asp-validation-for="BirthDate" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ImageFile" class="form-label fw-semibold"></label>
+                                <input asp-for="ImageFile" class="form-control" type="file" accept="image/*"
+                                       onchange="previewImage(this)" />
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-2"></i>Criar Perfil
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = e => {
+                    document.getElementById('imagePreview').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}

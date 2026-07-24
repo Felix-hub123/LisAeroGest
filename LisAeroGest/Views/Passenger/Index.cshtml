@@ -1,0 +1,89 @@
+﻿@model IEnumerable<LisAeroGest.Data.Entities.Passenger>
+@{
+    ViewData["Title"] = "Passageiros";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-people-fill text-primary me-2"></i>Passageiros
+            </h2>
+            <span class="text-muted small">@Model.Count() passageiro(s) registado(s)</span>
+        </div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-2"></i>Novo Passageiro
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            @if (!Model.Any())
+            {
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                    Nenhum passageiro registado.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="ps-3">Nome</th>
+                                <th>Documento</th>
+                                <th>Email</th>
+                                <th>Data de Nascimento</th>
+                                <th class="text-end pe-3">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in Model)
+                            {
+                                <tr>
+                                    <td class="ps-3 fw-semibold">@p.FullName</td>
+                                    <td>
+                                        <span class="badge bg-secondary">@p.DocumentType</span>
+                                        @p.DocumentNumber
+                                    </td>
+                                    <td>@p.User?.Email</td>
+                                    <td>@(p.BirthDate?.ToString("dd/MM/yyyy") ?? "—")</td>
+                                    <td class="text-end pe-3">
+                                        <a asp-action="Details" asp-route-id="@p.Id"
+                                           class="btn btn-sm btn-outline-info me-1">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@p.Id"
+                                           class="btn btn-sm btn-outline-warning me-1">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@p.Id"
+                                           class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

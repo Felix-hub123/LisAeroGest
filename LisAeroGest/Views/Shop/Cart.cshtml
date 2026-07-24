@@ -1,0 +1,129 @@
+﻿@model IEnumerable<LisAeroGest.Data.Entities.TicketTemp>
+
+@{
+    ViewData["Title"] = "Carrinho de Compras";
+}
+
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-cart3 me-2"></i>O Seu Carrinho de Compras</h2>
+        <a asp-action="Index" class="btn btn-outline-primary">
+            <i class="bi bi-plus-circle me-1"></i> Adicionar Outro Voo
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="card text-center p-5 shadow-sm border-0 rounded-4">
+            <div class="card-body">
+                <i class="bi bi-cart-x text-muted display-1 mb-3"></i>
+                <h4>O seu carrinho está vazio</h4>
+                <p class="text-muted">Não tem nenhuma reserva temporária pendente de pagamento.</p>
+                <a asp-action="Index" class="btn btn-primary btn-lg mt-3">Procurar Voos</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <!-- Lista de Itens do Carrinho -->
+            <div class="col-lg-8">
+                @foreach (var item in Model)
+                {
+                    <div class="card shadow-sm border-0 mb-3 rounded-3 overflow-hidden">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <span class="badge bg-primary px-3 py-2 fs-6">
+                                        Voo @item.Flight?.FlightNumber
+                                    </span>
+                                    <h5 class="fw-bold mt-2 mb-0">
+                                        @item.Flight?.OriginAirport?.IATACode ➔ @item.Flight?.DestinationAirport?.IATACode
+                                    </h5>
+                                    <small class="text-muted">
+                                        Partida: @item.Flight?.DepartureTime.ToString("dd/MM/yyyy HH:mm")
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-warning text-dark px-2 py-1">
+                                        <i class="bi bi-clock me-1"></i> Reserva Temporária
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="row bg-light p-3 rounded-3 align-items-center mb-3">
+                                <div class="col-md-4">
+                                    <span class="text-muted d-block fs-7">Lugar</span>
+                                    <strong class="text-dark">@item.Seat?.Code (@item.Seat?.SeatClass)</strong>
+                                </div>
+                                <div class="col-md-4">
+                                    <span class="text-muted d-block fs-7">Bagagem Extra (+30€)</span>
+                                    <strong class="text-dark">@(item.ExtraLuggage ? "Sim" : "Não")</strong>
+                                </div>
+                                <div class="col-md-4">
+                                    <span class="text-muted d-block fs-7">Refeição (+15€)</span>
+                                    <strong class="text-dark">@(item.MealIncluded ? "Sim" : "Não")</strong>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <form asp-action="RemoveFromCart" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="tempId" value="@item.Id" />
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-trash me-1"></i> Remover
+                                    </button>
+                                </form>
+                                <div class="text-end">
+                                    @{
+                                        decimal itemTotal = (item.Flight?.BasePrice ?? 0)
+                                        + (item.ExtraLuggage ? 30 : 0)
+                                        + (item.MealIncluded ? 15 : 0);
+                                    }
+                                    <span class="fs-5 fw-bold text-success">@itemTotal.ToString("C2")</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Resumo do Pagamento / Checkout -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 rounded-4 sticky-top" style="top: 20px;">
+                    <div class="card-header bg-dark text-white p-3 rounded-top-4">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-receipt me-2"></i>Resumo da Compra</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        @{
+                            decimal total = Model.Sum(i => (i.Flight?.BasePrice ?? 0)
+                            + (i.ExtraLuggage ? 30 : 0)
+                            + (i.MealIncluded ? 15 : 0));
+                        }
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Total de Bilhetes (@Model.Count())</span>
+                            <span>@total.ToString("C2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Taxas de Aeroporto</span>
+                            <span class="text-success fw-bold">Incluídas</span>
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between mb-4">
+                            <span class="fs-5 fw-bold">Total a Pagar</span>
+                            <span class="fs-4 fw-bold text-success">@total.ToString("C2")</span>
+                        </div>
+
+                        <form asp-action="Checkout" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-success btn-lg w-100 fw-bold shadow-sm">
+                                <i class="bi bi-credit-card-fill me-2"></i> Finalizar Pagamento
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

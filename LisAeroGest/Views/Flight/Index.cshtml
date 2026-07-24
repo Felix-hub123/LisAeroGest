@@ -1,0 +1,159 @@
+﻿@model LisAeroGest.Models.FlightFilterViewModel
+@using LisAeroGest.Helpers
+@{
+    ViewData["Title"] = "Gestão de Voos";
+}
+
+<div class="container-fluid mt-4">
+    <!-- Cabeçalho -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-airplane-engines-fill text-primary me-2"></i>Gestão de Voos
+            </h2>
+            <span class="text-muted small">@(Model.Flights?.Count() ?? 0) voo(s) listado(s)</span>
+        </div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-2"></i>Novo Voo
+        </a>
+    </div>
+
+    <!-- Alertas -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <form asp-action="Index" method="get">
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold mb-1">Companhia</label>
+                        <select name="airlineId" class="form-select form-select-sm" asp-items="@Model.Airlines">
+                            <option value="">— Todas —</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold mb-1">Origem</label>
+                        <select name="originId" class="form-select form-select-sm" asp-items="@Model.Airports">
+                            <option value="">— Todas —</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold mb-1">Destino</label>
+                        <select name="destinationId" class="form-select form-select-sm"
+                                asp-items="@(ViewBag.Destinations as IEnumerable<SelectListItem>)">
+                            <option value="">— Todos —</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold mb-1">Estado</label>
+                        <select name="status" class="form-select form-select-sm" asp-items="@Model.Statuses">
+                            <option value="">— Todos —</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end gap-1">
+                        <button type="submit" class="btn btn-sm btn-primary flex-grow-1" title="Filtrar">
+                            <i class="bi bi-funnel"></i>
+                        </button>
+                        <a asp-action="Index" class="btn btn-sm btn-outline-secondary" title="Limpar">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            @if (Model.Flights == null || !Model.Flights.Any())
+            {
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                    Nenhum voo encontrado com os filtros aplicados.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="ps-3">Nº Voo</th>
+                                <th>Companhia</th>
+                                <th>Rota</th>
+                                <th>Partida</th>
+                                <th>Chegada</th>
+                                <th>Gate</th>
+                                <th>Estado</th>
+                                <th class="text-end pe-3">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var flight in Model.Flights)
+                            {
+                                <tr class="@FlightStatusHelper.GetRowClass(flight.Status)">
+                                    <td class="ps-3 fw-bold">@flight.FlightNumber</td>
+                                    <td>
+                                        <span class="badge bg-secondary">@flight.Airline?.IATACode</span>
+                                        <small class="text-muted ms-1">@flight.Airline?.Name</small>
+                                    </td>
+                                    <td>
+                                        @flight.OriginAirport?.IATACode
+                                        <i class="bi bi-arrow-right mx-1 text-primary"></i>
+                                        @flight.DestinationAirport?.IATACode
+                                    </td>
+                                    <td>@flight.DepartureTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@flight.ArrivalTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        @if (flight.Gate != null)
+                                        {
+                                            <span class="badge bg-info text-dark">@flight.Gate.GateNumber</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge @FlightStatusHelper.GetBadgeClass(flight.Status)">
+                                            @FlightStatusHelper.GetStatusText(flight.Status)
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <a asp-action="Details" asp-route-id="@flight.Id"
+                                           class="btn btn-sm btn-outline-info me-1" title="Detalhes">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@flight.Id"
+                                           class="btn btn-sm btn-outline-warning me-1" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@flight.Id"
+                                           class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

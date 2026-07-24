@@ -1,0 +1,57 @@
+﻿@model IEnumerable<LisAeroGest.Data.Entities.Flight>
+@{
+    ViewData["Title"] = "Check-in Presencial";
+}
+
+<h1 class="mb-4"><i class="bi bi bi-person-check me-2"></i>Check-in Presencial</h1>
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead class="table-primary">
+            <tr>
+                <th>Voo</th>
+                <th>Companhia</th>
+                <th>Rota</th>
+                <th>Partida</th>
+                <th>Estado</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var flight in Model)
+            {
+                <tr>
+                    <td>@flight.FlightNumber</td>
+                    <td>@flight.Airline?.Name</td>
+                    <td>@flight.OriginAirport?.IATACode → @flight.DestinationAirport?.IATACode</td>
+                    <td>@flight.DepartureTime.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>
+                        @switch (flight.Status)
+                        {
+                            case "Scheduled":
+                                <span class="badge bg-secondary">Previsto</span>
+                                ; break;
+                            case "CheckIn":
+
+                                <span class="badge bg-info">Em Check-in</span>
+                                ; break;
+                            case "Boarding":
+
+                                <span class="badge bg-warning">Embarcando</span>
+                                ; break;
+                            default:
+
+                                <span class="badge bg-secondary">@flight.Status</span>
+                                ; break;
+                        }
+                    </td>
+                    <td>
+                        <a asp-action="FlightCheckIn" asp-route-flightId="@flight.Id" class="btn btn-primary btn-sm">
+                            <i class="bi bi-list me-1"></i>Passageiros
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

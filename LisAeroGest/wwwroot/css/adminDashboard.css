@@ -1,0 +1,140 @@
+.section-title {
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    margin-top: 1rem;
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+/* KPIs coloridos */
+.kpi-tile {
+    border-radius: 12px;
+    color: white;
+    transition: transform .2s, box-shadow .2s;
+}
+
+    .kpi-tile:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.12) !important;
+    }
+
+    .kpi-tile small {
+        opacity: 0.9;
+    }
+
+.kpi-blue {
+    background: linear-gradient(135deg, #0d3d6b, #1F5C99);
+}
+
+.kpi-green {
+    background: linear-gradient(135deg, #1a6b3c, #28a745);
+}
+
+.kpi-purple {
+    background: linear-gradient(135deg, #3d1a6b, #6f42c1);
+}
+
+.kpi-orange {
+    background: linear-gradient(135deg, #b34700, #fd7e14);
+}
+
+.kpi-teal {
+    background: linear-gradient(135deg, #0f6674, #20c997);
+}
+
+.kpi-red {
+    background: linear-gradient(135deg, #8b1a1a, #dc3545);
+}
+
+/* Menu cards */
+.menu-card {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    background: white;
+    padding: 1rem;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #212529;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    transition: all .2s ease;
+    border: 1px solid rgba(0,0,0,0.04);
+}
+
+    .menu-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+        color: #212529;
+    }
+
+.menu-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+.menu-info {
+    display: flex;
+    flex-direction: column;
+}
+
+    .menu-info strong {
+        font-size: 0.95rem;
+    }
+
+    .menu-info small {
+        color: #6c757d;
+        font-size: 0.8rem;
+    }
+
+/* Ripple dot */
+.ripple {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: #198754;
+    border-radius: 50%;
+    position: relative;
+}
+
+    .ripple::before {
+        content: "";
+        position: absolute;
+        inset: -4px;
+        background: #198754;
+        border-radius: 50%;
+        opacity: 0.5;
+        animation: ripple 1.6s infinite;
+    }
+
+@keyframes ripple {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.6;
+    }
+
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+/* Charts */
+.chart-wrap {
+    position: relative;
+    height: 320px;
+    width: 100%;
+}
+
+.chart-wrap-sm {
+    position: relative;
+    height: 260px;
+    width: 100%;
+}

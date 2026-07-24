@@ -1,0 +1,123 @@
+﻿@{
+    Layout = "_AuthLayout";
+}
+
+
+@model LisAeroGest.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Entrar — LisAeroGest";
+}
+
+<div class="auth-bg">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-9 col-lg-7 col-xl-5">
+                <div class="card auth-card">
+                    <div class="auth-header">
+                        <i class="bi bi-airplane-fill floating-plane"></i>
+                        <div class="auth-logo">
+                            <i class="bi bi-airplane-fill"></i>
+                        </div>
+                        <h1>LisAeroGest</h1>
+                        <p>Plataforma de Gestão Aeroportuária de Lisboa</p>
+                        <div class="auth-wave">
+                            <svg viewBox="0 0 1440 60" preserveAspectRatio="none">
+                                <path d="M0,32 C360,80 720,0 1080,32 C1260,48 1380,32 1440,32 L1440,60 L0,60 Z" fill="white" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="card-body auth-body">
+                        <h4 class="text-center mb-1">Bem-vindo de volta</h4>
+                        <p class="text-center text-muted mb-4">Entre para continuar</p>
+
+                        <form asp-action="Login" method="post" class="auth-form" id="loginForm">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger small" role="alert"></div>
+
+                            <div class="mb-3">
+                                <label asp-for="Username" class="form-label">Email</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                    <input asp-for="Username" class="form-control" placeholder="email@exemplo.com" autocomplete="username" />
+                                </div>
+                                <span asp-validation-for="Username" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Password" class="form-label">Palavra-passe</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                    <input asp-for="Password" class="form-control" type="password"
+                                           placeholder="••••••••" autocomplete="current-password" id="passwordInput" />
+                                    <span class="input-group-text password-toggle" id="togglePassword">
+                                        <i class="bi bi-eye"></i>
+                                    </span>
+                                </div>
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div class="form-check mb-0">
+                                    <input asp-for="RememberMe" class="form-check-input" id="rememberMe" />
+                                    <label asp-for="RememberMe" class="form-check-label small">Lembrar-me</label>
+                                </div>
+                                <a asp-action="RecoverPassword" class="small text-decoration-none">Esqueceu a password?</a>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-auth" id="loginBtn">
+                                    <span class="btn-text">
+                                        <i class="bi bi-box-arrow-in-right me-2"></i>Entrar
+                                    </span>
+                                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="card-footer bg-white text-center py-3 border-0">
+                        <span class="text-muted small">Não tem conta?</span>
+                        <a asp-action="Register" class="ms-1 small fw-semibold">Criar conta</a>
+                    </div>
+                </div>
+
+                <p class="text-center text-muted small mt-3 mb-0">
+                    &copy; @DateTime.Now.Year LisAeroGest · CINEL
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Toggle password visibility
+        (function () {
+            var toggle = document.getElementById('togglePassword');
+            var input  = document.getElementById('passwordInput');
+            if (toggle && input) {
+                toggle.addEventListener('click', function () {
+                    var isPassword = input.type === 'password';
+                    input.type = isPassword ? 'text' : 'password';
+                    toggle.querySelector('i').className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+                });
+            }
+        })();
+
+        // Loading state no botão
+        (function () {
+            var form = document.getElementById('loginForm');
+            var btn  = document.getElementById('loginBtn');
+            if (form && btn) {
+                form.addEventListener('submit', function () {
+                    btn.disabled = true;
+                    btn.querySelector('.btn-text').classList.add('d-none');
+                    btn.querySelector('.spinner-border').classList.remove('d-none');
+                });
+            }
+        })();
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

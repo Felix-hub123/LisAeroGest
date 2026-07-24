@@ -1,0 +1,306 @@
+﻿@model LisAeroGest.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Criar Conta — LisAeroGest";
+}
+
+<div class="auth-bg">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+                <div class="card auth-card">
+                    <div class="auth-header">
+                        <i class="bi bi-airplane-fill floating-plane"></i>
+                        <div class="auth-logo">
+                            <i class="bi bi-person-plus-fill"></i>
+                        </div>
+                        <h1>Criar Conta</h1>
+                        <p>Junte-se à plataforma LisAeroGest</p>
+                        <div class="auth-wave">
+                            <svg viewBox="0 0 1440 60" preserveAspectRatio="none">
+                                <path d="M0,32 C360,80 720,0 1080,32 C1260,48 1380,32 1440,32 L1440,60 L0,60 Z" fill="white" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="card-body auth-body">
+                        <h4 class="text-center mb-1">Bem-vindo!</h4>
+                        <p class="text-center text-muted mb-4">
+                            Crie a sua conta para comprar bilhetes, fazer check-in e gerir as suas viagens.
+                        </p>
+
+                        <form asp-action="Register" method="post" class="auth-form" id="registerForm">
+                            @Html.AntiForgeryToken()
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger small" role="alert"></div>
+
+                            @* ---- SECÇÃO 1: Dados Pessoais ---- *@
+                            <div class="form-section">
+                                <h6 class="form-section-title">
+                                    <i class="bi bi-person-vcard me-1"></i>Dados Pessoais
+                                </h6>
+
+                                <div class="row g-2">
+                                    <div class="col-md-6 mb-2">
+                                        <label asp-for="FirstName" class="form-label">Nome</label>
+                                        <input asp-for="FirstName" class="form-control"
+                                               placeholder="Ex.: Maria" autocomplete="given-name" />
+                                        <span asp-validation-for="FirstName" class="text-danger small"></span>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <label asp-for="LastName" class="form-label">Apelido</label>
+                                        <input asp-for="LastName" class="form-control"
+                                               placeholder="Ex.: Silva" autocomplete="family-name" />
+                                        <span asp-validation-for="LastName" class="text-danger small"></span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-2">
+                                    <label asp-for="BirthDate" class="form-label">Data de Nascimento</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+                                        <input asp-for="BirthDate" class="form-control" type="date"
+                                               max="@DateTime.Now.AddYears(-16).ToString("yyyy-MM-dd")" />
+                                    </div>
+                                    <span asp-validation-for="BirthDate" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            @* ---- SECÇÃO 2: Contacto ---- *@
+                            <div class="form-section">
+                                <h6 class="form-section-title">
+                                    <i class="bi bi-envelope-at me-1"></i>Contacto
+                                </h6>
+
+                                <div class="mb-2">
+                                    <label asp-for="Username" class="form-label">Email</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                        <input asp-for="Username" class="form-control" type="email"
+                                               placeholder="seu.email@exemplo.com" autocomplete="email" />
+                                    </div>
+                                    <span asp-validation-for="Username" class="text-danger small"></span>
+                                </div>
+
+                                <div class="mb-2">
+                                    <label asp-for="Address" class="form-label">Morada <small class="text-muted">(opcional)</small></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                        <input asp-for="Address" class="form-control"
+                                               placeholder="Rua, número, cidade" autocomplete="street-address" />
+                                    </div>
+                                    <span asp-validation-for="Address" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            @* ---- SECÇÃO 3: Documento de Identificação ---- *@
+                            <div class="form-section">
+                                <h6 class="form-section-title">
+                                    <i class="bi bi-card-text me-1"></i>Documento de Identificação
+                                </h6>
+
+                                <div class="row g-2">
+                                    <div class="col-md-5 mb-2">
+                                        <label asp-for="DocumentType" class="form-label">Tipo</label>
+                                        <select asp-for="DocumentType" class="form-select" required>
+                                            <option value="">Selecione...</option>
+                                            <option value="Cartão de Cidadão">Cartão de Cidadão</option>
+                                            <option value="Passaporte">Passaporte</option>
+                                            <option value="Autorização de Residência">Autorização de Residência</option>
+                                        </select>
+                                        <span asp-validation-for="DocumentType" class="text-danger small"></span>
+                                    </div>
+                                    <div class="col-md-7 mb-2">
+                                        <label asp-for="DocumentNumber" class="form-label">Número</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-hash"></i></span>
+                                            <input asp-for="DocumentNumber" class="form-control"
+                                                   placeholder="Nº do documento" />
+                                        </div>
+                                        <span asp-validation-for="DocumentNumber" class="text-danger small"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @* ---- SECÇÃO 4: Password ---- *@
+                            <div class="form-section">
+                                <h6 class="form-section-title">
+                                    <i class="bi bi-shield-lock me-1"></i>Segurança
+                                </h6>
+
+                                <div class="mb-2">
+                                    <label asp-for="Password" class="form-label">Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                        <input asp-for="Password" class="form-control" type="password"
+                                               placeholder="Mínimo 6 caracteres" autocomplete="new-password" id="newPass" />
+                                        <span class="input-group-text password-toggle" data-target="newPass">
+                                            <i class="bi bi-eye"></i>
+                                        </span>
+                                    </div>
+
+                                    <!-- Barra de força -->
+                                    <div class="password-strength mt-2" id="strengthWrap" style="display: none;">
+                                        <div class="progress" style="height: 5px;">
+                                            <div class="progress-bar" id="strengthBar" style="width: 0%; transition: width .2s;"></div>
+                                        </div>
+                                        <small id="strengthText" class="text-muted"></small>
+                                    </div>
+                                    <span asp-validation-for="Password" class="text-danger small"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="ConfirmPassword" class="form-label">Confirmar Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                                        <input asp-for="ConfirmPassword" class="form-control" type="password"
+                                               placeholder="Repita a password" autocomplete="new-password" id="confirmPass" />
+                                        <span class="input-group-text password-toggle" data-target="confirmPass">
+                                            <i class="bi bi-eye"></i>
+                                        </span>
+                                    </div>
+                                    <small id="matchStatus" class="text-muted"></small>
+                                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                                </div>
+
+                                <!-- Regras de password -->
+                                <div class="password-rules small text-muted">
+                                    <p class="mb-1"><i class="bi bi-info-circle me-1"></i>A password deve ter:</p>
+                                    <ul class="mb-0 ps-3" id="rulesList">
+                                        <li id="rule-len">No mínimo 6 caracteres</li>
+                                        <li id="rule-upper">Pelo menos 1 letra maiúscula</li>
+                                        <li id="rule-digit">Pelo menos 1 número</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-primary btn-auth" id="submitBtn">
+                                    <span class="btn-text">
+                                        <i class="bi bi-person-check me-2"></i>Criar Conta
+                                    </span>
+                                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                </button>
+                            </div>
+
+                            <p class="text-center text-muted small mt-3 mb-0">
+                                <i class="bi bi-shield-check me-1"></i>
+                                Os seus dados são protegidos com encriptação.
+                            </p>
+                        </form>
+                    </div>
+
+                    <div class="card-footer bg-white text-center py-3 border-0">
+                        <span class="text-muted small">Já tem conta?</span>
+                        <a asp-action="Login" class="ms-1 small fw-semibold">Entrar</a>
+                    </div>
+                </div>
+
+                <p class="text-center text-muted small mt-3 mb-0">
+                    &copy; @DateTime.Now.Year LisAeroGest · CINEL
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // ---- Toggle show/hide password (genérico) ----
+        document.querySelectorAll('.password-toggle').forEach(function (toggle) {
+            toggle.addEventListener('click', function () {
+                var input = document.getElementById(this.getAttribute('data-target'));
+                if (!input) return;
+                var isPassword = input.type === 'password';
+                input.type = isPassword ? 'text' : 'password';
+                this.querySelector('i').className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+            });
+        });
+
+        // ---- Força da password + regras visuais + match ----
+        (function () {
+            var newPass = document.getElementById('newPass');
+            var confirmPass = document.getElementById('confirmPass');
+            var wrap = document.getElementById('strengthWrap');
+            var bar = document.getElementById('strengthBar');
+            var text = document.getElementById('strengthText');
+            var matchStatus = document.getElementById('matchStatus');
+            if (!newPass) return;
+
+            function scorePassword(p) {
+                var s = 0;
+                if (p.length >= 6) s++;
+                if (p.length >= 10) s++;
+                if (/[A-Z]/.test(p)) s++;
+                if (/[0-9]/.test(p)) s++;
+                if (/[^A-Za-z0-9]/.test(p)) s++;
+                return s;
+            }
+            function colorFor(s) {
+                if (s <= 1) return { bg: 'bg-danger',  label: 'Muito fraca' };
+                if (s === 2) return { bg: 'bg-warning', label: 'Fraca' };
+                if (s === 3) return { bg: 'bg-info',    label: 'Razoável' };
+                if (s === 4) return { bg: 'bg-primary', label: 'Forte' };
+                return       { bg: 'bg-success', label: 'Muito forte' };
+            }
+            function updateRules(p) {
+                var rules = {
+                    'rule-len':   p.length >= 6,
+                    'rule-upper': /[A-Z]/.test(p),
+                    'rule-digit': /[0-9]/.test(p)
+                };
+                Object.keys(rules).forEach(function (id) {
+                    var el = document.getElementById(id);
+                    if (el) {
+                        var txt = el.textContent.trim();
+                        el.style.color = rules[id] ? '#198754' : '#dc3545';
+                        el.innerHTML = (rules[id] ? '<i class="bi bi-check-circle-fill"></i> ' : '<i class="bi bi-x-circle-fill"></i> ') + txt;
+                    }
+                });
+            }
+            function updateMatch() {
+                if (!confirmPass) return;
+                if (confirmPass.value.length === 0) {
+                    matchStatus.textContent = '';
+                    return;
+                }
+                if (newPass.value === confirmPass.value) {
+                    matchStatus.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i> As passwords coincidem';
+                } else {
+                    matchStatus.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i> As passwords não coincidem';
+                }
+            }
+            newPass.addEventListener('input', function () {
+                var p = newPass.value;
+                wrap.style.display = p.length === 0 ? 'none' : 'block';
+                var s = scorePassword(p);
+                var pct = (s / 5) * 100;
+                var c = colorFor(s);
+                bar.className = 'progress-bar ' + c.bg;
+                bar.style.width = pct + '%';
+                text.textContent = 'Força: ' + c.label;
+                text.className = c.bg === 'bg-danger'  ? 'text-danger' :
+                                 c.bg === 'bg-warning' ? 'text-warning' :
+                                 c.bg === 'bg-info'    ? 'text-info' :
+                                 c.bg === 'bg-primary' ? 'text-primary' : 'text-success';
+                updateRules(p);
+                updateMatch();
+            });
+            if (confirmPass) confirmPass.addEventListener('input', updateMatch);
+        })();
+
+        // ---- Loading state no botão ----
+        (function () {
+            var form = document.getElementById('registerForm');
+            var btn = document.getElementById('submitBtn');
+            if (form && btn) {
+                form.addEventListener('submit', function () {
+                    btn.disabled = true;
+                    btn.querySelector('.btn-text').classList.add('d-none');
+                    btn.querySelector('.spinner-border').classList.remove('d-none');
+                });
+            }
+        })();
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

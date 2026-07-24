@@ -1,0 +1,86 @@
+﻿@model LisAeroGest.Data.Entities.BoardingPass
+
+@{
+    ViewData["Title"] = "Cartão de Embarque";
+}
+
+<style>
+    @@media print {
+        body * {
+            visibility: hidden;
+        }
+
+        .print-area, .print-area * {
+            visibility: visible;
+        }
+
+        .print-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+        }
+
+        .no-print {
+            display: none !important;
+        }
+    }
+</style>
+
+<div class="container py-4">
+    <div class="card shadow-lg border-0 print-area" style="max-width: 650px; margin: 0 auto; border-radius: 15px; overflow: hidden;">
+        <div class="card-header bg-primary text-white p-4 d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="fw-bold mb-0">LisAeroGest</h3>
+                <small class="text-white-50">CARTÃO DE EMBARQUE / BOARDING PASS</small>
+            </div>
+            <span class="badge bg-light text-primary fs-6 px-3 py-2">CONFIRMADO</span>
+        </div>
+
+        <div class="card-body p-4">
+            <div class="row g-3 mb-4">
+                <div class="col-8">
+                    <small class="text-muted text-uppercase d-block fs-7">Passageiro</small>
+                    <strong class="fs-5 text-dark">@(Model.Ticket?.Passenger?.User?.FullName ?? "Passageiro")</strong>
+                </div>
+                <div class="col-4 text-end">
+                    <small class="text-muted text-uppercase d-block fs-7">Sequência</small>
+                    <strong class="fs-5 text-secondary">#@Model.SequenceNumber</strong>
+                </div>
+            </div>
+
+            <hr />
+
+            <div class="row g-3 my-2 text-center">
+                <div class="col-4">
+                    <small class="text-muted text-uppercase d-block">Voo</small>
+                    <strong class="fs-5 text-dark">@(Model.Ticket?.Flight?.FlightNumber ?? "N/A")</strong>
+                </div>
+                <div class="col-4">
+                    <small class="text-muted text-uppercase d-block">Portão (Gate)</small>
+                    <strong class="fs-4 text-primary">@(Model.Gate ?? "TBA")</strong>
+                </div>
+                <div class="col-4">
+                    <small class="text-muted text-uppercase d-block">Lugar (Seat)</small>
+                    <strong class="fs-4 text-success">@(Model.Ticket?.Seat?.Code ?? "Atribuído")</strong>
+                </div>
+            </div>
+
+            <hr />
+
+            <div class="text-center my-4">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=@(Uri.EscapeDataString(Model.QRCode ?? "BOARDING"))"
+                     alt="QR Code Boarding Pass"
+                     class="img-fluid border p-2 rounded shadow-sm" style="max-width: 160px;" />
+                <small class="d-block text-muted mt-2">Apresente este código no portão de embarque</small>
+            </div>
+        </div>
+
+        <div class="card-footer bg-light p-3 text-center no-print">
+            <button onclick="window.print()" class="btn btn-outline-primary me-2">
+                <i class="bi bi-printer"></i> Imprimir Cartão
+            </button>
+            <a asp-action="Index" class="btn btn-secondary">Voltar aos Meus Bilhetes</a>
+        </div>
+    </div>
+</div>

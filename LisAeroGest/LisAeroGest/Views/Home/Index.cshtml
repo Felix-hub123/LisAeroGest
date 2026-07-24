@@ -1,0 +1,230 @@
+﻿@model LisAeroGest.Models.HomeBoardViewModel
+@{
+    ViewData["Title"] = "Painel de Voos — Aeroporto de Lisboa";
+    var culture = new System.Globalization.CultureInfo("pt-PT");
+}
+
+<!-- Envolve todo o painel num wrapper com padding-bottom de segurança -->
+<div class="container-fluid py-3 flightboard-wrapper pb-5">
+
+    <!-- Hero Section -->
+    <section class="hero-section rounded-4 mb-4 p-4 p-md-5 text-white position-relative"
+             style="background: url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1400&q=80') center/cover no-repeat;"
+             data-aos="fade-in">
+
+        <div class="hero-overlay"></div>
+
+        <div class="hero-content">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="display-5 fw-bold mb-2">Aeroporto de Lisboa</h1>
+                    <p class="fs-5 mb-2 opacity-75">Humberto Delgado Airport — LIS</p>
+                    <p class="mb-0 opacity-50">
+                        <i class="bi bi-calendar3 me-1"></i>
+                        @DateTime.Now.ToString("dddd, dd 'de' MMMM 'de' yyyy", culture)
+                    </p>
+
+                    @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Passenger"))
+                    {
+                        <div class="mt-3" data-aos="zoom-in" data-aos-delay="200">
+                            <a class="btn btn-light btn-lg fw-semibold" asp-controller="Shop" asp-action="Index">
+                                <i class="bi bi-cart me-2"></i>Comprar Bilhete
+                            </a>
+                        </div>
+                    }
+                </div>
+
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <div class="digital-clock d-inline-block">
+                        <div class="clock-time" id="clockTime">00:00:00</div>
+                        <div class="clock-date" id="clockDate"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Ticker de Avisos -->
+    @if (Model.ActiveWarnings.Any())
+    {
+        <div class="boarding-ticker mb-4" data-aos="fade-in" data-aos-delay="100">
+            <div class="ticker-inner">
+                @for (int i = 0; i < 2; i++)
+                {
+                    foreach (var w in Model.ActiveWarnings)
+                    {
+                        <span class="ticker-item">
+                            <i class="bi bi-megaphone-fill"></i>
+                            <strong>Última chamada</strong> — @w.FlightNumber
+                            · @w.Origin → @w.Destination
+                            <span class="ticker-badge">@w.Status</span>
+                        </span>
+                    }
+                }
+            </div>
+        </div>
+    }
+
+    <!-- KPIs -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3" data-aos="fade-up" data-aos-delay="0">
+            <div class="card border-0 shadow-sm h-100 text-center py-3 kpi-card">
+                <div class="card-body">
+                    <i class="bi bi-airplane text-primary fs-2"></i>
+                    <h4 class="fw-bold mb-0 mt-2">@Model.TotalPartidas</h4>
+                    <small class="text-muted">Partidas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
+            <div class="card border-0 shadow-sm h-100 text-center py-3 kpi-card">
+                <div class="card-body">
+                    <i class="bi bi-airplane-engines-fill text-success fs-2"></i>
+                    <h4 class="fw-bold mb-0 mt-2">@Model.TotalChegadas</h4>
+                    <small class="text-muted">Chegadas</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+            <div class="card border-0 shadow-sm h-100 text-center py-3 kpi-card">
+                <div class="card-body">
+                    <i class="bi bi-check-circle-fill text-success fs-2"></i>
+                    <h4 class="fw-bold mb-0 mt-2">@Model.ActiveFlightsCount</h4>
+                    <small class="text-muted">Em Operação</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3" data-aos="fade-up" data-aos-delay="300">
+            <div class="card border-0 shadow-sm h-100 text-center py-3 kpi-card">
+                <div class="card-body">
+                    <i class="bi bi-exclamation-triangle-fill text-warning fs-2"></i>
+                    <h4 class="fw-bold mb-0 mt-2">@Model.DisruptedFlightsCount</h4>
+                    <small class="text-muted">Perturbados</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Destinos Populares -->
+    @if (Model.PopularDestinations.Any())
+    {
+        <div class="destinations-section mb-4" data-aos="fade-up" data-aos-delay="100">
+            <h5 class="mb-3">
+                <i class="bi bi-globe2 me-2"></i>Destinos Populares
+            </h5>
+            <div class="row g-3">
+                @foreach (var d in Model.PopularDestinations)
+                {
+                    <div class="col-6 col-md-4 col-lg-2" data-aos="zoom-in" data-aos-delay="100">
+                        <div class="dest-card">
+                            <div class="dest-image" style="background: linear-gradient(135deg, #0d3d6b, #1F5C99);">
+                                <div class="dest-badge">@d.Voos voos</div>
+                                <div class="text-center text-white py-4">
+                                    <i class="bi bi-geo-alt-fill fs-1"></i>
+                                </div>
+                            </div>
+                            <div class="dest-info text-center">
+                                <h6 class="mb-0 fw-bold">@d.Cidade</h6>
+                                <small class="text-muted">@d.Pais</small><br />
+                                <span class="badge bg-primary mt-1">@d.IATA</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Live Indicator -->
+    <div class="d-flex justify-content-between align-items-center mb-2" data-aos="fade-in" data-aos-delay="200">
+        <div class="live-indicator">
+            <div class="live-dot"></div>
+            <span>Painel ao vivo — actualizado há <span id="secondsAgo">0</span>s</span>
+        </div>
+        <small class="text-muted">
+            <i class="bi bi-arrow-clockwise me-1"></i>Actualização automática
+        </small>
+    </div>
+
+    <!-- Filtro -->
+    <div class="input-group mb-3" data-aos="fade-up" data-aos-delay="250">
+        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+        <input type="text" id="flightSearch" class="form-control form-control-lg"
+               placeholder="Pesquisar voo, destino, companhia..."
+               onkeyup="filterFlights()" />
+    </div>
+
+    <!-- Tabs -->
+    <div data-aos="fade-up" data-aos-delay="300">
+        <ul class="nav nav-tabs mb-0">
+            <li class="nav-item">
+                <button class="nav-link active fw-semibold px-4"
+                        data-bs-toggle="tab" data-bs-target="#departures">
+                    <i class="bi bi-airplane me-2"></i>Partidas
+                    <span class="badge bg-primary ms-2">@Model.TotalPartidas</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link fw-semibold px-4"
+                        data-bs-toggle="tab" data-bs-target="#arrivals">
+                    <i class="bi bi-airplane-fill me-2"></i>Chegadas
+                    <span class="badge bg-secondary ms-2">@Model.TotalChegadas</span>
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Tabelas de Voos com margem de fecho garantida (mb-5) -->
+    <div class="tab-content border border-top-0 rounded-bottom shadow-sm bg-white mb-5" data-aos="fade-up" data-aos-delay="350">
+        <div class="tab-pane fade show active p-0" id="departures">
+            @{
+                ViewData["Type"] = "Departures";
+            }
+            <partial name="_FlightTable" model="Model.Departures" view-data="ViewData" />
+        </div>
+        <div class="tab-pane fade p-0" id="arrivals">
+            @{
+                ViewData["Type"] = "Arrivals";
+            }
+            <partial name="_FlightTable" model="Model.Arrivals" view-data="ViewData" />
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        // Relógio
+        function updateClock() {
+            var now = new Date();
+            document.getElementById('clockTime').textContent = now.toLocaleTimeString('pt-PT');
+            document.getElementById('clockDate').textContent = now.toLocaleDateString('pt-PT', {
+                weekday: 'long', day: 'numeric', month: 'long'
+            });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Contador de segundos
+        var seconds = 0;
+        setInterval(function () {
+            seconds++;
+            var el = document.getElementById("secondsAgo");
+            if (el) el.textContent = seconds;
+            if (seconds >= 60) location.reload();
+        }, 1000);
+
+        // Filtro
+        function filterFlights() {
+            var input = document.getElementById("flightSearch");
+            var filter = input.value.toUpperCase();
+            document.querySelectorAll(".tab-pane.active table tbody tr").forEach(function (row) {
+                row.style.display = (row.textContent || row.innerText).toUpperCase().indexOf(filter) > -1 ? "" : "none";
+            });
+        }
+
+        document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(function (btn) {
+            btn.addEventListener("shown.bs.tab", function () { filterFlights(); });
+        });
+    </script>
+}
