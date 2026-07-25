@@ -90,6 +90,7 @@ builder.Services.AddScoped<ISeatRepository, SeatRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IForumTopicRepository, ForumTopicRepository>();
 builder.Services.AddScoped<IBoardingPassRepository, BoardingPassRepository>();
+builder.Services.AddScoped<IConverterHelper, ConverterHelper>();
 // ─── HttpClient (para OpenWeatherMap) ───────────────────────────────────────
 builder.Services.AddHttpClient();
 
