@@ -98,35 +98,25 @@ namespace LisAeroGest.Helpers
 
         public string GetImageUrl(Guid imageId, string folder, string placeholderName = "noimage")
         {
-
+            // 1. Se o ID for vazio, vai buscar o placeholder à raiz /images/
             if (imageId == Guid.Empty)
-
-                return $"/images/{folder}/{placeholderName}.png";
-
+                return $"/images/{placeholderName}.png";
 
             var path = Path.Combine(_env.WebRootPath, "images", folder);
 
-
             if (!Directory.Exists(path))
-
-                return $"/images/{folder}/{placeholderName}.png";
-
+                return $"/images/{placeholderName}.png";
 
             var files = Directory.GetFiles(path, $"{imageId}.*");
 
-
             if (files.Length > 0)
             {
-
                 var fileName = Path.GetFileName(files[0]);
-
                 return $"/images/{folder}/{fileName}";
-
             }
 
-
-            return $"/images/{folder}/{placeholderName}.png";
-
+            
+            return $"/images/{placeholderName}.png";
         }
     }
 }
