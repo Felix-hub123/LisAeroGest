@@ -39,13 +39,18 @@ namespace LisAeroGest.Data.Repositories
                 .ToListAsync();
 
         public async Task<IEnumerable<Flight>> GetDepartureBoardAsync()
-            => await _dbSet
+        {
+            var todayUtc = DateTime.UtcNow.Date;
+            var tomorrowUtc = todayUtc.AddDays(1);
+
+            return await _dbSet
                 .Include(f => f.Airline)
                 .Include(f => f.DestinationAirport)
                 .Include(f => f.Gate)
-                .Where(f => f.DepartureTime.Date == DateTime.Today)
+                .Where(f => f.DepartureTime >= todayUtc && f.DepartureTime < tomorrowUtc)
                 .OrderBy(f => f.DepartureTime)
                 .ToListAsync();
+        }
 
         public async Task<IEnumerable<Flight>> GetArrivalBoardAsync()
             => await _dbSet
