@@ -15,10 +15,22 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── Base de Dados ────────────────────────────────────────────────────────────
-builder.Services.AddDbContext<DataContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+// ── Base de Dados (SQL Server em Dev vs PostgreSQL em Prod) ──────────────────
+if (builder.Environment.IsDevelopment())
+{
+    // Usa SQL Server quando executado via Visual Studio (Ambiente Development)
+    builder.Services.AddDbContext<DataContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+}
+else
+{
+    // Habilita compatibilidade de datas legadas do PostgreSQL apenas em Produção
+    AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
+    // Usa PostgreSQL (Supabase / Render) quando em Produção
+    builder.Services.AddDbContext<DataContext>(options =>
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+}
 // ── Identity ─────────────────────────────────────────────────────────────────
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
