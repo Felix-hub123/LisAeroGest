@@ -15,13 +15,13 @@
     </ol>
 </nav>
 
-<div class="container mt-4">
+<div class="container mt-4 mb-5">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
 
-            <!-- Botão voltar -->
+            <!-- Cabeçalho & Botão Voltar -->
             <div class="d-flex align-items-center mb-4">
-                <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3">
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3" title="Voltar à lista">
                     <i class="bi bi-arrow-left"></i>
                 </a>
                 <h2 class="fw-bold mb-0">
@@ -29,73 +29,82 @@
                 </h2>
             </div>
 
-            <div class="card shadow-sm">
+            <div class="card shadow-sm border-0 overflow-hidden">
 
-                <!-- Imagem -->
-                <img src="@ImageHelper.GetImageUrl(Model.ImageId, "aircraft")"
-                     alt="@Model.Brand @Model.Model"
-                     class="card-img-top"
-                     style="height:220px; object-fit:cover;" />
-
-                <div class="card-body">
-
-                    <!-- Estado -->
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div>
-                            <h4 class="card-title mb-1">@Model.Brand @Model.Model</h4>
-                            <p class="text-muted mb-0">Aeronave #@Model.Id</p>
-                        </div>
-                        @if (Model.IsAvailable)
-                        {
-                            <span class="badge bg-success fs-6">
-                                <i class="bi bi-check-circle me-1"></i>Disponível
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-danger fs-6">
-                                <i class="bi bi-x-circle me-1"></i>Indisponível
-                            </span>
-                        }
-                    </div>
-
-                    <hr />
-
-                    <!-- Capacidade -->
-                    <div class="row text-center">
-                        <div class="col-4">
-                            <div class="p-3 bg-light rounded">
-                                <h3 class="mb-0 text-primary">@Model.TotalCapacity</h3>
-                                <small class="text-muted">Total</small>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="p-3 bg-light rounded">
-                                <h3 class="mb-0 text-secondary">@Model.EconomySeats</h3>
-                                <small class="text-muted">Económica</small>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="p-3 bg-light rounded">
-                                <h3 class="mb-0 text-dark">@Model.BusinessSeats</h3>
-                                <small class="text-muted">Executiva</small>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Imagem Principal -->
+                <div class="position-relative bg-light text-center border-bottom">
+                    <img src="@ImageHelper.GetImageUrl(Model.ImageId, "aircraft")"
+                         alt="@Model.Brand @Model.Model"
+                         class="card-img-top"
+                         style="height: 240px; object-fit: cover;" />
                 </div>
 
-                <!-- Ações -->
-                <div class="card-footer bg-white d-flex gap-2">
+                <div class="card-body p-4">
+
+                    <!-- Título & Status Operacional -->
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <h3 class="fw-bold mb-1">@Model.Brand @Model.Model</h3>
+                            <span class="text-muted small">ID do Registo: #@Model.Id</span>
+                        </div>
+                        <div>
+                            @if (Model.IsAvailable)
+                            {
+                                <span class="badge bg-success-subtle text-success border border-success px-3 py-2 rounded-pill">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Disponível
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger-subtle text-danger border border-danger px-3 py-2 rounded-pill">
+                                    <i class="bi bi-x-circle-fill me-1"></i>Indisponível
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Métricas de Capacidade e Configuração de Lugares -->
+                    <h6 class="fw-bold text-uppercase text-muted small mb-3">Configuração de Passageiros</h6>
+
+                    <div class="row g-3 text-center mb-2">
+                        <div class="col-4">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <i class="bi bi-people-fill fs-4 text-primary d-block mb-1"></i>
+                                <h4 class="fw-bold mb-0 text-dark">@Model.TotalCapacity</h4>
+                                <small class="text-muted fw-semibold">Total</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <i class="bi bi-person-seat fs-4 text-secondary d-block mb-1"></i>
+                                <h4 class="fw-bold mb-0 text-dark">@Model.EconomySeats</h4>
+                                <small class="text-muted fw-semibold">Económica</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <i class="bi bi-star-fill fs-4 text-warning d-block mb-1"></i>
+                                <h4 class="fw-bold mb-0 text-dark">@Model.BusinessSeats</h4>
+                                <small class="text-muted fw-semibold">Executiva</small>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Painel de Ações -->
+                <div class="card-footer bg-light p-3 d-flex gap-2">
                     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
-                        <i class="bi bi-pencil me-2"></i>Editar
+                        <i class="bi bi-pencil-fill me-2"></i>Editar
                     </a>
                     <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
-                        <i class="bi bi-trash me-2"></i>Eliminar
+                        <i class="bi bi-trash-fill me-2"></i>Eliminar
                     </a>
                     <a asp-action="Index" class="btn btn-outline-secondary ms-auto">
-                        <i class="bi bi-arrow-left me-2"></i>Voltar
+                        <i class="bi bi-arrow-left me-2"></i>Voltar à Lista
                     </a>
                 </div>
+
             </div>
         </div>
     </div>

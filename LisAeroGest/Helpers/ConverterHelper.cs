@@ -53,8 +53,8 @@ namespace LisAeroGest.Helpers
             return new AircraftViewModel
             {
                 Id = aircraft.Id,
-                Brand = aircraft.Brand,
-                Model = aircraft.Model,
+                Brand = aircraft.Brand!,
+                Model = aircraft.Model!,
                 EconomySeats = aircraft.EconomySeats,
                 BusinessSeats = aircraft.BusinessSeats,
                 IsAvailable = aircraft.IsAvailable,
@@ -64,12 +64,15 @@ namespace LisAeroGest.Helpers
 
         public void UpdateAircraftFromViewModel(Aircraft aircraft, AircraftViewModel model, Guid imageId)
         {
-            aircraft.Brand = model.Brand;
-            aircraft.Model = model.Model;
+            // Atualiza apenas as propriedades operacionais
             aircraft.EconomySeats = model.EconomySeats;
             aircraft.BusinessSeats = model.BusinessSeats;
             aircraft.IsAvailable = model.IsAvailable;
-            aircraft.ImageId = imageId;
+
+            if (imageId != Guid.Empty)
+            {
+                aircraft.ImageId = imageId;
+            }
         }
 
 
@@ -97,13 +100,7 @@ namespace LisAeroGest.Helpers
             };
         }
 
-        public void UpdateAirlineFromViewModel(Airline airline, AirlineViewModel model, Guid imageId)
-        {
-            airline.Name = model.Name;
-            airline.IATACode = model.IATACode!.ToUpper();
-            airline.Country = model.Country;
-            airline.ImageId = imageId;
-        }
+       
 
         public Airport ToAirport(AirportViewModel model, Guid imageId, bool isEdit = false)
         {
@@ -119,29 +116,9 @@ namespace LisAeroGest.Helpers
             };
         }
 
-        public AirportViewModel ToAirportViewModel(Airport airport)
-        {
-            return new AirportViewModel
-            {
-                Id = airport.Id,
-                Name = airport.Name,
-                City = airport.City,
-                Country = airport.Country,
-                IATACode = airport.IATACode,
-                DefaultFee = airport.DefaultFee,
-                ImageId = airport.ImageId
-            };
-        }
+      
 
-        public void UpdateAirportFromViewModel(Airport airport, AirportViewModel model, Guid imageId)
-        {
-            airport.Name = model.Name;
-            airport.City = model.City;
-            airport.Country = model.Country;
-            airport.IATACode = model.IATACode!.ToUpper();
-            airport.DefaultFee = model.DefaultFee;
-            airport.ImageId = imageId;
-        }
+    
 
         public BoardingPass ToBoardingPass(Ticket ticket, int sequenceNumber, string? gate = null, string prefix = "BOARDING")
         {
@@ -313,8 +290,8 @@ namespace LisAeroGest.Helpers
             return new ForumTopicViewModel
             {
                 Id = topic.Id,
-                Title = topic.Title,
-                Content = topic.Content,
+                Title = topic.Title!,
+                Content = topic.Content!,
                 IsClosed = topic.IsClosed,
                 CreatedAt = topic.CreatedAt,
                 CreatedByUserId = topic.CreatedByUserId,
@@ -438,40 +415,65 @@ namespace LisAeroGest.Helpers
             return new SelectList(airports, "IATACode", "Name", selectedValue);
         }
 
-        public Ticket ToTicket(TicketTemp tempItem, Flight? flight, string userId)
+        public void ConfirmTicketPayment(Ticket ticket, Flight? flight, string userId)
         {
             var basePrice = flight?.BasePrice ?? 0;
-            var luggageFee = tempItem.ExtraLuggage ? 30 : 0;
-            var mealFee = tempItem.MealIncluded ? 15 : 0;
+            var luggageFee = ticket.ExtraLuggage ? 30 : 0;
+            var mealFee = ticket.MealIncluded ? 15 : 0;
 
-            return new Ticket
-            {
-                PassengerId = tempItem.PassengerId,
-                FlightId = tempItem.FlightId,
-                SeatId = tempItem.SeatId,
-                TotalPrice = basePrice + luggageFee + mealFee,
-                ExtraLuggage = tempItem.ExtraLuggage,
-                MealIncluded = tempItem.MealIncluded,
-                Status = "Paid",
-                PurchaseDate = DateTime.UtcNow,
-                CreatedByUserId = userId
-            };
+            // Atualiza o bilhete existente
+            ticket.TotalPrice = basePrice + luggageFee + mealFee;
+            ticket.Status = "Paid";
+            ticket.PurchaseDate = DateTime.UtcNow;
+            ticket.ReservationExpiresAt = null; // Remove a expiração da reserva
+            ticket.CreatedByUserId = userId;
         }
 
 
-        public TicketTemp ToTicketTemp(int flightId, int seatId, Passenger passenger, bool extraLuggage, bool mealIncluded)
+        public IEnumerable<SelectListItem> GetCountries(string? selectedCountry = null)
         {
-            return new TicketTemp
+            var countryList = new List<string>
+            {
+                "Alemanha", "Angola", "Arábia Saudita", "Argentina", "Austrália",
+                "Áustria", "Bélgica", "Brasil", "Cabo Verde", "Canadá", "Catar",
+                "China", "Colômbia", "Coreia do Sul", "Dinamarca", "Emirados Árabes Unidos",
+                "Espanha", "Estados Unidos", "Finlândia", "França", "Grécia",
+                "Holanda", "Irlanda", "Itália", "Japão", "Marrocos", "México",
+                "Moçambique", "Noruega", "Nova Zelândia", "Polónia", "Portugal",
+                "Reino Unido", "Singapura", "Suíça", "Suécia", "Turquia"
+            };
+
+            var list = countryList.Select(c => new SelectListItem
+            {
+                Text = c,
+                Value = c,
+                Selected = string.Equals(c, selectedCountry, StringComparison.OrdinalIgnoreCase)
+            }).ToList();
+
+            list.Insert(0, new SelectListItem
+            {
+                Text = "[ Selecione um País ]",
+                Value = string.Empty,
+                Selected = string.IsNullOrEmpty(selectedCountry)
+            });
+
+            return list;
+        }
+
+        public Ticket ToTicket(int flightId, int seatId, Passenger passenger, bool extraLuggage, bool mealIncluded, decimal price)
+        {
+            return new Ticket
             {
                 FlightId = flightId,
                 SeatId = seatId,
                 PassengerId = passenger.Id,
                 ExtraLuggage = extraLuggage,
                 MealIncluded = mealIncluded,
-                Price = 0,
+                TotalPrice = price,
+                Status = "Reserved", 
                 CreatedByUserId = passenger.UserId,
-                CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(15)
+                PurchaseDate = DateTime.UtcNow,
+                ReservationExpiresAt = DateTime.UtcNow.AddMinutes(30) 
             };
         }
 
@@ -507,7 +509,355 @@ namespace LisAeroGest.Helpers
             };
         }
 
+      
+
+        #region Dropdowns & Listas Estruturadas
+
+        /// <summary>
+        /// Devolve as principais marcas e fabricantes de aeronaves do mercado mundial.
+        /// </summary>
+        public IEnumerable<SelectListItem> GetAircraftBrands(string? selectedBrand = null)
+        {
+            var brands = new List<string>
+            {
+                // Aviação Comercial / Mainline
+                "Airbus",
+                "Boeing",
+                
+                // Aviação Regional / Turboprop & Regional Jets
+                "Embraer",
+                "ATR",
+                "Bombardier",
+                "De Havilland Canada",
+                "Dornier",
+                "COMAC",
+                "Sukhoi",
+                
+                // Jactos Executivos e Aviação Geral
+                "Gulfstream",
+                "Dassault Falcon",
+                "Cessna",
+                "Beechcraft",
+                "Piper Aircraft",
+                "Pilatus",
+                "Cirrus Aircraft",
+                "HondaJet"
+            };
+
+            return brands
+                .OrderBy(b => b)
+                .Select(b => new SelectListItem
+                {
+                    Value = b,
+                    Text = b,
+                    Selected = b == selectedBrand
+                });
+        }
+
+        #region Dicionário Completo de Aeroportos e IATA
+
+        private static readonly Dictionary<string, Dictionary<string, (string AirportName, string IataCode)>> AirportsMap = new()
+        {
+            { "Alemanha", new() {
+                { "Berlim", ("Aeroporto de Berlim-Brandremburgo", "BER") },
+                { "Frankfurt", ("Aeroporto de Frankfurt", "FRA") },
+                { "Munique", ("Aeroporto de Munique", "MUC") }
+            }},
+            { "Angola", new() {
+                { "Luanda", ("Aeroporto Internacional 4 de Fevereiro", "LAD") },
+                { "Benguela", ("Aeroporto de Benguela", "BUG") },
+                { "Lubango", ("Aeroporto Internacional da Mukanka", "SDD") },
+                { "Cabinda", ("Aeroporto de Cabinda", "CAB") }
+            }},
+            { "Arábia Saudita", new() {
+                { "Riad", ("Aeroporto Internacional Rei Khalid", "RUH") },
+                { "Jidá", ("Aeroporto Internacional Rei Abdulaziz", "JED") }
+            }},
+            { "Argentina", new() {
+                { "Buenos Aires", ("Aeroporto Internacional Ministro Pistarini", "EZE") }
+            }},
+            { "Austrália", new() {
+                { "Sydney", ("Aeroporto Internacional de Sydney Kingsford Smith", "SYD") },
+                { "Melbourne", ("Aeroporto de Melbourne", "MEL") }
+            }},
+            { "Áustria", new() {
+                { "Viena", ("Aeroporto Internacional de Viena", "VIE") }
+            }},
+            { "Bélgica", new() {
+                { "Bruxelas", ("Aeroporto de Bruxelas", "BRU") }
+            }},
+            { "Brasil", new() {
+                { "São Paulo", ("Aeroporto Internacional de Guarulhos", "GRU") },
+                { "Rio de Janeiro", ("Aeroporto Internacional Tom Jobim", "GIG") },
+                { "Brasília", ("Aeroporto Internacional de Brasília", "BSB") }
+            }},
+            { "Cabo Verde", new() {
+                { "Praia", ("Aeroporto Internacional Nelson Mandela", "RAI") },
+                { "Sal", ("Aeroporto Internacional Amílcar Cabral", "SID") }
+            }},
+            { "Canadá", new() {
+                { "Toronto", ("Aeroporto Internacional Toronto Pearson", "YYZ") },
+                { "Vancouver", ("Aeroporto Internacional de Vancouver", "YVR") },
+                { "Montreal", ("Aeroporto Internacional Pierre Elliott Trudeau", "YUL") }
+            }},
+            { "Catar", new() {
+                { "Doha", ("Aeroporto Internacional de Hamad", "DOH") }
+            }},
+            { "China", new() {
+                { "Pequim", ("Aeroporto Internacional de Pequim Capital", "PEK") },
+                { "Xangai", ("Aeroporto Internacional de Xangai Pudong", "PVG") }
+            }},
+            { "Colômbia", new() {
+                { "Bogotá", ("Aeroporto Internacional El Dorado", "BOG") }
+            }},
+            { "Coreia do Sul", new() {
+                { "Seul", ("Aeroporto Internacional de Incheon", "ICN") }
+            }},
+            { "Dinamarca", new() {
+                { "Copenhaga", ("Aeroporto de Copenhaga", "CPH") }
+            }},
+            { "Emirados Árabes Unidos", new() {
+                { "Dubai", ("Aeroporto Internacional do Dubai", "DXB") },
+                { "Abu Dhabi", ("Aeroporto Internacional de Abu Dhabi", "AUH") }
+            }},
+            { "Espanha", new() {
+                { "Madrid", ("Aeropuerto Adolfo Suárez Madrid-Barajas", "MAD") },
+                { "Barcelona", ("Aeropuerto Josep Tarradellas Barcelona-El Prat", "BCN") }
+            }},
+            { "Estados Unidos", new() {
+                { "Nova Iorque", ("John F. Kennedy International Airport", "JFK") },
+                { "Los Angeles", ("Los Angeles International Airport", "LAX") },
+                { "Miami", ("Aeroporto Internacional de Miami", "MIA") }
+            }},
+            { "Finlândia", new() {
+                { "Helsínquia", ("Aeroporto de Helsínquia-Vantaa", "HEL") }
+            }},
+            { "França", new() {
+                { "Paris", ("Aéroport de Paris-Charles de Gaulle", "CDG") },
+                { "Nice", ("Aéroport Nice Côte d'Azur", "NCE") },
+                { "Lyon", ("Aeroporto de Lyon-Saint-Exupéry", "LYS") }
+            }},
+            { "Grécia", new() {
+                { "Atenas", ("Aeroporto Internacional de Atenas Eleftherios Venizelos", "ATH") }
+            }},
+            { "Holanda", new() {
+                { "Amesterdão", ("Aeroporto de Amesterdão Schiphol", "AMS") }
+            }},
+            { "Irlanda", new() {
+                { "Dublim", ("Aeroporto de Dublim", "DUB") }
+            }},
+            { "Itália", new() {
+                { "Roma", ("Aeroporto Internacional de Roma-Fiumicino", "FCO") },
+                { "Milão", ("Aeroporto de Milão-Malpensa", "MXP") }
+            }},
+            { "Japão", new() {
+                { "Tóquio", ("Aeroporto Internacional de Narita", "NRT") },
+                { "Osaka", ("Aeroporto Internacional de Kansai", "KIX") }
+            }},
+            { "Marrocos", new() {
+                { "Casablanca", ("Aeroporto Internacional Mohammed V", "CMN") },
+                { "Marraquexe", ("Aeroporto de Marraquexe-Menara", "RAK") }
+            }},
+            { "México", new() {
+                { "Cidade do México", ("Aeroporto Internacional da Cidade do México", "MEX") }
+            }},
+            { "Moçambique", new() {
+                { "Maputo", ("Aeroporto Internacional de Maputo", "MPM") },
+                { "Beira", ("Aeroporto Internacional da Beira", "BEW") }
+            }},
+            { "Noruega", new() {
+                { "Oslo", ("Aeroporto de Oslo Gardermoen", "OSL") }
+            }},
+            { "Nova Zelândia", new() {
+                { "Auckland", ("Aeroporto de Auckland", "AKL") }
+            }},
+            { "Polónia", new() {
+                { "Varsóvia", ("Aeroporto de Varsóvia-Chopin", "WAW") }
+            }},
+            { "Portugal", new() {
+                { "Lisboa", ("Aeroporto Humberto Delgado", "LIS") },
+                { "Porto", ("Aeroporto Francisco Sá Carneiro", "OPO") },
+                { "Faro", ("Aeroporto Gago Coutinho", "FAO") },
+                { "Funchal", ("Aeroporto Internacional da Madeira Cristiano Ronaldo", "FNC") },
+                { "Ponta Delgada", ("Aeroporto João Paulo II", "PDL") }
+            }},
+            { "Reino Unido", new() {
+                { "Londres", ("Aeroporto de Londres Heathrow", "LHR") },
+                { "Manchester", ("Aeroporto de Manchester", "MAN") }
+            }},
+            { "Singapura", new() {
+                { "Singapura", ("Aeroporto de Singapura Changi", "SIN") }
+            }},
+            { "Suíça", new() {
+                { "Zurique", ("Aeroporto de Zurique", "ZRH") },
+                { "Genebra", ("Aeroporto de Genebra", "GVA") }
+            }},
+            { "Suécia", new() {
+                { "Estocolmo", ("Aeroporto de Estocolmo-Arlanda", "ARN") }
+            }},
+            { "Turquia", new() {
+                { "Istambul", ("Aeroporto de Istambul", "IST") }
+            }}
+        };
+
+        #endregion
+
+        public IEnumerable<object> GetCitiesWithIata(string? selectedCountry = null)
+        {
+            if (!string.IsNullOrEmpty(selectedCountry) && AirportsMap.TryGetValue(selectedCountry, out var countryCities))
+            {
+                return countryCities.Select(c => new
+                {
+                    value = c.Key,
+                    text = c.Key,
+                    airport = c.Value.AirportName,
+                    iata = c.Value.IataCode
+                }).OrderBy(c => c.text);
+            }
+
+            return AirportsMap.Values
+                .SelectMany(c => c)
+                .DistinctBy(c => c.Key)
+                .Select(c => new
+                {
+                    value = c.Key,
+                    text = c.Key,
+                    airport = c.Value.AirportName,
+                    iata = c.Value.IataCode
+                })
+                .OrderBy(c => c.text);
+        }
+
+
+        public IEnumerable<SelectListItem> GetAircraftModels(string? selectedBrand = null, string? selectedModel = null)
+        {
+            var modelsMap = new Dictionary<string, List<string>>
+            {
+                { "Airbus", new List<string> { "A220-100", "A220-300", "A319neo", "A320neo", "A321neo", "A321XLR", "A330-900neo", "A350-900", "A350-1000", "A380-800" } },
+                { "Boeing", new List<string> { "737-800", "737 MAX 8", "737 MAX 9", "767-300ER", "777-300ER", "777X", "787-8 Dreamliner", "787-9 Dreamliner", "787-10 Dreamliner" } },
+                { "Embraer", new List<string> { "E175", "E190-E2", "E195-E2", "Phenom 100EV", "Phenom 300E", "Praetor 500", "Praetor 600" } },
+                { "ATR", new List<string> { "ATR 42-600", "ATR 72-600" } },
+                { "Bombardier", new List<string> { "CRJ-900", "CRJ-1000", "Challenger 350", "Challenger 650", "Global 7500", "Global 8000" } },
+                { "De Havilland Canada", new List<string> { "Dash 8-Q400" } },
+                { "Dornier", new List<string> { "Do 228", "Do 328" } },
+                { "COMAC", new List<string> { "ARJ21", "C919", "C929" } },
+                { "Sukhoi", new List<string> { "Superjet 100" } },
+                { "Gulfstream", new List<string> { "G280", "G500", "G600", "G650ER", "G700", "G800" } },
+                { "Dassault Falcon", new List<string> { "Falcon 2000LXS", "Falcon 6X", "Falcon 8X", "Falcon 10X" } },
+                { "Cessna", new List<string> { "172 Skyhawk", "208 Grand Caravan", "Citation CJ4", "Citation Latitude", "Citation Longitude" } },
+                { "Beechcraft", new List<string> { "King Air 260", "King Air 360" } },
+                { "Piper Aircraft", new List<string> { "PA-28 Archer", "M600SLS" } },
+                { "Pilatus", new List<string> { "PC-12 NGX", "PC-24" } },
+                { "Cirrus Aircraft", new List<string> { "SR22T", "Vision Jet SF50" } },
+                { "HondaJet", new List<string> { "HA-420 HondaJet Elite II" } }
+            };
+
+            List<string> models;
+
+            if (!string.IsNullOrEmpty(selectedBrand) && modelsMap.TryGetValue(selectedBrand, out var brandModels))
+            {
+                models = brandModels;
+            }
+            else
+            {
+                models = modelsMap.Values.SelectMany(m => m).Distinct().ToList();
+            }
+
+            return models
+                .OrderBy(m => m)
+                .Select(m => new SelectListItem
+                {
+                    Value = m,
+                    Text = m,
+                    Selected = m == selectedModel
+                });
+        }
+
+        /// <summary>
+        /// Devolve cidades agrupadas pelos respetivos países para SelectListItem.
+        /// </summary>
+        public IEnumerable<SelectListItem> GetCities(string? selectedCountry = null, string? selectedCity = null)
+        {
+            IEnumerable<string> cities;
+
+            // Procura no AirportsMap em vez de CitiesIataMap
+            if (!string.IsNullOrEmpty(selectedCountry) && AirportsMap.TryGetValue(selectedCountry, out var countryCities))
+            {
+                cities = countryCities.Keys;
+            }
+            else
+            {
+                // Se não houver país selecionado, junta todas as cidades únicas de todos os países
+                cities = AirportsMap.Values.SelectMany(c => c.Keys).Distinct();
+            }
+
+            var list = cities
+                .OrderBy(c => c)
+                .Select(c => new SelectListItem
+                {
+                    Value = c,
+                    Text = c,
+                    Selected = string.Equals(c, selectedCity, StringComparison.OrdinalIgnoreCase)
+                }).ToList();
+
+            list.Insert(0, new SelectListItem
+            {
+                Text = "[ Selecione uma Cidade ]",
+                Value = string.Empty,
+                Selected = string.IsNullOrEmpty(selectedCity)
+            });
+
+            return list;
+        }
+
+
+
+       
+
+        public AirportViewModel ToAirportViewModel(Airport airport)
+        {
+            return new AirportViewModel
+            {
+                Id = airport.Id,
+                Name = airport.Name ?? string.Empty,
+                IATACode = airport.IATACode ?? string.Empty,
+                City = airport.City ?? string.Empty,
+                Country = airport.Country ?? string.Empty,
+                DefaultFee = airport.DefaultFee,
+                ImageId = airport.ImageId
+            };
+        }
+
+        /// <summary>
+        /// Atualiza apenas os dados operacionais de um Aeroporto existente (Edit).
+        /// Protege Name, IATACode, City e Country contra sobrescrita indevida.
+        /// </summary>
+        public void UpdateAirlineFromViewModel(Airline airline, AirlineViewModel model, Guid imageId)
+        {
+            airline.Name = model.Name;
+            airline.IATACode = model.IATACode!.ToUpper();
+            airline.Country = model.Country;
+            airline.ImageId = imageId;
+        }
+
+      
+
+        public void UpdateAirportFromViewModel(Airport airport, AirportViewModel model, Guid imageId)
+        {
+            // Apenas atualizamos a taxa operacional e a imagem na edição
+            airport.DefaultFee = model.DefaultFee;
+            airport.ImageId = imageId;
+        }
+
+
+        #endregion
+
+
+
+
+
 
 
     }
+
 }

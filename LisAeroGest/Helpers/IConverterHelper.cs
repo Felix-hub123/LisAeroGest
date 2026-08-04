@@ -204,15 +204,7 @@ namespace LisAeroGest.Helpers
         /// </summary>
         SelectList ToAirportSelectList(IEnumerable<Airport> airports, string? selectedValue = null);
 
-        /// <summary>
-        /// Converte uma reserva temporária (TicketTemp) e o voo associado num Ticket final.
-        /// </summary>
-        Ticket ToTicket(TicketTemp tempItem, Flight? flight, string userId);
-
-        /// <summary>
-        /// Converte a seleção do passageiro num objeto TicketTemp com expiração de 15 minutos.
-        /// </summary>
-        TicketTemp ToTicketTemp(int flightId, int seatId, Passenger passenger, bool extraLuggage, bool mealIncluded);
+      
 
         /// <summary>
         /// Converte uma entidade User e o seu nome de role no modelo de visualização UserWithRole.
@@ -229,5 +221,35 @@ namespace LisAeroGest.Helpers
         /// </summary>
         User ToUser(string email, string firstName, string lastName);
 
+
+        /// <summary>
+        /// Gera a lista de marcas/fabricantes de aeronaves válidos.
+        /// </summary>
+        IEnumerable<SelectListItem> GetAircraftBrands(string? selectedBrand = null);
+
+        /// <summary>
+        /// Gera a lista de países válidos.
+        /// </summary>
+        IEnumerable<SelectListItem> GetCountries(string? selectedCountry = null);
+
+        /// <summary>
+        /// Gera a lista de cidades válidas com base no país (opcional).
+        /// </summary>
+        IEnumerable<SelectListItem> GetCities(string? selectedCountry = null, string? selectedCity = null);
+
+        IEnumerable<SelectListItem> GetAircraftModels(string? selectedBrand = null, string? selectedModel = null);
+
+        IEnumerable<object> GetCitiesWithIata(string? selectedCountry = null);
+
+        public Ticket ToTicket(int flightId, int seatId, Passenger passenger, bool extraLuggage, bool mealIncluded, decimal price);
+
+
+
+
+
+
+
     }
+
 }
+

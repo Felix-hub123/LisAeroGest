@@ -7,14 +7,23 @@ namespace LisAeroGest.Data.Interfaces
         Task<Ticket?> GetWithDetailsAsync(int id);
         Task<IEnumerable<Ticket>> GetByPassengerAsync(int passengerId);
         Task<IEnumerable<Ticket>> GetByFlightAsync(int flightId);
+
+        /// <summary>
+        /// Obtém bilhetes pagos que ainda não efetuaram check-in para um voo.
+        /// </summary>
         Task<IEnumerable<Ticket>> GetPendingCheckInAsync(int flightId);
+
         IQueryable<Ticket> GetAllQueryable();
 
         Task<IEnumerable<Ticket>> SearchForCheckInAsync(string searchCriteria);
 
-        Task AddTempAsync(TicketTemp temp);
-        Task DeleteTempAsync(TicketTemp temp);
-        Task<TicketTemp?> GetTempByIdAsync(int id);
-        Task<IEnumerable<TicketTemp>> GetTempByUserAsync(int passengerId);
+        /// <summary>
+        /// Obtém reservas temporárias pendentes de pagamento para um determinado passageiro.
+        /// </summary>
+        Task<IEnumerable<Ticket>> GetReservedByPassengerAsync(int passengerId);
+
+
+
+
     }
 }

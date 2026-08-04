@@ -40,6 +40,13 @@ namespace LisAeroGest.Data.Entities
         /// </summary>
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+
+        /// <summary>
+        /// Indica se o comentário foi aprovado por um Administrador.
+        /// Se false, fica pendente e visível apenas para os Admins.
+        /// </summary>
+        public bool IsApproved { get; set; } = false;
+
         /// <summary>
         /// Indica se o comentário foi eliminado logicamente.
         /// </summary>

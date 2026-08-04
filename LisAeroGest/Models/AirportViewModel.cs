@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 
 namespace LisAeroGest.Models
 {
@@ -68,6 +69,17 @@ namespace LisAeroGest.Models
         public string ImageFullPath => ImageId == Guid.Empty
             ? "/images/airports/noimage.png"
             : $"https://lisaerogest.blob.core.windows.net/airports/{ImageId}";
+
+
+        /// <summary>
+        /// Lista de países para popular a DropdownList.
+        /// </summary>
+        public IEnumerable<SelectListItem>? Countries { get; set; }
+
+        /// <summary>
+        /// Lista de cidades para popular a DropdownList (filtradas por país).
+        /// </summary>
+        public IEnumerable<SelectListItem>? Cities { get; set; }
     }
 
 }

@@ -1,6 +1,7 @@
 ﻿@using LisAeroGest.Data.Interfaces
 @inject IImageHelper ImageHelper
 @model LisAeroGest.Models.AircraftViewModel
+
 @{
     ViewData["Title"] = "Editar Aeronave";
 }
@@ -14,13 +15,13 @@
     </ol>
 </nav>
 
-<div class="container mt-4">
+<div class="container mt-4 mb-5">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-7">
 
-            <!-- Botão voltar -->
+            <!-- Cabeçalho & Botão Voltar -->
             <div class="d-flex align-items-center mb-4">
-                <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3">
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3" title="Voltar à lista">
                     <i class="bi bi-arrow-left"></i>
                 </a>
                 <h2 class="fw-bold mb-0">
@@ -28,69 +29,74 @@
                 </h2>
             </div>
 
-            <div class="card shadow-sm">
+            <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
                     <form asp-action="Edit" method="post" enctype="multipart/form-data">
                         @Html.AntiForgeryToken()
                         <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="ImageId" />
 
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
-                        <!-- Marca e Modelo -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Brand" class="form-label fw-semibold"></label>
-                                <input asp-for="Brand" class="form-control" />
-                                <span asp-validation-for="Brand" class="text-danger small"></span>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Model" class="form-label fw-semibold"></label>
-                                <input asp-for="Model" class="form-control" />
-                                <span asp-validation-for="Model" class="text-danger small"></span>
+                        <!-- Fabricante e Modelo (Imutáveis - Apenas Leitura) -->
+                        <div class="p-3 bg-light rounded border mb-4">
+                            <h6 class="text-muted fw-bold mb-3">
+                                <i class="bi bi-lock-fill me-1"></i>Identificação da Aeronave (Imutável)
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <label class="form-label fw-semibold">Fabricante / Marca</label>
+                                    <input type="text" class="form-control" value="@Model.Brand" disabled />
+                                </div>
+                                <div class="col-md-6 mb-0">
+                                    <label class="form-label fw-semibold">Modelo</label>
+                                    <input type="text" class="form-control" value="@Model.Model" disabled />
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Lugares -->
+                        <!-- Configuração de Lugares -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label asp-for="EconomySeats" class="form-label fw-semibold"></label>
-                                <input asp-for="EconomySeats" class="form-control" type="number" min="1" max="500" />
+                                <label asp-for="EconomySeats" class="form-label fw-semibold">Lugares Económicos</label>
+                                <input asp-for="EconomySeats" class="form-control" type="number" min="0" max="800" />
                                 <span asp-validation-for="EconomySeats" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="BusinessSeats" class="form-label fw-semibold"></label>
-                                <input asp-for="BusinessSeats" class="form-control" type="number" min="0" max="100" />
+                                <label asp-for="BusinessSeats" class="form-label fw-semibold">Lugares Executivos</label>
+                                <input asp-for="BusinessSeats" class="form-control" type="number" min="0" max="200" />
                                 <span asp-validation-for="BusinessSeats" class="text-danger small"></span>
                             </div>
                         </div>
 
-                        <!-- Disponível -->
-                        <div class="form-check mb-4">
-                            <input asp-for="IsAvailable" class="form-check-input" />
-                            <label asp-for="IsAvailable" class="form-check-label fw-semibold">
+                        <!-- Disponibilidade Operacional -->
+                        <div class="form-check form-switch mb-4">
+                            <input asp-for="IsAvailable" class="form-check-input" type="checkbox" role="switch" id="isAvailableSwitch" />
+                            <label class="form-check-label fw-semibold" for="isAvailableSwitch">
                                 Disponível para operar voos
                             </label>
                         </div>
 
-                        <!-- Imagem -->
+                        <!-- Upload de Imagem e Pré-visualização -->
                         <div class="mb-4">
                             <label asp-for="ImageFile" class="form-label fw-semibold">
                                 <i class="bi bi-image me-1"></i>Alterar Fotografia
                             </label>
-                            <input asp-for="ImageFile" class="form-control" type="file"
-                                   accept="image/*" onchange="previewImage(this)" />
-                            <div class="mt-3">
+                            <input asp-for="ImageFile" class="form-control" type="file" accept="image/*" onchange="previewImage(this)" />
+                            <span asp-validation-for="ImageFile" class="text-danger small"></span>
+
+                            <div class="mt-3 text-center text-md-start">
                                 <img id="imagePreview"
                                      src="@ImageHelper.GetImageUrl(Model.ImageId, "aircraft")"
-                                     class="rounded shadow-sm"
-                                     style="height:120px; width:200px; object-fit:cover;" />
+                                     alt="Fotografia Atual"
+                                     class="rounded border shadow-sm"
+                                     style="height: 140px; width: 220px; object-fit: cover;" />
                             </div>
                         </div>
 
-                        <!-- Botões -->
-                        <div class="d-flex gap-2 pt-2">
-                            <button type="submit" class="btn btn-success">
+                        <!-- Botões de Ação -->
+                        <div class="d-flex gap-2 pt-2 border-top">
+                            <button type="submit" class="btn btn-warning">
                                 <i class="bi bi-check-lg me-2"></i>Guardar Alterações
                             </button>
                             <a asp-action="Index" class="btn btn-outline-secondary ms-auto">
@@ -109,6 +115,7 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
     <script>
+        // Pré-visualização dinâmica da imagem enviada
         function previewImage(input) {
             if (input.files && input.files[0]) {
                 var reader = new FileReader();

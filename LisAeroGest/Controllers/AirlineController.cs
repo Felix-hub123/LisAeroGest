@@ -101,7 +101,8 @@ namespace LisAeroGest.Controllers
         }
 
         /// <summary>
-        /// Processa as alterações a uma companhia aérea, gerindo a atualização de imagem e código IATA.
+        /// Processa as alterações operacionais de uma companhia aérea, gerindo a atualização de imagem.
+        /// Protege Name, IATACode e Country contra alterações.
         /// </summary>
         /// <param name="model">ViewModel com os dados atualizados.</param>
         /// <returns>Redirecionamento para a Index ou View com validações.</returns>
@@ -109,27 +110,25 @@ namespace LisAeroGest.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(AirlineViewModel model)
         {
+          
+
             if (!ModelState.IsValid) return View(model);
 
             var airline = await _airlineRepository.GetByIdAsync(model.Id);
             if (airline == null) return NotFound();
 
-            // Garante que o código IATA não entra em conflito com outra companhia
-            var existing = await _airlineRepository.GetByIATACodeAsync(model.IATACode!.ToUpper());
-            if (existing != null && existing.Id != model.Id)
-            {
-                ModelState.AddModelError("IATACode", "Este código IATA já está em uso por outra companhia.");
-                return View(model);
-            }
-
             var imageId = airline.ImageId;
-            if (model.ImageFile != null)
+            if (model.ImageFile != null && model.ImageFile.Length > 0)
             {
-                await _imageHelper.DeleteImageAsync(airline.ImageId, "airlines");
+                if (airline.ImageId != Guid.Empty)
+                {
+                    await _imageHelper.DeleteImageAsync(airline.ImageId, "airlines");
+                }
+
                 imageId = await _imageHelper.UploadImageAsync(model.ImageFile, "airlines");
             }
 
-            // Atribuição delegada ao ConverterHelper
+            // Atribuição delegada ao ConverterHelper (preserva campos imutáveis)
             _converterHelper.UpdateAirlineFromViewModel(airline, model, imageId);
 
             await _airlineRepository.UpdateAsync(airline);

@@ -7,114 +7,173 @@ using Microsoft.AspNetCore.Mvc;
 namespace LisAeroGest.Controllers
 {
     /// <summary>
-    /// Controller responsável pela gestão da frota de aeronaves.
-    /// Operações restritas à role Admin.
+    /// Controlador responsável pelo ciclo de vida e operações CRUD das aeronaves da frota.
+    /// Gere a integração entre o repositório de dados, helpers de conversão/dropdowns e gestão de ficheiros de imagem.
     /// </summary>
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Employee")]
     public class AircraftController : Controller
     {
         private readonly IAircraftRepository _aircraftRepository;
-        private readonly IImageHelper _imageHelper;
         private readonly IConverterHelper _converterHelper;
+        private readonly IImageHelper _imageHelper;
 
         /// <summary>
-        /// Inicializa o AircraftController com as dependências necessárias.
+        /// Inicializa uma nova instância do controlador de aeronaves.
         /// </summary>
-        /// <param name="aircraftRepository">Repositório para acesso aos dados das aeronaves.</param>
-        /// <param name="imageHelper">Helper para gestão de imagens (Local/Cloud).</param>
-        /// <param name="converterHelper">Helper para conversão entre ViewModels e Entidades.</param>
+        /// <param name="aircraftRepository">Repositório de dados para persistência das aeronaves.</param>
+        /// <param name="converterHelper">Helper para transformação de modelos, DTOs e listas de seleção.</param>
+        /// <param name="imageHelper">Helper para upload e remoção de imagens físicas no servidor.</param>
         public AircraftController(
             IAircraftRepository aircraftRepository,
-            IImageHelper imageHelper,
-            IConverterHelper converterHelper)
+            IConverterHelper converterHelper,
+            IImageHelper imageHelper)
         {
             _aircraftRepository = aircraftRepository;
-            _imageHelper = imageHelper;
             _converterHelper = converterHelper;
+            _imageHelper = imageHelper;
         }
 
+        #region Leitura (Index & Details)
+
         /// <summary>
-        /// Lista todas as aeronaves registadas na frota.
+        /// GET: Aircraft
+        /// Apresenta a listagem completa das aeronaves registadas no sistema.
         /// </summary>
-        /// <returns>View com a listagem de aeronaves.</returns>
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            return View(await _aircraftRepository.GetAllAsync());
+            var aircrafts = await _aircraftRepository.GetAllAsync();
+            return View(aircrafts);
         }
 
         /// <summary>
-        /// Apresenta o formulário para adicionar uma nova aeronave.
+        /// GET: Aircraft/Details/5
+        /// Exibe a página de detalhes técnicos de uma aeronave específica.
         /// </summary>
-        /// <returns>View com o formulário de criação.</returns>
+        /// <param name="id">Identificador único da aeronave.</param>
         [HttpGet]
-        public IActionResult Create() => View(new AircraftViewModel());
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var aircraft = await _aircraftRepository.GetByIdAsync(id.Value);
+            if (aircraft == null) return NotFound();
+
+            return View(aircraft);
+        }
+
+        #endregion
+
+        #region Criação (Create)
 
         /// <summary>
-        /// Processa a criação de uma nova aeronave.
-        /// Faz o upload da imagem se fornecida e guarda os dados na base de dados.
+        /// GET: Aircraft/Create
+        /// Exibe o formulário de registo de uma nova aeronave com as listas de seleção inicializadas.
         /// </summary>
-        /// <param name="viewModel">Modelo com os dados da nova aeronave.</param>
-        /// <returns>Redirecionamento para a Index em caso de sucesso, ou a própria View com erros.</returns>
+        [HttpGet]
+        public IActionResult Create()
+        {
+            var viewModel = new AircraftViewModel
+            {
+                Brands = _converterHelper.GetAircraftBrands(),
+                Models = _converterHelper.GetAircraftModels()
+            };
+
+            return View(viewModel);
+        }
+
+        /// <summary>
+        /// POST: Aircraft/Create
+        /// Valida os dados, processa o upload de imagem e persiste uma nova aeronave no repositório.
+        /// </summary>
+        /// <param name="viewModel">Dados do formulário de criação de aeronave.</param>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AircraftViewModel viewModel)
         {
-            if (!ModelState.IsValid) return View(viewModel);
+            if (!ModelState.IsValid)
+            {
+                // Repovoa os dropdowns encadeados mantendo os valores selecionados pelo utilizador
+                viewModel.Brands = _converterHelper.GetAircraftBrands(viewModel.Brand);
+                viewModel.Models = _converterHelper.GetAircraftModels(viewModel.Brand, viewModel.Model);
+                return View(viewModel);
+            }
 
-            var imageId = Guid.Empty;
+            // Processa o upload da fotografia, caso tenha sido fornecida
+            Guid imageId = Guid.Empty;
             if (viewModel.ImageFile != null)
+            {
                 imageId = await _imageHelper.UploadImageAsync(viewModel.ImageFile, "aircraft");
+            }
 
-            // Mapeamento delegado ao ConverterHelper
             var aircraft = _converterHelper.ToAircraft(viewModel, imageId);
 
             await _aircraftRepository.AddAsync(aircraft);
             await _aircraftRepository.SaveAsync();
 
-            TempData["Success"] = "Aeronave adicionada com sucesso!";
+            TempData["Success"] = "Aeronave registada com sucesso!";
             return RedirectToAction(nameof(Index));
         }
 
+        #endregion
+
+        #region Edição (Edit)
         /// <summary>
-        /// Apresenta o formulário de edição para uma aeronave existente.
+        /// GET: Aircraft/Edit/5
+        /// Carrega os dados operacionais da aeronave para edição.
         /// </summary>
-        /// <param name="id">ID da aeronave a editar.</param>
-        /// <returns>View com os dados da aeronave ou NotFound se não existir.</returns>
+        /// <param name="id">Identificador da aeronave a editar.</param>
         [HttpGet]
-        public async Task<IActionResult> Edit(int id)
+        public async Task<IActionResult> Edit(int? id)
         {
-            var aircraft = await _aircraftRepository.GetByIdAsync(id);
+            if (id == null) return NotFound();
+
+            var aircraft = await _aircraftRepository.GetByIdAsync(id.Value);
             if (aircraft == null) return NotFound();
 
-            // Mapeamento delegado ao ConverterHelper
-            var model = _converterHelper.ToAircraftViewModel(aircraft);
+            var viewModel = _converterHelper.ToAircraftViewModel(aircraft);
 
-            return View(model);
+            return View(viewModel);
         }
 
         /// <summary>
-        /// Processa a atualização dos dados de uma aeronave.
-        /// Gere a substituição da imagem se um novo ficheiro for enviado.
+        /// POST: Aircraft/Edit/5
+        /// Atualiza as informações operacionais da aeronave e a sua imagem física.
         /// </summary>
-        /// <param name="viewModel">Modelo com os dados atualizados.</param>
+        /// <param name="id">Identificador único da aeronave.</param>
+        /// <param name="viewModel">Dados atualizados do formulário.</param>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(AircraftViewModel viewModel)
+        public async Task<IActionResult> Edit(int id, AircraftViewModel viewModel)
         {
-            if (!ModelState.IsValid) return View(viewModel);
+            if (id != viewModel.Id) return NotFound();
+
+            // Como Brand e Model vêm desativados no HTML, removemos da validação do ModelState
+            ModelState.Remove(nameof(viewModel.Brand));
+            ModelState.Remove(nameof(viewModel.Model));
+
+            if (!ModelState.IsValid)
+            {
+                return View(viewModel);
+            }
 
             var aircraft = await _aircraftRepository.GetByIdAsync(viewModel.Id);
             if (aircraft == null) return NotFound();
 
-            var imageId = aircraft.ImageId;
-            if (viewModel.ImageFile != null)
+            Guid imageId = aircraft.ImageId;
+
+            // Se uma nova imagem for carregada, apaga a anterior do disco e guarda a nova
+            if (viewModel.ImageFile != null && viewModel.ImageFile.Length > 0)
             {
-                await _imageHelper.DeleteImageAsync(aircraft.ImageId, "aircraft");
+                if (aircraft.ImageId != Guid.Empty)
+                {
+                    await _imageHelper.DeleteImageAsync(aircraft.ImageId, "aircraft");
+                }
+
                 imageId = await _imageHelper.UploadImageAsync(viewModel.ImageFile, "aircraft");
             }
 
-            // Delegamos a atribuição de propriedades ao ConverterHelper
+            // Atualiza apenas os campos operacionais
             _converterHelper.UpdateAircraftFromViewModel(aircraft, viewModel, imageId);
 
             await _aircraftRepository.UpdateAsync(aircraft);
@@ -124,58 +183,70 @@ namespace LisAeroGest.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        #endregion
+
+        #region Remoção (Delete)
+
         /// <summary>
-        /// Apresenta os detalhes de uma aeronave específica, incluindo os seus lugares.
+        /// GET: Aircraft/Delete/5
+        /// Apresenta a ecrã de confirmação de remoção do registo da aeronave.
         /// </summary>
-        /// <param name="id">ID da aeronave.</param>
-        /// <returns>View com os detalhes da aeronave.</returns>
+        /// <param name="id">Identificador da aeronave a remover.</param>
         [HttpGet]
-        public async Task<IActionResult> Details(int id)
+        public async Task<IActionResult> Delete(int? id)
         {
-            var aircraft = await _aircraftRepository.GetWithSeatsAsync(id);
+            if (id == null) return NotFound();
+
+            var aircraft = await _aircraftRepository.GetByIdAsync(id.Value);
             if (aircraft == null) return NotFound();
 
             return View(aircraft);
         }
 
         /// <summary>
-        /// Apresenta a página de confirmação de eliminação de uma aeronave.
+        /// POST: Aircraft/Delete/5
+        /// Executa a remoção definitiva da aeronave na base de dados e limpa os ficheiros multimédia associados.
         /// </summary>
-        /// <param name="id">ID da aeronave a eliminar.</param>
-        /// <returns>View de confirmação.</returns>
-        [HttpGet]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var aircraft = await _aircraftRepository.GetByIdAsync(id);
-            if (aircraft == null) return NotFound();
-
-            return View(aircraft);
-        }
-
-        /// <summary>
-        /// Processa a eliminação da aeronave após confirmação se não estiver associada a voos.
-        /// </summary>
-        /// <param name="id">ID da aeronave a eliminar.</param>
-        /// <returns>Redirecionamento para a Index.</returns>
+        /// <param name="id">Identificador da aeronave a ser eliminada.</param>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var isUsed = await _aircraftRepository.IsUsedInFlightsAsync(id);
-            if (isUsed)
-            {
-                TempData["Error"] = "Não é possível eliminar esta aeronave pois está associada a voos.";
-                return RedirectToAction(nameof(Index));
-            }
-
             var aircraft = await _aircraftRepository.GetByIdAsync(id);
             if (aircraft == null) return NotFound();
+
+            // Elimina o ficheiro da imagem física caso exista
+            if (aircraft.ImageId != Guid.Empty)
+            {
+                await _imageHelper.DeleteImageAsync(aircraft.ImageId, "aircraft");
+            }
 
             await _aircraftRepository.DeleteAsync(aircraft);
             await _aircraftRepository.SaveAsync();
 
-            TempData["Success"] = "Aeronave removida da frota com sucesso!";
+            TempData["Success"] = "Aeronave eliminada com sucesso!";
             return RedirectToAction(nameof(Index));
         }
+
+        #endregion
+
+        #region Endpoints de Apoio (AJAX / API)
+
+        /// <summary>
+        /// GET: Aircraft/GetModelsByBrand?brand=Airbus
+        /// Endpoint assíncrono para suporte a dropdowns encadeados em cliente (AJAX/Fetch API).
+        /// </summary>
+        /// <param name="brand">Nome do fabricante para filtragem de modelos.</param>
+        /// <returns>Lista em formato JSON com os modelos correspondentes à marca selecionada.</returns>
+        [HttpGet]
+        public IActionResult GetModelsByBrand(string brand)
+        {
+            var models = _converterHelper.GetAircraftModels(brand);
+            return Json(models);
+        }
+
+        #endregion
     }
+
 }
+

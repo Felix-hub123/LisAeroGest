@@ -106,6 +106,10 @@
             "Rotativa.AspNetCore": {
               "target": "Package",
               "version": "[1.4.0, )"
+            },
+            "supabase-storage-csharp": {
+              "target": "Package",
+              "version": "[1.4.0, )"
             }
           },
           "imports": [

@@ -15,21 +15,29 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── Base de Dados (SQL Server em Dev vs PostgreSQL em Prod) ──────────────────
+// ── Base de Dados (SQL Server em Dev vs PostgreSQL em Prod) ──────────────
 if (builder.Environment.IsDevelopment())
 {
-    // Usa SQL Server quando executado via Visual Studio (Ambiente Development)
+    // Usa SQL Server em Desenvolvimento e lê da pasta Migrations/SqlServer
     builder.Services.AddDbContext<DataContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options.UseSqlServer(
+            builder.Configuration.GetConnectionString("DefaultConnection"),
+            b => b.MigrationsAssembly(typeof(DataContext).Assembly.FullName)
+        )
+    );
 }
 else
 {
-    // Habilita compatibilidade de datas legadas do PostgreSQL apenas em Produção
+    // Habilita compatibilidade de datas legadas do PostgreSQL
     AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-    // Usa PostgreSQL (Supabase / Render) quando em Produção
+    // Usa PostgreSQL em Produção e lê da pasta Migrations/Postgres
     builder.Services.AddDbContext<DataContext>(options =>
-        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options.UseNpgsql(
+            builder.Configuration.GetConnectionString("DefaultConnection"),
+            b => b.MigrationsAssembly(typeof(DataContext).Assembly.FullName)
+        )
+    );
 }
 // ── Identity ─────────────────────────────────────────────────────────────────
 builder.Services.AddIdentity<User, IdentityRole>(options =>
@@ -90,19 +98,17 @@ builder.Services.AddScoped<IAircraftRepository, AircraftRepository>();
 builder.Services.AddScoped<IFlightRepository, FlightRepository>();
 builder.Services.AddScoped<IPassengerRepository, PassengerRepository>();
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+builder.Services.AddScoped<ISeatRepository, SeatRepository>();
+builder.Services.AddScoped<IBoardingPassRepository, BoardingPassRepository>();
+builder.Services.AddScoped<IForumTopicRepository, ForumTopicRepository>();
+builder.Services.AddScoped<IForumCommentRepository, ForumCommentRepository>(); 
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IUserHelper, UserHelper>();
 builder.Services.AddScoped<IBlobHelper, BlobHelper>();
 builder.Services.AddTransient<IMailHelper, MailHelper>();
 builder.Services.AddScoped<IImageHelper, ImageHelper>();
-builder.Services.AddScoped<ISeatRepository, SeatRepository>();
-builder.Services.AddScoped<IGenericRepository<ForumTopic>, GenericRepository<ForumTopic>>();
-builder.Services.AddScoped<IGenericRepository<ForumComment>, GenericRepository<ForumComment>>();
-builder.Services.AddScoped<WeatherService>();
-builder.Services.AddScoped<ISeatRepository, SeatRepository>();
-builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
-builder.Services.AddScoped<IForumTopicRepository, ForumTopicRepository>();
-builder.Services.AddScoped<IBoardingPassRepository, BoardingPassRepository>();
 builder.Services.AddScoped<IConverterHelper, ConverterHelper>();
+builder.Services.AddScoped<WeatherService>();
 // ─── HttpClient (para OpenWeatherMap) ───────────────────────────────────────
 builder.Services.AddHttpClient();
 
