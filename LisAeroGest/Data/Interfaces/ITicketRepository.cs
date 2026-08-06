@@ -23,6 +23,12 @@ namespace LisAeroGest.Data.Interfaces
         Task<IEnumerable<Ticket>> GetReservedByPassengerAsync(int passengerId);
 
 
+        /// <summary>
+        /// Obtém um bilhete com todos os relacionamentos necessários carregados (Flight, Seat, Passenger, User, Airports).
+        /// </summary>
+        Task<Ticket?> GetTicketWithDetailsAsync(int id);
+
+
 
 
     }

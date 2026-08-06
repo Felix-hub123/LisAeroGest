@@ -34,6 +34,7 @@ namespace LisAeroGest.Data.Repositories
 
         public Task DeleteAsync(T entity)
         {
+
             _dbSet.Remove(entity);
             return Task.CompletedTask;
         }

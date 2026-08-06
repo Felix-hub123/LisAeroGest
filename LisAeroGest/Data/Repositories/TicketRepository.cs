@@ -94,5 +94,22 @@ namespace LisAeroGest.Data.Repositories
                 .OrderByDescending(t => t.PurchaseDate)
                 .ToListAsync();
         }
+
+        /// <summary>
+        /// Obtém um bilhete por ID incluindo todas as navegações necessárias para a emissão do PDF.
+        /// </summary>
+        public async Task<Ticket?> GetTicketWithDetailsAsync(int id)
+        {
+            return await _context.Tickets
+                .Include(t => t.Seat)
+                .Include(t => t.Passenger)
+                    .ThenInclude(p => p.User)
+                .Include(t => t.Flight)
+                    .ThenInclude(f => f.OriginAirport)
+                .Include(t => t.Flight)
+                    .ThenInclude(f => f.DestinationAirport)
+                .FirstOrDefaultAsync(t => t.Id == id);
+        }
+
     }
 }

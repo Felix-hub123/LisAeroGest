@@ -702,6 +702,144 @@ namespace LisAeroGest.Helpers
 
         #endregion
 
+        #region Dicionário Completo de Companhias Aéreas (Immutability Pattern)
+
+        private static readonly Dictionary<string, List<(string Name, string IataCode)>> AirlinesMap = new()
+        {
+            { "Portugal", new() {
+                ("TAP Air Portugal", "TP"),
+                ("SATA Air Açores", "SP"),
+                ("Azores Airlines", "S4"),
+                ("euroAtlantic Airways", "YU"),
+                ("Hi Fly", "5K")
+            }},
+            { "Espanha", new() {
+                ("Iberia", "IB"),
+                ("Vueling Airlines", "VY"),
+                ("Air Europa", "UX"),
+                ("Volotea", "V7")
+            }},
+            { "França", new() {
+                ("Air France", "AF"),
+                ("Transavia France", "TO"),
+                ("Corsair", "SS")
+            }},
+            { "Alemanha", new() {
+                ("Lufthansa", "LH"),
+                ("Eurowings", "EW"),
+                ("Condor", "DE")
+            }},
+            { "Reino Unido", new() {
+                ("British Airways", "BA"),
+                ("easyJet", "U2"),
+                ("Virgin Atlantic", "VS"),
+                ("Jet2", "LS")
+            }},
+            { "Estados Unidos", new() {
+                ("American Airlines", "AA"),
+                ("Delta Air Lines", "DL"),
+                ("United Airlines", "UA")
+            }},
+            { "Brasil", new() {
+                ("LATAM Brasil", "LA"),
+                ("GOL Linhas Aéreas", "G3"),
+                ("Azul Linhas Aéreas", "AD")
+            }},
+            { "Angola", new() {
+                ("TAAG Linhas Aéreas de Angola", "DT"),
+                ("Fly Angola", "EQ")
+            }},
+                        { "Itália", new() {
+                ("ITA Airways", "AZ"),
+                ("Air Dolomiti", "EN"),
+                ("Neos", "NO")
+            }},
+            { "Turquia", new() {
+                ("Turkish Airlines", "TK"),
+                ("Pegasus Airlines", "PC"),
+                ("SunExpress", "XQ")
+            }},
+            { "México", new() {
+                ("Aeroméxico", "AM"),
+                ("Volaris", "Y4"),
+                ("VivaAerobus", "VB")
+            }},
+            { "China", new() {
+                ("Air China", "CA"),
+                ("China Southern Airlines", "CZ"),
+                ("China Eastern Airlines", "MU"),
+                ("Hainan Airlines", "HU")
+            }},
+            { "Grécia", new() {
+                ("Aegean Airlines", "A3"),
+                ("Sky Express", "GQ")
+            }},
+            { "Áustria", new() {
+                ("Austrian Airlines", "OS")
+            }},
+            { "Japão", new() {
+                ("All Nippon Airways (ANA)", "NH"),
+                ("Japan Airlines (JAL)", "JL"),
+                ("Peach Aviation", "MM")
+            }},
+            { "Emirados Árabes Unidos", new() {
+                ("Emirates", "EK"),
+                ("Etihad Airways", "EY"),
+                ("flydubai", "FZ"),
+                ("Air Arabia", "G9")
+            }},
+            { "Catar", new() {
+                ("Qatar Airways", "QR")
+            }},
+            { "Tailândia", new() {
+                ("Thai Airways", "TG"),
+                ("Bangkok Airways", "PG"),
+                ("Thai AirAsia", "FD")
+            }}
+        };
+
+        /// <summary>
+        /// Converte as chaves do dicionário de países numa lista para dropdown (SelectListItem).
+        /// </summary>
+        public IEnumerable<SelectListItem> GetCountries()
+        {
+            var countries = AirlinesMap.Keys.OrderBy(c => c).ToList();
+
+            var list = new List<SelectListItem>
+            {
+                       new SelectListItem { Text = "-- Selecione o País --", Value = "" }
+            };
+
+            list.AddRange(countries.Select(c => new SelectListItem
+            {
+                Text = c,
+                Value = c
+            }));
+
+            return list;
+        }
+
+        /// <summary>
+        /// Retorna a lista de companhias filtradas pelo país em formato JSON para o AJAX.
+        /// </summary>
+        public IEnumerable<object> GetAirlinesByCountry(string? country)
+        {
+            if (!string.IsNullOrEmpty(country) && AirlinesMap.TryGetValue(country, out var airlines))
+            {
+                return airlines.Select(a => new
+                {
+                    name = a.Name,
+                    iata = a.IataCode
+                }).OrderBy(a => a.name);
+            }
+
+            return Enumerable.Empty<object>();
+        }
+
+        #endregion
+
+
+
         public IEnumerable<object> GetCitiesWithIata(string? selectedCountry = null)
         {
             if (!string.IsNullOrEmpty(selectedCountry) && AirportsMap.TryGetValue(selectedCountry, out var countryCities))

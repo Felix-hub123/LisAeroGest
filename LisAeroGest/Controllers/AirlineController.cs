@@ -44,28 +44,44 @@ namespace LisAeroGest.Controllers
         }
 
         /// <summary>
-        /// Exibe o formulário de registo de uma nova companhia aérea.
+        /// Exibe o formulário de registo de uma nova companhia aérea preenchendo a lista de países.
         /// </summary>
-        /// <returns>View com o formulário de criação.</returns>
         [HttpGet]
-        public IActionResult Create() => View(new AirlineViewModel());
+        public IActionResult Create()
+        {
+            ViewBag.Countries = _converterHelper.GetCountries();
+            return View(new AirlineViewModel());
+        }
+
+        /// <summary>
+        /// Endpoint JSON para obter as companhias pré-definidas associadas ao país selecionado.
+        /// </summary>
+        [HttpGet]
+        public IActionResult GetAirlinesByCountry(string country)
+        {
+            var airlines = _converterHelper.GetAirlinesByCountry(country);
+            return Json(airlines);
+        }
 
         /// <summary>
         /// Processa a criação de uma nova companhia aérea, validando a unicidade do código IATA.
         /// </summary>
-        /// <param name="model">ViewModel com os dados da companhia.</param>
-        /// <returns>Redirecionamento para a Index em caso de sucesso, ou a View com mensagens de erro.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AirlineViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Countries = _converterHelper.GetCountries();
+                return View(model);
+            }
 
             // Validação de duplicidade do código IATA
             var existing = await _airlineRepository.GetByIATACodeAsync(model.IATACode!.ToUpper());
             if (existing != null)
             {
-                ModelState.AddModelError("IATACode", "Já existe uma companhia com este código IATA.");
+                ModelState.AddModelError("IATACode", "Já existe uma companhia registada com este código IATA.");
+                ViewBag.Countries = _converterHelper.GetCountries();
                 return View(model);
             }
 
@@ -83,40 +99,36 @@ namespace LisAeroGest.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+
         /// <summary>
-        /// Exibe o formulário de edição de uma companhia aérea existente.
+        /// Exibe o formulário de edição de uma companhia aérea existente (HTTP GET).
         /// </summary>
-        /// <param name="id">ID da companhia aérea.</param>
-        /// <returns>View de edição preenchida ou NotFound se não existir.</returns>
+        /// <param name="id">ID da companhia aérea a editar.</param>
+        /// <returns>View de edição preenchida com os dados atuais ou NotFound se não existir.</returns>
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
             var airline = await _airlineRepository.GetByIdAsync(id);
-            if (airline == null) return NotFound();
+            if (airline == null)
+            {
+                return NotFound();
+            }
 
-            // Mapeamento via ConverterHelper
+            // Converte a entidade da BD para o ViewModel que a View espera
             var model = _converterHelper.ToAirlineViewModel(airline);
 
             return View(model);
         }
 
-        /// <summary>
-        /// Processa as alterações operacionais de uma companhia aérea, gerindo a atualização de imagem.
-        /// Protege Name, IATACode e Country contra alterações.
-        /// </summary>
-        /// <param name="model">ViewModel com os dados atualizados.</param>
-        /// <returns>Redirecionamento para a Index ou View com validações.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(AirlineViewModel model)
         {
-          
-
-            if (!ModelState.IsValid) return View(model);
-
+            
             var airline = await _airlineRepository.GetByIdAsync(model.Id);
             if (airline == null) return NotFound();
 
+            
             var imageId = airline.ImageId;
             if (model.ImageFile != null && model.ImageFile.Length > 0)
             {
@@ -128,9 +140,10 @@ namespace LisAeroGest.Controllers
                 imageId = await _imageHelper.UploadImageAsync(model.ImageFile, "airlines");
             }
 
-            // Atribuição delegada ao ConverterHelper (preserva campos imutáveis)
-            _converterHelper.UpdateAirlineFromViewModel(airline, model, imageId);
+            
+            airline.ImageId = imageId;
 
+            
             await _airlineRepository.UpdateAsync(airline);
             await _airlineRepository.SaveAsync();
 
@@ -178,6 +191,14 @@ namespace LisAeroGest.Controllers
             var airline = await _airlineRepository.GetByIdAsync(id);
             if (airline == null) return NotFound();
 
+            // 1. Valida no repositório se a companhia tem voos associados
+            if (await _airlineRepository.IsUsedInFlightsAsync(id))
+            {
+                ModelState.AddModelError(string.Empty, "Não é possível eliminar esta companhia aérea pois existem voos associados a ela.");
+                return View(airline);
+            }
+
+            // 2. Apaga fisicamente se não houver dependências
             await _airlineRepository.DeleteAsync(airline);
             await _airlineRepository.SaveAsync();
 

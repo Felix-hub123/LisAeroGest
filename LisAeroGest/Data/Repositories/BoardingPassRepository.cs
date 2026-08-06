@@ -64,5 +64,25 @@ namespace LisAeroGest.Data.Repositories
             _context.BoardingPasses.Update(boardingPass);
             await _context.SaveChangesAsync();
         }
+
+        /// <summary>
+        /// Obtém um cartão de embarque incluindo os relacionamentos necessários para o PDF.
+        /// </summary>
+        public async Task<BoardingPass?> GetBoardingPassWithDetailsAsync(int id)
+        {
+            return await _context.BoardingPasses
+                .Include(bp => bp.Ticket)
+                    .ThenInclude(t => t.Seat)
+                .Include(bp => bp.Ticket)
+                    .ThenInclude(t => t.Passenger)
+                        .ThenInclude(p => p.User)
+                .Include(bp => bp.Ticket)
+                    .ThenInclude(t => t.Flight)
+                        .ThenInclude(f => f.OriginAirport)
+                .Include(bp => bp.Ticket)
+                    .ThenInclude(t => t.Flight)
+                        .ThenInclude(f => f.DestinationAirport)
+                .FirstOrDefaultAsync(bp => bp.Id == id);
+        }
     }
 }

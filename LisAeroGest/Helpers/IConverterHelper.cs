@@ -246,6 +246,17 @@ namespace LisAeroGest.Helpers
 
 
 
+        /// <summary>
+        /// Retorna a lista de países disponíveis no catálogo imutável.
+        /// </summary>
+        IEnumerable<SelectListItem> GetCountries();
+
+        /// <summary>
+        /// Retorna as companhias aéreas associadas a um país.
+        /// </summary>
+        IEnumerable<object> GetAirlinesByCountry(string? country);
+
+
 
 
 

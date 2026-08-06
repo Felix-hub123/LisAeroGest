@@ -10,9 +10,9 @@
     </ol>
 </nav>
 
-<div class="container-fluid mt-2">
+<div class="container-fluid mt-2 mb-5">
 
-    <!-- Cabeçalho -->
+    <!-- Cabeçalho Principal com Controlo Global -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
             <h2 class="fw-bold mb-1">
@@ -23,329 +23,403 @@
                 <span class="badge bg-primary">Administrador</span>
             </p>
         </div>
-        <div class="text-muted small d-flex align-items-center gap-3">
-            <span>
-                <span class="ripple"></span>
-                <span class="ms-2">Actualizado há <span id="secondsAgo">0</span>s</span>
-            </span>
-            <span>
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-outline-secondary btn-sm" onclick="toggleAllGroups()">
+                <i class="bi bi-arrows-collapse me-1" id="toggleAllIcon"></i>
+                <span id="toggleAllText">Colapsar Tudo</span>
+            </button>
+            <div class="text-muted small">
                 <i class="bi bi-calendar3 me-1"></i>
                 @DateTime.Now.ToString("dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("pt-PT"))
-            </span>
-        </div>
-    </div>
-
-    <!-- KPIs principais -->
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="card border-0 shadow-sm kpi-tile kpi-blue h-100">
-                <div class="card-body">
-                    <i class="bi bi-airplane fs-2"></i>
-                    <h3 class="fw-bold mb-0 mt-2 counter" data-target="@ViewBag.TotalFlights">0</h3>
-                    <small>Total de Voos</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="card border-0 shadow-sm kpi-tile kpi-green h-100">
-                <div class="card-body">
-                    <i class="bi bi-play-circle-fill fs-2"></i>
-                    <h3 class="fw-bold mb-0 mt-2 counter" data-target="@ViewBag.ActiveFlights">0</h3>
-                    <small>Voos Activos</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="card border-0 shadow-sm kpi-tile kpi-purple h-100">
-                <div class="card-body">
-                    <i class="bi bi-ticket-perforated-fill fs-2"></i>
-                    <h3 class="fw-bold mb-0 mt-2 counter" data-target="@ViewBag.TotalTickets">0</h3>
-                    <small>Bilhetes Vendidos</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="card border-0 shadow-sm kpi-tile kpi-orange h-100">
-                <div class="card-body">
-                    <i class="bi bi-cash-coin fs-2"></i>
-                    <h3 class="fw-bold mb-0 mt-2">
-                        @(((decimal)ViewBag.TotalRevenue).ToString("C0", new System.Globalization.CultureInfo("pt-PT")))
-                    </h3>
-                    <small>Receita Total</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="card border-0 shadow-sm kpi-tile kpi-teal h-100">
-                <div class="card-body">
-                    <i class="bi bi-people-fill fs-2"></i>
-                    <h3 class="fw-bold mb-0 mt-2">@ViewBag.OccupancyRate%</h3>
-                    <small>Ocupação Média</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-2">
-            <div class="card border-0 shadow-sm kpi-tile kpi-red h-100">
-                <div class="card-body">
-                    <i class="bi bi-exclamation-triangle-fill fs-2"></i>
-                    <h3 class="fw-bold mb-0 mt-2">
-                        @(((int)ViewBag.DelayedFlights + (int)ViewBag.CancelledFlights))
-                    </h3>
-                    <small>Perturbados</small>
-                </div>
             </div>
         </div>
     </div>
 
-    <!-- Operações -->
-    <h5 class="section-title">
-        <i class="bi bi-grid-3x3-gap-fill me-1"></i>Operações
-    </h5>
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
-            <a asp-controller="CheckIn" asp-action="EmployeeCheckIn" class="menu-card h-100">
-                <div class="menu-icon bg-success-subtle text-success">
-                    <i class="bi bi-person-check"></i>
-                </div>
-                <div class="menu-info">
-                    <strong>Check-in Presencial</strong>
-                    <small>Balcão de check-in</small>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a asp-controller="Home" asp-action="Index" class="menu-card h-100">
-                <div class="menu-icon bg-primary-subtle text-primary">
-                    <i class="bi bi-display"></i>
-                </div>
-                <div class="menu-info">
-                    <strong>Painel de Voos</strong>
-                    <small>Ecrã público</small>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a asp-controller="Shop" asp-action="Index" class="menu-card h-100">
-                <div class="menu-icon bg-info-subtle text-info">
-                    <i class="bi bi-shop"></i>
-                </div>
-                <div class="menu-info">
-                    <strong>Loja</strong>
-                    <small>Bilhetes e vendas</small>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a asp-controller="Forum" asp-action="Index" class="menu-card h-100">
-                <div class="menu-icon bg-danger-subtle text-danger">
-                    <i class="bi bi-chat-dots-fill"></i>
-                </div>
-                <div class="menu-info">
-                    <strong>Fórum</strong>
-                    <small>Discussão interna</small>
-                </div>
-            </a>
-        </div>
-    </div>
-
-    <!-- Gestão do Sistema -->
-    <h5 class="section-title">
-        <i class="bi bi-gear-fill me-1"></i>Gestão do Sistema
-    </h5>
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
-            <a asp-controller="Airline" asp-action="Index" class="menu-card h-100">
-                <div class="menu-icon bg-primary-subtle text-primary">
-                    <i class="bi bi-buildings-fill"></i>
-                </div>
-                <div class="menu-info">
-                    <strong>Companhias</strong>
-                    <small>Gerir companhias</small>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a asp-controller="Airports" asp-action="Index" class="menu-card h-100">
-                <div class="menu-icon bg-success-subtle text-success">
-                    <i class="bi bi-geo-alt-fill"></i>
-                </div>
-                <div class="menu-info">
-                    <strong>Aeroportos</strong>
-                    <small>Origens e destinos</small>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a asp-controller="Gate" asp-action="Index" class="menu-card h-100">
-                <div class="menu-icon bg-warning-subtle text-warning">
-                    <i class="bi bi-door-open-fill"></i>
-                </div>
-                <div class="menu-info">
-                    <strong>Gates</strong>
-                    <small>Portões</small>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a asp-controller="Aircraft" asp-action="Index" class="menu-card h-100">
-                <div class="menu-icon bg-info-subtle text-info">
-                    <i class="bi bi-airplane-fill"></i>
-                </div>
-                <div class="menu-info">
-                    <strong>Aeronaves</strong>
-                    <small>Frota</small>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a asp-controller="Flight" asp-action="Index" class="menu-card h-100">
-                <div class="menu-icon bg-primary-subtle text-primary">
-                    <i class="bi bi-calendar3"></i>
-                </div>
-                <div class="menu-info">
-                    <strong>Voos</strong>
-                    <small>Gerir voos</small>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a asp-controller="User" asp-action="Index" class="menu-card h-100">
-                <div class="menu-icon bg-secondary-subtle text-secondary">
-                    <i class="bi bi-people-fill"></i>
-                </div>
-                <div class="menu-info">
-                    <strong>Utilizadores</strong>
-                    <small>Todos os perfis</small>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a asp-controller="User" asp-action="Create" class="menu-card h-100">
-                <div class="menu-icon bg-success-subtle text-success">
-                    <i class="bi bi-person-plus-fill"></i>
-                </div>
-                <div class="menu-info">
-                    <strong>Criar Utilizador</strong>
-                    <small>Adicionar staff</small>
-                </div>
-            </a>
-        </div>
-       
-        <div class="col-6 col-md-3">
-            <a asp-controller="Flight" asp-action="ExportXml" class="menu-card h-100">
-                <div class="menu-icon bg-info-subtle text-info">
-                    <i class="bi bi-file-earmark-xml-fill"></i>
-                </div>
-                <div class="menu-info">
-                    <strong>Exportar XML</strong>
-                    <small>Voos</small>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a asp-controller="Flight" asp-action="ExportPdf" class="menu-card h-100">
-                <div class="menu-icon bg-danger-subtle text-danger">
-                    <i class="bi bi-file-earmark-pdf-fill"></i>
-                </div>
-                <div class="menu-info">
-                    <strong>Exportar PDF</strong>
-                    <small>Voos</small>
-                </div>
-            </a>
-        </div>
-    </div>
-
-    <!-- Estatísticas -->
-    <h5 class="section-title">
-        <i class="bi bi-graph-up-arrow me-1"></i>Estatísticas
-    </h5>
-
-    <div class="row g-3 mb-4">
-        <div class="col-lg-6">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-airplane-engines me-2 text-primary"></i>Voos por Companhia
-                    </h5>
-                    <div class="chart-wrap">
-                        <canvas id="chartAirlines"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-pie-chart-fill me-2 text-success"></i>Voos por Estado
-                    </h5>
-                    <div class="chart-wrap">
-                        <canvas id="chartStatus"></canvas>
-                    </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-3 mb-4">
-        <div class="col-lg-8">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-cash-stack me-2 text-warning"></i>Receita por Mês
-                            <small class="text-muted ms-2">(últimos 12 meses)</small>
-                    </h5>
-                        <div class="chart-wrap-sm">
-                            <canvas id="chartRevenue"></canvas>
-                        </div>
-            </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-trophy-fill me-2 text-warning"></i>Top 5 Rotas
-                    </h5>
-                    <ul class="list-group list-group-flush" id="topRoutesList"></ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <!-- GRUPO 1: KPIs e Resumo Executivo -->
     <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body">
-            <h5 class="card-title">
-                <i class="bi bi-bar-chart-line-fill me-2 text-success"></i>Receita por Companhia Aérea
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center cursor-pointer"
+             data-bs-toggle="collapse" data-bs-target="#groupKPIs" aria-expanded="true">
+            <h5 class="mb-0 fw-bold text-primary">
+                <i class="bi bi-graph-up me-2"></i>Resumo de Indicadores (KPIs)
             </h5>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>#</th>
-                            <th>Companhia</th>
-                            <th class="text-center">Bilhetes</th>
-                            <th class="text-end">Receita</th>
-                            <th>Quota de Mercado</th>
-                        </tr>
-                    </thead>
-                    <tbody id="revenueByAirlineBody">
-                        <!-- Preenchido via JS -->
-                    </tbody>
-                </table>
+            <button class="btn btn-sm btn-light border-0" type="button">
+                <i class="bi bi-chevron-up collapse-icon"></i>
+            </button>
+        </div>
+        <div id="groupKPIs" class="collapse show">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <div class="card border-0 shadow-sm kpi-tile kpi-blue h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-airplane fs-2"></i>
+                                <h3 class="fw-bold mb-0 mt-2 counter" data-target="@ViewBag.TotalFlights">0</h3>
+                                <small>Total de Voos</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <div class="card border-0 shadow-sm kpi-tile kpi-green h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-play-circle-fill fs-2"></i>
+                                <h3 class="fw-bold mb-0 mt-2 counter" data-target="@ViewBag.ActiveFlights">0</h3>
+                                <small>Voos Activos</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <div class="card border-0 shadow-sm kpi-tile kpi-purple h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-ticket-perforated-fill fs-2"></i>
+                                <h3 class="fw-bold mb-0 mt-2 counter" data-target="@ViewBag.TotalTickets">0</h3>
+                                <small>Bilhetes Vendidos</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <div class="card border-0 shadow-sm kpi-tile kpi-orange h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-cash-coin fs-2"></i>
+                                <h3 class="fw-bold mb-0 mt-2">
+                                    @(((decimal)ViewBag.TotalRevenue).ToString("C0", new System.Globalization.CultureInfo("pt-PT")))
+                                </h3>
+                                <small>Receita Total</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <div class="card border-0 shadow-sm kpi-tile kpi-teal h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-people-fill fs-2"></i>
+                                <h3 class="fw-bold mb-0 mt-2">@ViewBag.OccupancyRate%</h3>
+                                <small>Ocupação Média</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <div class="card border-0 shadow-sm kpi-tile kpi-red h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-exclamation-triangle-fill fs-2"></i>
+                                <h3 class="fw-bold mb-0 mt-2">
+                                    @(((int)ViewBag.DelayedFlights + (int)ViewBag.CancelledFlights))
+                                </h3>
+                                <small>Perturbados</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GRUPO 2: Operações de Aeroporto -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center cursor-pointer"
+             data-bs-toggle="collapse" data-bs-target="#groupOperations" aria-expanded="true">
+            <h5 class="mb-0 fw-bold text-success">
+                <i class="bi bi-grid-3x3-gap-fill me-2"></i>Operações Rápidas
+            </h5>
+            <button class="btn btn-sm btn-light border-0" type="button">
+                <i class="bi bi-chevron-up collapse-icon"></i>
+            </button>
+        </div>
+        <div id="groupOperations" class="collapse show">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <a asp-controller="CheckIn" asp-action="EmployeeCheckIn" class="menu-card h-100">
+                            <div class="menu-icon bg-success-subtle text-success">
+                                <i class="bi bi-person-check"></i>
+                            </div>
+                            <div class="menu-info">
+                                <strong>Check-in Presencial</strong>
+                                <small>Balcão de check-in</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a asp-controller="Home" asp-action="Index" class="menu-card h-100">
+                            <div class="menu-icon bg-primary-subtle text-primary">
+                                <i class="bi bi-display"></i>
+                            </div>
+                            <div class="menu-info">
+                                <strong>Painel de Voos</strong>
+                                <small>Ecrã público</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a asp-controller="Shop" asp-action="Index" class="menu-card h-100">
+                            <div class="menu-icon bg-info-subtle text-info">
+                                <i class="bi bi-shop"></i>
+                            </div>
+                            <div class="menu-info">
+                                <strong>Loja</strong>
+                                <small>Bilhetes e vendas</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a asp-controller="Forum" asp-action="Index" class="menu-card h-100">
+                            <div class="menu-icon bg-danger-subtle text-danger">
+                                <i class="bi bi-chat-dots-fill"></i>
+                            </div>
+                            <div class="menu-info">
+                                <strong>Fórum</strong>
+                                <small>Discussão interna</small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GRUPO 3: Gestão do Sistema -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center cursor-pointer"
+             data-bs-toggle="collapse" data-bs-target="#groupSystem" aria-expanded="true">
+            <h5 class="mb-0 fw-bold text-dark">
+                <i class="bi bi-gear-fill me-2"></i>Gestão de Entidades & Sistema
+            </h5>
+            <button class="btn btn-sm btn-light border-0" type="button">
+                <i class="bi bi-chevron-up collapse-icon"></i>
+            </button>
+        </div>
+        <div id="groupSystem" class="collapse show">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <a asp-controller="Airline" asp-action="Index" class="menu-card h-100">
+                            <div class="menu-icon bg-primary-subtle text-primary">
+                                <i class="bi bi-buildings-fill"></i>
+                            </div>
+                            <div class="menu-info">
+                                <strong>Companhias</strong>
+                                <small>Gerir companhias</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a asp-controller="Airports" asp-action="Index" class="menu-card h-100">
+                            <div class="menu-icon bg-success-subtle text-success">
+                                <i class="bi bi-geo-alt-fill"></i>
+                            </div>
+                            <div class="menu-info">
+                                <strong>Aeroportos</strong>
+                                <small>Origens e destinos</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a asp-controller="Gate" asp-action="Index" class="menu-card h-100">
+                            <div class="menu-icon bg-warning-subtle text-warning">
+                                <i class="bi bi-door-open-fill"></i>
+                            </div>
+                            <div class="menu-info">
+                                <strong>Gates</strong>
+                                <small>Portões</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a asp-controller="Aircraft" asp-action="Index" class="menu-card h-100">
+                            <div class="menu-icon bg-info-subtle text-info">
+                                <i class="bi bi-airplane-fill"></i>
+                            </div>
+                            <div class="menu-info">
+                                <strong>Aeronaves</strong>
+                                <small>Frota</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a asp-controller="Flight" asp-action="Index" class="menu-card h-100">
+                            <div class="menu-icon bg-primary-subtle text-primary">
+                                <i class="bi bi-calendar3"></i>
+                            </div>
+                            <div class="menu-info">
+                                <strong>Voos</strong>
+                                <small>Gerir voos</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a asp-controller="User" asp-action="Index" class="menu-card h-100">
+                            <div class="menu-icon bg-secondary-subtle text-secondary">
+                                <i class="bi bi-people-fill"></i>
+                            </div>
+                            <div class="menu-info">
+                                <strong>Utilizadores</strong>
+                                <small>Todos os perfis</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a asp-controller="User" asp-action="Create" class="menu-card h-100">
+                            <div class="menu-icon bg-success-subtle text-success">
+                                <i class="bi bi-person-plus-fill"></i>
+                            </div>
+                            <div class="menu-info">
+                                <strong>Criar Utilizador</strong>
+                                <small>Adicionar staff</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a asp-controller="Flight" asp-action="ExportXml" class="menu-card h-100">
+                            <div class="menu-icon bg-info-subtle text-info">
+                                <i class="bi bi-file-earmark-xml-fill"></i>
+                            </div>
+                            <div class="menu-info">
+                                <strong>Exportar XML</strong>
+                                <small>Voos</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a asp-controller="Flight" asp-action="ExportPdf" class="menu-card h-100">
+                            <div class="menu-icon bg-danger-subtle text-danger">
+                                <i class="bi bi-file-earmark-pdf-fill"></i>
+                            </div>
+                            <div class="menu-info">
+                                <strong>Exportar PDF</strong>
+                                <small>Voos</small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GRUPO 4: Gráficos & Métricas Visualização -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center cursor-pointer"
+             data-bs-toggle="collapse" data-bs-target="#groupCharts" aria-expanded="true">
+            <h5 class="mb-0 fw-bold text-warning">
+                <i class="bi bi-bar-chart-line-fill me-2"></i>Estatísticas de Desempenho
+            </h5>
+            <button class="btn btn-sm btn-light border-0" type="button">
+                <i class="bi bi-chevron-up collapse-icon"></i>
+            </button>
+        </div>
+        <div id="groupCharts" class="collapse show">
+            <div class="card-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-lg-6">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="bi bi-airplane-engines me-2 text-primary"></i>Voos por Companhia
+                                </h5>
+                                <div class="chart-wrap">
+                                    <canvas id="chartAirlines"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="bi bi-pie-chart-fill me-2 text-success"></i>Voos por Estado
+                                </h5>
+                                <div class="chart-wrap">
+                                    <canvas id="chartStatus"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-lg-8">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="bi bi-cash-stack me-2 text-warning"></i>Receita por Mês
+                                    <small class="text-muted ms-2">(últimos 12 meses)</small>
+                                </h5>
+                                <div class="chart-wrap-sm">
+                                    <canvas id="chartRevenue"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="bi bi-trophy-fill me-2 text-warning"></i>Top 5 Rotas
+                                </h5>
+                                <ul class="list-group list-group-flush" id="topRoutesList"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabela de Quota de Mercado -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-bar-chart-line-fill me-2 text-success"></i>Receita por Companhia Aérea
+                        </h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Companhia</th>
+                                        <th class="text-center">Bilhetes</th>
+                                        <th class="text-end">Receita</th>
+                                        <th>Quota de Mercado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="revenueByAirlineBody">
+                                    <!-- Preenchido via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-
 @section Scripts {
     <script>
-        // ---- Contador "actualizado há Xs" ----
-        var seconds = 0;
-        setInterval(function () {
-            seconds++;
-            var el = document.getElementById("secondsAgo");
-            if (el) el.textContent = seconds;
-        }, 1000);
+        // Toggle Global Maximizar / Minimizar
+        let allExpanded = true;
+        function toggleAllGroups() {
+            const collapses = document.querySelectorAll('.collapse');
+            allExpanded = !allExpanded;
+
+            collapses.forEach(el => {
+                const bsCollapse = bootstrap.Collapse.getOrCreateInstance(el, { toggle: false });
+                if (allExpanded) {
+                    bsCollapse.show();
+                } else {
+                    bsCollapse.hide();
+                }
+            });
+
+            document.getElementById('toggleAllText').textContent = allExpanded ? "Colapsar Tudo" : "Expandir Tudo";
+            document.getElementById('toggleAllIcon').className = allExpanded ? "bi bi-arrows-collapse me-1" : "bi bi-arrows-expand me-1";
+        }
+
+        // Rotação dos ícones de seta dos acordões
+        document.querySelectorAll('.collapse').forEach(collapseEl => {
+            collapseEl.addEventListener('hide.bs.collapse', function () {
+                const icon = this.parentElement.querySelector('.collapse-icon');
+                if(icon) icon.className = "bi bi-chevron-down collapse-icon";
+            });
+            collapseEl.addEventListener('show.bs.collapse', function () {
+                const icon = this.parentElement.querySelector('.collapse-icon');
+                if(icon) icon.className = "bi bi-chevron-up collapse-icon";
+            });
+        });
 
         // ---- Count-up KPIs ----
         document.querySelectorAll('.counter').forEach(function (counter) {
@@ -362,7 +436,7 @@
             }, 30);
         });
 
-        // ---- Dados do servidor ----
+        // ---- Dados do Servidor ----
         var airlinesData   = @Html.Raw(ViewBag.FlightsByAirline);
         var statusData     = @Html.Raw(ViewBag.FlightsByStatus);
         var revenueMonth   = @Html.Raw(ViewBag.RevenueByMonth);
@@ -373,10 +447,10 @@
         new Chart(document.getElementById('chartAirlines'), {
             type: 'bar',
             data: {
-                labels: airlinesData.map(function (x) { return x.label; }),
+                labels: airlinesData.map(x => x.label),
                 datasets: [{
                     label: 'Nº de Voos',
-                    data: airlinesData.map(function (x) { return x.count; }),
+                    data: airlinesData.map(x => x.count),
                     backgroundColor: '#1F5C99',
                     borderRadius: 6
                 }]
@@ -392,9 +466,9 @@
         new Chart(document.getElementById('chartStatus'), {
             type: 'doughnut',
             data: {
-                labels: statusData.map(function (x) { return x.label; }),
+                labels: statusData.map(x => x.label),
                 datasets: [{
-                    data: statusData.map(function (x) { return x.count; }),
+                    data: statusData.map(x => x.count),
                     backgroundColor: ['#0d3d6b','#1F5C99','#ffc107','#dc3545','#198754','#6c757d','#6f42c1']
                 }]
             },
@@ -406,13 +480,13 @@
             new Chart(document.getElementById('chartRevenue'), {
                 type: 'line',
                 data: {
-                    labels: revenueMonth.map(function (x) {
+                    labels: revenueMonth.map(x => {
                         var parts = x.label.split('-');
                         return parts[1] + '/' + parts[0].slice(2);
                     }),
                     datasets: [{
                         label: 'Receita (€)',
-                        data: revenueMonth.map(function (x) { return x.total; }),
+                        data: revenueMonth.map(x => x.total),
                         borderColor: '#fd7e14',
                         backgroundColor: 'rgba(253, 126, 20, 0.15)',
                         fill: true,
