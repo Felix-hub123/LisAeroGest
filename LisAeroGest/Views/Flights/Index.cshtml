@@ -1,0 +1,198 @@
+﻿@model LisAeroGest.Models.FlightFilterViewModel
+
+@{
+    ViewData["Title"] = "Gestão de Voos";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1 text-gray-800"><i class="bi bi-airplane me-2"></i>Gestão de Voos</h1>
+        <p class="text-muted small mb-0">Consulte, filtre e exporte os voos operados na plataforma.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="ExportXml" class="btn btn-outline-success">
+            <i class="bi bi-file-type-xml me-1"></i> Exportar XML
+        </a>
+        <a asp-action="ExportPdf" class="btn btn-outline-danger">
+            <i class="bi bi-file-type-pdf me-1"></i> Exportar PDF
+        </a>
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Criar Voo
+            </a>
+        }
+    </div>
+</div>
+
+<!-- Painel de Filtros -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-light fw-bold py-3">
+        <i class="bi bi-funnel me-1"></i> Filtros de Pesquisa
+    </div>
+    <div class="card-body">
+        <form method="get" asp-action="Index" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Companhia Aérea</label>
+                <select asp-for="FilterAirlineId" asp-items="Model.Airlines" class="form-select">
+                    <option value="">-- Todas as Companhias --</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Origem</label>
+                <select asp-for="FilterOriginId" asp-items="Model.Airports" class="form-select">
+                    <option value="">-- Qualquer Origem --</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Destino</label>
+                <select asp-for="FilterDestinationId" asp-items="(IEnumerable<SelectListItem>)ViewBag.Destinations" class="form-select">
+                    <option value="">-- Qualquer Destino --</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Estado</label>
+                <select asp-for="FilterStatus" asp-items="Model.Statuses" class="form-select">
+                    <option value="">-- Todos os Estados --</option>
+                </select>
+            </div>
+            <div class="col-12 d-flex justify-content-between align-items-center mt-3">
+                <div class="w-50">
+                    <input type="text" id="tableSearch" class="form-control form-control-sm" placeholder="🔍 Pesquisa rápida na tabela..." />
+                </div>
+                <div class="d-flex gap-2">
+                    <a asp-action="Index" class="btn btn-secondary btn-sm">
+                        <i class="bi bi-x-circle me-1"></i> Limpar
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-search me-1"></i> Pesquisar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabela de Voos -->
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="flightsTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nº Voo</th>
+                        <th>Companhia</th>
+                        <th>Rota (Origem &rarr; Destino)</th>
+                        <th>Partida</th>
+                        <th>Chegada</th>
+                        <th>Preço Base</th>
+                        <th>Estado (AJAX)</th>
+                        <th class="text-end pe-3">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Flights != null && Model.Flights.Any())
+                    {
+                        @foreach (var flight in Model.Flights)
+                        {
+                            <tr>
+                                <td class="fw-bold">@flight.FlightNumber</td>
+                                <td>@(flight.Airline?.Name ?? "-")</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">@(flight.OriginAirport?.IATACode ?? "N/A")</span>
+                                    <i class="bi bi-arrow-right mx-1 text-muted"></i>
+                                    <span class="badge bg-light text-dark border">@(flight.DestinationAirport?.IATACode ?? "N/A")</span>
+                                </td>
+                                <td>@flight.DepartureTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@flight.ArrivalTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@flight.BasePrice.ToString("C2")</td>
+                                <td>
+                                    <select class="form-select form-select-sm status-dropdown" data-flight-id="@flight.Id">
+                                        <option value="Scheduled" selected="@(flight.Status == "Scheduled")">Agendado</option>
+                                        <option value="CheckIn" selected="@(flight.Status == "CheckIn")">Check-in</option>
+                                        <option value="Boarding" selected="@(flight.Status == "Boarding")">Embarque</option>
+                                        <option value="Departed" selected="@(flight.Status == "Departed")">Em Viagem</option>
+                                        <option value="Delayed" selected="@(flight.Status == "Delayed")">Atrasado</option>
+                                        <option value="Cancelled" selected="@(flight.Status == "Cancelled")">Cancelado</option>
+                                    </select>
+                                </td>
+                                <td class="text-end pe-3">
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Details" asp-route-id="@flight.Id" class="btn btn-outline-info" title="Detalhes">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        @if (User.IsInRole("Admin"))
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@flight.Id" class="btn btn-outline-warning" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@flight.Id" class="btn btn-outline-danger" title="Eliminar">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">
+                                <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                                Nenhum voo encontrado.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 1. Pesquisa rápida instantânea no cliente (Front-End Filter)
+        document.getElementById('tableSearch')?.addEventListener('keyup', function () {
+            const filter = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#flightsTable tbody tr');
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(filter) ? '' : 'none';
+            });
+        });
+
+        // 2. Atualização rápida de estado por AJAX sem refresh
+        document.querySelectorAll('.status-dropdown').forEach(select => {
+            select.addEventListener('change', async function () {
+                const flightId = this.getAttribute('data-flight-id');
+                const newStatus = this.value;
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                const formData = new FormData();
+                formData.append('id', flightId);
+                formData.append('newStatus', newStatus);
+
+                try {
+                    const response = await fetch('/Flights/ChangeStatus', {
+                        method: 'POST',
+                        headers: { 'RequestVerificationToken': token },
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        this.classList.add('border-success', 'bg-light');
+                        setTimeout(() => this.classList.remove('border-success', 'bg-light'), 1500);
+                    } else {
+                        alert('Erro ao atualizar o estado do voo.');
+                    }
+                } catch (err) {
+                    console.error('Erro na ligação AJAX:', err);
+                }
+            });
+        });
+    </script>
+}

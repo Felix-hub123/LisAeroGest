@@ -3,6 +3,7 @@ using LisAeroGest.Data.Interfaces;
 using LisAeroGest.Data.Repositories;
 using LisAeroGest.Helpers;
 using LisAeroGest.Models;
+using LisAeroGest.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace LisAeroGest.Controllers
 {
     /// <summary>
-    /// Controlador responsável pela gestão de voos na plataforma LisAeroGest.
+    /// Controlador responsável pela gestão operacional de voos e exportação de dados na plataforma LisAeroGest.
     /// Acesso permitido a Administradores e Funcionários.
     /// </summary>
     [Authorize(Roles = "Admin,Employee")]
@@ -21,7 +22,9 @@ namespace LisAeroGest.Controllers
         private readonly IAirportRepository _airportRepository;
         private readonly IAircraftRepository _aircraftRepository;
         private readonly IGateRepository _gateRepository;
+        private readonly ISeatRepository _seatRepository;
         private readonly IConverterHelper _converterHelper;
+        private readonly IFlightExportService _flightExportService;
 
         public FlightsController(
             IFlightRepository flightRepository,
@@ -29,15 +32,21 @@ namespace LisAeroGest.Controllers
             IAirportRepository airportRepository,
             IAircraftRepository aircraftRepository,
             IGateRepository gateRepository,
-            IConverterHelper converterHelper)
+            ISeatRepository seatRepository,
+            IConverterHelper converterHelper,
+            IFlightExportService flightExportService)
         {
             _flightRepository = flightRepository;
             _airlineRepository = airlineRepository;
             _airportRepository = airportRepository;
             _aircraftRepository = aircraftRepository;
             _gateRepository = gateRepository;
+            _seatRepository = seatRepository;
             _converterHelper = converterHelper;
+            _flightExportService = flightExportService;
         }
+
+        // ─── INDEX COM FILTROS ───────────────────────────────────────────────
 
         /// <summary>
         /// Lista os voos com suporte a filtros por companhia, origem, destino e estado.
@@ -45,19 +54,15 @@ namespace LisAeroGest.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(int? airlineId, int? originId, int? destinationId, string? status)
         {
-            // Obtém a consulta base de voos sem executar imediatamente na BD
             var query = _flightRepository.GetAllQueryable();
 
-            // Aplicação dinâmica dos filtros selecionados pelo utilizador
             if (airlineId.HasValue) query = query.Where(f => f.AirlineId == airlineId.Value);
             if (originId.HasValue) query = query.Where(f => f.OriginAirportId == originId.Value);
             if (destinationId.HasValue) query = query.Where(f => f.DestinationAirportId == destinationId.Value);
             if (!string.IsNullOrEmpty(status)) query = query.Where(f => f.Status == status);
 
-            // Ordena os voos por data de partida (mais recentes/futuros primeiro)
             var flights = await query.OrderByDescending(f => f.DepartureTime).ToListAsync();
 
-            // Constrói a ViewModel com os dados da tabela e as dropdowns de filtro
             var model = new FlightFilterViewModel
             {
                 Flights = flights,
@@ -70,11 +75,36 @@ namespace LisAeroGest.Controllers
                 FilterStatus = status
             };
 
-            // Guarda a lista de aeroportos para o filtro de destino via ViewBag
             ViewBag.Destinations = _converterHelper.ToComboAirports(await _airportRepository.GetAllAsync(), destinationId);
 
             return View(model);
         }
+
+        // ─── EXPORTAÇÃO (XML / PDF) ──────────────────────────────────────────
+
+        /// <summary>
+        /// Gera e transfere um relatório em formato XML com todos os voos detalhados.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> ExportXml()
+        {
+            var xmlBytes = await _flightExportService.ExportFlightsToXmlAsync();
+            var fileName = $"Voos_LisAeroGest_{DateTime.UtcNow:yyyyMMdd_HHmmss}.xml";
+            return File(xmlBytes, "application/xml", fileName);
+        }
+
+        /// <summary>
+        /// Gera e transfere um relatório em formato PDF com a listagem de voos.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> ExportPdf()
+        {
+            var pdfBytes = await _flightExportService.ExportFlightsToPdfAsync();
+            var fileName = $"Voos_LisAeroGest_{DateTime.UtcNow:yyyyMMdd_HHmmss}.pdf";
+            return File(pdfBytes, "application/pdf", fileName);
+        }
+
+        // ─── DETAILS ────────────────────────────────────────────────────────
 
         /// <summary>
         /// Exibe os detalhes de um voo específico.
@@ -88,6 +118,8 @@ namespace LisAeroGest.Controllers
             return View(flight);
         }
 
+        // ─── CREATE ─────────────────────────────────────────────────────────
+
         /// <summary>
         /// Apresenta o formulário para criação de um novo voo (Apenas Admin).
         /// </summary>
@@ -95,7 +127,6 @@ namespace LisAeroGest.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create()
         {
-            // Sugere horários padrão de partida e chegada
             var vm = new FlightViewModel
             {
                 DepartureTime = DateTime.Now.AddHours(2),
@@ -114,63 +145,40 @@ namespace LisAeroGest.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(FlightViewModel viewModel)
         {
-            // Validar se a partida não é no passado
             if (viewModel.DepartureTime <= DateTime.Now)
                 ModelState.AddModelError("DepartureTime", "A hora de partida não pode ser no passado.");
 
-            // Validar se a chegada é posterior à partida
             if (viewModel.ArrivalTime <= viewModel.DepartureTime)
                 ModelState.AddModelError("ArrivalTime", "A hora de chegada tem de ser posterior à partida.");
 
-            // Validar se a origem é diferente do destino
             if (viewModel.OriginAirportId == viewModel.DestinationAirportId)
                 ModelState.AddModelError("DestinationAirportId", "O aeroporto de destino tem de ser diferente da origem.");
 
-            // Validar disponibilidade da porta de embarque (Gate), se selecionada
             if (viewModel.GateId.HasValue && viewModel.GateId.Value > 0)
             {
                 if (await _gateRepository.IsGateOccupiedAsync(viewModel.GateId.Value, viewModel.DepartureTime, viewModel.ArrivalTime))
                     ModelState.AddModelError("GateId", "O Gate selecionado já está ocupado por outro voo neste horário.");
             }
 
-            // Se existirem erros de validação, recarrega as dropdowns e devolve a View
             if (!ModelState.IsValid)
             {
                 await PopulateDropdownsAsync(viewModel, viewModel.Status);
                 return View(viewModel);
             }
 
-            // Converter ViewModel em entidade Flight
             var flight = _converterHelper.ToFlight(viewModel, isEdit: false);
-            var aircraft = await _aircraftRepository.GetWithSeatsAsync(viewModel.AircraftId);
-
-            // Geração dos lugares do voo com base nos templates da aeronave ou na capacidade total
-            if (aircraft?.Seats != null && aircraft.Seats.Any())
-            {
-                // Gera os lugares com base na estrutura de assentos predefinida da aeronave
-                foreach (var seatTemplate in aircraft.Seats)
-                {
-                    flight.Seats.Add(new Seat
-                    {
-                        Code = seatTemplate.Code,
-                        SeatClass = seatTemplate.SeatClass,
-                        BasePrice = seatTemplate.SeatClass == "Business" ? viewModel.BasePrice * 1.5m : viewModel.BasePrice,
-                        IsAvailable = true
-                    });
-                }
-            }
-            else
-            {
-                // Fallback: Gera os lugares sequencialmente a partir da capacidade total
-                flight.Seats = _converterHelper.GenerateSeatsFromAircraftCapacity(aircraft, viewModel.BasePrice);
-            }
 
             await _flightRepository.AddAsync(flight);
             await _flightRepository.SaveAsync();
 
-            TempData["Success"] = $"Voo {flight.FlightNumber} criado com sucesso com {flight.Seats.Count} lugares gerados!";
+            // Gera automaticamente os lugares associados ao voo recém-criado
+            await _seatRepository.GenerateSeatsForFlightAsync(flight.Id, viewModel.AircraftId);
+
+            TempData["Success"] = $"Voo {flight.FlightNumber} criado com sucesso!";
             return RedirectToAction(nameof(Index));
         }
+
+        // ─── EDIT ───────────────────────────────────────────────────────────
 
         /// <summary>
         /// Apresenta o formulário de edição de um voo existente (Apenas Admin).
@@ -196,14 +204,12 @@ namespace LisAeroGest.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(FlightViewModel viewModel)
         {
-            // Validações de datas e aeroportos
             if (viewModel.ArrivalTime <= viewModel.DepartureTime)
                 ModelState.AddModelError("ArrivalTime", "A chegada tem de ser depois da partida.");
 
             if (viewModel.OriginAirportId == viewModel.DestinationAirportId)
                 ModelState.AddModelError("DestinationAirportId", "O destino tem de ser diferente da origem.");
 
-            // Validar conflito de Gate excluindo o próprio voo atual
             if (viewModel.GateId.HasValue && viewModel.GateId.Value > 0)
             {
                 if (await _gateRepository.IsGateOccupiedAsync(viewModel.GateId.Value, viewModel.DepartureTime, viewModel.ArrivalTime, viewModel.Id))
@@ -216,7 +222,21 @@ namespace LisAeroGest.Controllers
                 return View(viewModel);
             }
 
-            var flight = _converterHelper.ToFlight(viewModel, isEdit: true);
+            var flight = await _flightRepository.GetByIdAsync(viewModel.Id);
+            if (flight == null) return NotFound();
+
+            var updatedFlight = _converterHelper.ToFlight(viewModel, isEdit: true);
+
+            flight.FlightNumber = updatedFlight.FlightNumber;
+            flight.AirlineId = updatedFlight.AirlineId;
+            flight.OriginAirportId = updatedFlight.OriginAirportId;
+            flight.DestinationAirportId = updatedFlight.DestinationAirportId;
+            flight.AircraftId = updatedFlight.AircraftId;
+            flight.GateId = updatedFlight.GateId;
+            flight.DepartureTime = updatedFlight.DepartureTime;
+            flight.ArrivalTime = updatedFlight.ArrivalTime;
+            flight.BasePrice = updatedFlight.BasePrice;
+            flight.Status = updatedFlight.Status;
 
             await _flightRepository.UpdateAsync(flight);
             await _flightRepository.SaveAsync();
@@ -225,8 +245,10 @@ namespace LisAeroGest.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // ─── CHANGE STATUS ──────────────────────────────────────────────────
+
         /// <summary>
-        /// Altera o estado operacional do voo (ex: Programado, Check-in, Embarque, Atrasado, etc.).
+        /// Altera o estado operacional do voo a partir da listagem.
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -235,7 +257,6 @@ namespace LisAeroGest.Controllers
             var flight = await _flightRepository.GetByIdAsync(id);
             if (flight == null) return NotFound();
 
-            // Lista de estados operacionais válidos no sistema
             var valid = new[] { "Scheduled", "CheckIn", "Boarding", "Departed", "Delayed", "Cancelled" };
             if (!valid.Contains(newStatus))
             {
@@ -251,6 +272,8 @@ namespace LisAeroGest.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // ─── DELETE ─────────────────────────────────────────────────────────
+
         /// <summary>
         /// Apresenta a página de confirmação para remoção de um voo (Apenas Admin).
         /// </summary>
@@ -265,7 +288,7 @@ namespace LisAeroGest.Controllers
         }
 
         /// <summary>
-        /// Executa a remoção definitiva do voo.
+        /// Executa a remoção do voo, verificando antes se existem assentos/bilhetes vendidos.
         /// </summary>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -275,8 +298,10 @@ namespace LisAeroGest.Controllers
             var flight = await _flightRepository.GetWithDetailsAsync(id);
             if (flight == null) return NotFound();
 
-            // Regra de negócio: impede a eliminação de voos que já tenham bilhetes/lugares vendidos
-            if (flight.Seats != null && flight.Seats.Any(s => !s.IsAvailable))
+            var hasSoldSeats = await _seatRepository.GetAllQueryable()
+                .AnyAsync(s => s.FlightId == id && !s.IsAvailable);
+
+            if (hasSoldSeats || (flight.Seats != null && flight.Seats.Any(s => !s.IsAvailable)))
             {
                 TempData["Error"] = "Não é possível eliminar este voo pois já existem bilhetes vendidos.";
                 return RedirectToAction(nameof(Index));
@@ -289,9 +314,8 @@ namespace LisAeroGest.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        /// <summary>
-        /// Método auxiliar para popular todas as listas pendentes (SelectLists) necessárias para as Views.
-        /// </summary>
+        // ─── MÉTODOS AUXILIARES ─────────────────────────────────────────────
+
         private async Task PopulateDropdownsAsync(FlightViewModel vm, string? selectedStatus)
         {
             vm.Airlines = _converterHelper.ToComboAirlines(await _airlineRepository.GetAllAsync(), vm.AirlineId);

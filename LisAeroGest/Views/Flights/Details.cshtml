@@ -1,0 +1,122 @@
+﻿@model LisAeroGest.Data.Entities.Flight
+
+@{
+    ViewData["Title"] = "Detalhes do Voo";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800"><i class="bi bi-info-circle me-2"></i>Detalhes do Voo @Model.FlightNumber</h1>
+    <div>
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning me-1"><i class="bi bi-pencil me-1"></i> Editar</a>
+        }
+        <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Voltar</a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-8">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-dark text-white fw-bold">
+                <i class="bi bi-airplane me-2"></i> Informação do Voo
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Companhia Aérea</dt>
+                    <dd class="col-sm-8">@(Model.Airline?.Name ?? "-")</dd>
+
+                    <dt class="col-sm-4">Origem</dt>
+                    <dd class="col-sm-8">@(Model.OriginAirport?.Name) (@Model.OriginAirport?.IATACode)</dd>
+
+                    <dt class="col-sm-4">Destino</dt>
+                    <dd class="col-sm-8">@(Model.DestinationAirport?.Name) (@Model.DestinationAirport?.IATACode)</dd>
+
+                    <dt class="col-sm-4">Hora de Partida</dt>
+                    <dd class="col-sm-8">@Model.DepartureTime.ToString("g")</dd>
+
+                    <dt class="col-sm-4">Hora de Chegada</dt>
+                    <dd class="col-sm-8">@Model.ArrivalTime.ToString("g")</dd>
+
+                    <dt class="col-sm-4">Preço Base</dt>
+                    <dd class="col-sm-8">@Model.BasePrice.ToString("C2")</dd>
+
+                    <dt class="col-sm-4">Estado Atual</dt>
+                    <dd class="col-sm-8"><span class="badge bg-primary">@Model.Status</span></dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-light fw-bold">
+                <i class="bi bi-cpu me-2"></i> Aeronave & Operacional
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-6">Modelo</dt>
+                    <dd class="col-sm-6">@(Model.Aircraft?.Brand) @(Model.Aircraft?.Model)</dd>
+
+                    <dt class="col-sm-6">Capacidade</dt>
+                    <dd class="col-sm-6">@(Model.Aircraft?.TotalCapacity ?? 0) Lugares</dd>
+
+                    <dt class="col-sm-6">Portão (Gate)</dt>
+                    <dd class="col-sm-6">@(Model.Gate?.GateNumber ?? "Não Atribuído")</dd>
+
+                    <dt class="col-sm-6">Assentos Criados</dt>
+                    <dd class="col-sm-6">@(Model.Seats?.Count ?? 0)</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Grelha de Assentos Visual (Interatividade em JS) -->
+<div class="card shadow-sm">
+    <div class="card-header bg-light fw-bold d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-grid-3x3-gap me-2"></i>Mapa de Ocupação da Aeronave</span>
+        <div>
+            <span class="badge bg-success me-1">Livre</span>
+            <span class="badge bg-danger">Ocupado</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <div id="seatMapContainer" class="d-flex flex-wrap gap-2 justify-content-center py-3">
+            @if (Model.Seats != null && Model.Seats.Any())
+            {
+                @foreach (var seat in Model.Seats)
+                {
+                    <button type="button"
+                            class="btn btn-sm @(seat.IsAvailable ? "btn-outline-success" : "btn-danger") seat-btn"
+                            data-code="@seat.Code"
+                            data-class="@seat.SeatClass"
+                            data-price="@seat.BasePrice.ToString("C2")"
+                            data-status="@(seat.IsAvailable ? "Livre" : "Ocupado")">
+                        @seat.Code
+                    </button>
+                }
+            }
+            else
+            {
+                <p class="text-muted mb-0">Sem mapa de assentos disponível.</p>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Interatividade ao clicar em qualquer assento da aeronave
+        document.querySelectorAll('.seat-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const code = this.getAttribute('data-code');
+                const seatClass = this.getAttribute('data-class');
+                const price = this.getAttribute('data-price');
+                const status = this.getAttribute('data-status');
+
+                alert(`Assento: ${code}\nClasse: ${seatClass}\nPreço: ${price}\nEstado: ${status}`);
+            });
+        });
+    </script>
+}
