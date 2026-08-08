@@ -31,5 +31,16 @@ namespace LisAeroGest.Data.Repositories
                 .Include(t => t.Comments)
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
+
+
+        /// <summary>
+        /// Obtém os tópicos mais recentes ordenados por data de criação.
+        /// </summary>
+        public async Task<IEnumerable<ForumTopic>> GetRecentTopicsAsync(int count)
+            => await _dbSet
+                .Include(t => t.CreatedBy)
+                .OrderByDescending(t => t.CreatedAt)
+                .Take(count)
+                .ToListAsync();
     }
 }

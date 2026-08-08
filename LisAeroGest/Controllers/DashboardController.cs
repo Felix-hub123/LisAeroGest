@@ -68,7 +68,7 @@ namespace LisAeroGest.Controllers
         [Authorize(Roles = "Admin")]
         private async Task<IActionResult> AdminDashboard()
         {
-            var flights = await _flightRepository.GetAllAsync();
+            var flights = (await _flightRepository.GetAllWithDetailsAsync()).ToList();
             var tickets = await _ticketRepository.GetAllAsync();
 
             // ---- KPIs básicos ----
