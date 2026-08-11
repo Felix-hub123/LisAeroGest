@@ -69,6 +69,57 @@ namespace LisAeroGest.Controllers
             return View(tickets);
         }
 
+
+        /// <summary>
+        /// Exibe a página do balcão de check-in presencial para funcionários.
+        /// </summary>
+        [HttpGet]
+        [Authorize(Roles = "Employee, Admin")]
+        public IActionResult EmployeeCheckIn()
+        {
+            return View();
+        }
+
+        /// <summary>
+        /// Processa a pesquisa e efetua o check-in no balcão feito pelo funcionário.
+        /// </summary>
+        /// <param name="searchTerm">ID do bilhete ou documento de identificação do passageiro.</param>
+        [HttpPost]
+        [Authorize(Roles = "Employee, Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EmployeeCheckIn(string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                TempData["Error"] = "Por favor, introduza o ID do bilhete ou documento de identificação.";
+                return View();
+            }
+
+            var tickets = await _ticketRepository.GetAllAsync();
+
+            bool isNumeric = int.TryParse(searchTerm, out int ticketId);
+
+            var ticket = tickets.FirstOrDefault(t =>
+                (isNumeric && t.Id == ticketId) ||
+                (t.Passenger != null && t.Passenger.DocumentNumber != null && t.Passenger.DocumentNumber.Equals(searchTerm, StringComparison.OrdinalIgnoreCase))
+            );
+
+            if (ticket == null)
+            {
+                TempData["Error"] = "Nenhum bilhete encontrado para a pesquisa introduzida.";
+                return View();
+            }
+
+            var ticketWithDetails = await _ticketRepository.GetTicketWithDetailsAsync(ticket.Id);
+
+            if (ticketWithDetails!.HasCheckedIn)
+            {
+                TempData["Warning"] = "Este passageiro já efetuou o check-in.";
+            }
+
+            return View(ticketWithDetails);
+        }
+
         /// <summary>
         /// Executa o processo de check-in para um bilhete específico e gera o cartão de embarque.
         /// </summary>

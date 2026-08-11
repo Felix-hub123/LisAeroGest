@@ -1,57 +1,111 @@
-﻿@model IEnumerable<LisAeroGest.Data.Entities.Flight>
+﻿@model LisAeroGest.Data.Entities.Ticket
+@inject LisAeroGest.Helpers.IConverterHelper ConverterHelper
+
 @{
     ViewData["Title"] = "Check-in Presencial";
 }
 
-<h1 class="mb-4"><i class="bi bi bi-person-check me-2"></i>Check-in Presencial</h1>
+<div class="container mt-4">
+    <div class="d-flex align-items-center mb-4">
+        <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-secondary btn-sm me-3">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <h2 class="fw-bold mb-0">
+            <i class="bi bi-person-check text-success me-2"></i>Balcão de Check-in Presencial
+        </h2>
+    </div>
 
-<div class="table-responsive">
-    <table class="table table-hover">
-        <thead class="table-primary">
-            <tr>
-                <th>Voo</th>
-                <th>Companhia</th>
-                <th>Rota</th>
-                <th>Partida</th>
-                <th>Estado</th>
-                <th>Ação</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var flight in Model)
-            {
-                <tr>
-                    <td>@flight.FlightNumber</td>
-                    <td>@flight.Airline?.Name</td>
-                    <td>@flight.OriginAirport?.IATACode → @flight.DestinationAirport?.IATACode</td>
-                    <td>@flight.DepartureTime.ToString("dd/MM/yyyy HH:mm")</td>
-                    <td>
-                        @switch (flight.Status)
-                        {
-                            case "Scheduled":
-                                <span class="badge bg-secondary">Previsto</span>
-                                ; break;
-                            case "CheckIn":
+    <!-- Mensagens de Feedback -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-exclamation-circle-fill me-2"></i>@TempData["Warning"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
-                                <span class="badge bg-info">Em Check-in</span>
-                                ; break;
-                            case "Boarding":
+    <!-- Formulário de Pesquisa -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold card-title mb-3">Pesquisar Passageiro / Bilhete</h5>
+            <form asp-action="EmployeeCheckIn" method="post" class="row g-3">
+                <div class="col-md-9">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                        <input type="text" name="searchTerm" class="form-control"
+                               placeholder="Escreva o ID do Bilhete ou Documento (Passaporte / CC / NIF)..." required autocomplete="off" />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        Procurar Bilhete
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-                                <span class="badge bg-warning">Embarcando</span>
-                                ; break;
-                            default:
+    <!-- Resultado da Pesquisa -->
+    @if (Model != null)
+    {
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-ticket-detailed me-2"></i>Bilhete <strong>#@Model.Id</strong>
+                </h5>
+                <span class="badge @ConverterHelper.GetFlightBadgeClass(Model.Status)">
+                    @ConverterHelper.GetFlightStatusText(Model.Status)
+                </span>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    <!-- Dados do Passageiro -->
+                    <div class="col-md-6 border-end">
+                        <h6 class="text-muted fw-bold text-uppercase small mb-3">Passageiro</h6>
+                        <p class="mb-1"><strong>Nome:</strong> @Model.Passenger?.FirstName @Model.Passenger?.LastName</p>
+                        <p class="mb-1"><strong>Documento:</strong> @(Model.Passenger?.DocumentNumber ?? "—")</p>
+                        <p class="mb-1"><strong>Bagagem Extra:</strong> @(Model.ExtraLuggage ? "Sim" : "Não")</p>
+                        <p class="mb-1"><strong>Refeição:</strong> @(Model.MealIncluded ? "Sim" : "Não")</p>
+                    </div>
 
-                                <span class="badge bg-secondary">@flight.Status</span>
-                                ; break;
-                        }
-                    </td>
-                    <td>
-                        <a asp-action="FlightCheckIn" asp-route-flightId="@flight.Id" class="btn btn-primary btn-sm">
-                            <i class="bi bi-list me-1"></i>Passageiros
-                        </a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                    <!-- Dados do Voo -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted fw-bold text-uppercase small mb-3">Detalhes do Voo</h6>
+                        <p class="mb-1"><strong>Voo:</strong> @Model.Flight?.FlightNumber (@Model.Flight?.Airline?.Name)</p>
+                        <p class="mb-1"><strong>Rota:</strong> @Model.Flight?.OriginAirport?.IATACode → @Model.Flight?.DestinationAirport?.IATACode</p>
+                        <p class="mb-1"><strong>Partida:</strong> @Model.Flight?.DepartureTime.ToString("dd/MM/yyyy HH:mm")</p>
+                        <p class="mb-1"><strong>Lugar:</strong> <span class="badge bg-secondary">@(Model.Seat?.Code ?? "N/A")</span></p>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <!-- Ação de Processamento -->
+                <div class="d-flex justify-content-end gap-2">
+                    @if (!Model.HasCheckedIn)
+                    {
+                        <form asp-action="ProcessCheckIn" method="post">
+                            <input type="hidden" name="ticketId" value="@Model.Id" />
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-lg me-2"></i>Emitir Check-in & Cartão
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <button class="btn btn-secondary btn-lg" disabled>
+                            <i class="bi bi-check-circle me-2"></i>Check-in Já Concluído
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    }
 </div>

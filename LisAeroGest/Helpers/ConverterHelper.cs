@@ -990,6 +990,41 @@ namespace LisAeroGest.Helpers
 
         #endregion
 
+        /// <summary>
+        /// Devolve o texto em português correspondente ao estado do voo.
+        /// </summary>
+        /// <param name="status">Estado do voo em inglês.</param>
+        /// <returns>Texto traduzido para português.</returns>
+        public string GetFlightStatusText(string status) => status switch
+        {
+            "Scheduled" => "Previsto",
+            "CheckIn" => "Check-in",
+            "Boarding" => "A Embarcar",
+            "Departed" => "Partiu",
+            "Delayed" => "Atrasado",
+            "Cancelled" => "Cancelado",
+            _ => status
+        };
+
+        public string GetFlightBadgeClass(string status) => status switch
+        {
+            "Scheduled" => "bg-primary",
+            "CheckIn" => "bg-info text-dark",
+            "Boarding" => "bg-success",
+            "Departed" => "bg-secondary",
+            "Delayed" => "bg-warning text-dark",
+            "Cancelled" => "bg-danger",
+            _ => "bg-secondary"
+        };
+
+        public string GetFlightRowClass(string status) => status switch
+        {
+            "Cancelled" => "table-danger",
+            "Delayed" => "table-warning",
+            "Boarding" => "table-success",
+            _ => ""
+        };
+
 
 
 

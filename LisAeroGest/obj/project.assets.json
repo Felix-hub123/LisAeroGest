@@ -1287,7 +1287,7 @@
           }
         }
       },
-      "QuestPDF/2026.6.0": {
+      "QuestPDF/2026.7.2": {
         "type": "package",
         "compile": {
           "lib/net8.0/QuestPDF.dll": {
@@ -4009,10 +4009,10 @@
         "qrcoder.nuspec"
       ]
     },
-    "QuestPDF/2026.6.0": {
-      "sha512": "0DQY6bGXcFLdj10vXmdMMZqgShQGuy0XvPtkkfntlOmSrtIZTBmlLFQilg3OK/V9c6hlyqus+g6PKm5YexEZ0A==",
+    "QuestPDF/2026.7.2": {
+      "sha512": "GSPOoErqB4Yh7mnbV4m/ykHOF6erHdm5qyMRHDr4sjk+fvrtkEL+RoG5YpOqiWrS833jEiktC1Uthyy5/QMNQA==",
       "type": "package",
-      "path": "questpdf/2026.6.0",
+      "path": "questpdf/2026.7.2",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -4063,13 +4063,15 @@
         "buildTransitive/net4/QuestPDF.targets",
         "lib/net10.0/QuestPDF.dll",
         "lib/net10.0/QuestPDF.xml",
+        "lib/net5.0/QuestPDF.dll",
+        "lib/net5.0/QuestPDF.xml",
         "lib/net6.0/QuestPDF.dll",
         "lib/net6.0/QuestPDF.xml",
         "lib/net8.0/QuestPDF.dll",
         "lib/net8.0/QuestPDF.xml",
         "lib/netstandard2.0/QuestPDF.dll",
         "lib/netstandard2.0/QuestPDF.xml",
-        "questpdf.2026.6.0.nupkg.sha512",
+        "questpdf.2026.7.2.nupkg.sha512",
         "questpdf.nuspec",
         "runtimes/linux-arm64/native/libQuestPdfSkia.so",
         "runtimes/linux-arm64/native/libqpdf.so",
@@ -5239,7 +5241,7 @@
       "Microsoft.EntityFrameworkCore.Tools >= 8.0.0",
       "Npgsql.EntityFrameworkCore.PostgreSQL >= 8.0.11",
       "QRCoder >= 1.8.0",
-      "QuestPDF >= 2026.6.0",
+      "QuestPDF >= 2026.7.2",
       "Rotativa.AspNetCore >= 1.4.0",
       "supabase-storage-csharp >= 1.4.0"
     ]
@@ -5345,7 +5347,7 @@
           },
           "QuestPDF": {
             "target": "Package",
-            "version": "[2026.6.0, )"
+            "version": "[2026.7.2, )"
           },
           "Rotativa.AspNetCore": {
             "target": "Package",

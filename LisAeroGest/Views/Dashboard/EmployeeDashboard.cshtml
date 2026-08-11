@@ -1,156 +1,162 @@
-﻿@{
+﻿@inject LisAeroGest.Helpers.IConverterHelper ConverterHelper
+@{
     ViewData["Title"] = "Dashboard Operacional";
+    var recentNotifications = ViewBag.RecentNotifications as IEnumerable<LisAeroGest.Data.Entities.Notification>;
 }
 
 <div class="container-fluid mt-4">
 
+    <!-- Cabeçalho -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold mb-1">
+            <h2 class="fw-bold mb-1 text-dark">
                 <i class="bi bi-person-badge text-primary me-2"></i>Dashboard Operacional
             </h2>
             <p class="text-muted mb-0">
-                Bem-vindo, <strong>@User.Identity!.Name</strong> —
-                <span class="badge bg-info">Funcionário</span>
+                Operador: <strong>@User.Identity!.Name</strong>
+                <span class="badge bg-primary ms-2">Operações</span>
             </p>
         </div>
-        <div class="text-muted small">
-            <i class="bi bi-calendar3 me-1"></i>
-            @DateTime.Now.ToString("dddd, dd 'de' MMMM 'de' yyyy",
-            new System.Globalization.CultureInfo("pt-PT"))
+        <div class="text-end text-muted small">
+            <i class="bi bi-clock me-1"></i>
+            @DateTime.Now.ToString("dd/MM/yyyy — HH:mm")
         </div>
     </div>
 
+    <!-- Acesso Rápido a Tarefas do Operador -->
     <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm text-center py-3"
-                 style="background: linear-gradient(135deg, #0d3d6b, #1F5C99);">
-                <div class="card-body text-white">
+        <div class="col-6 col-md-3">
+            <a asp-controller="CheckIn" asp-action="EmployeeCheckIn" class="card text-decoration-none shadow-sm border-0 bg-success text-white h-100">
+                <div class="card-body d-flex align-items-center justify-content-between p-3">
+                    <div>
+                        <h6 class="fw-bold mb-1">Balcão Check-in</h6>
+                        <small class="opacity-75">Processar passageiros</small>
+                    </div>
+                    <i class="bi bi-person-check fs-1"></i>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-controller="Gate" asp-action="Index" class="card text-decoration-none shadow-sm border-0 bg-warning text-dark h-100">
+                <div class="card-body d-flex align-items-center justify-content-between p-3">
+                    <div>
+                        <h6 class="fw-bold mb-1">Gestão de Gates</h6>
+                        <small class="opacity-75">Atribuir / Alterar</small>
+                    </div>
+                    <i class="bi bi-door-open fs-1"></i>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-controller="Flights" asp-action="Index" class="card text-decoration-none shadow-sm border-0 bg-primary text-white h-100">
+                <div class="card-body d-flex align-items-center justify-content-between p-3">
+                    <div>
+                        <h6 class="fw-bold mb-1">Lista de Voos</h6>
+                        <small class="opacity-75">Consultar / Atualizar</small>
+                    </div>
                     <i class="bi bi-airplane fs-1"></i>
-                    <h3 class="fw-bold mt-2">@ViewBag.TotalFlights</h3>
-                    <small>Total de Voos</small>
                 </div>
-            </div>
+            </a>
         </div>
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm text-center py-3"
-                 style="background: linear-gradient(135deg, #1a6b3c, #28a745);">
-                <div class="card-body text-white">
-                    <i class="bi bi-play-circle fs-1"></i>
-                    <h3 class="fw-bold mt-2">@ViewBag.ActiveFlights</h3>
-                    <small>Voos Ativos</small>
+        <div class="col-6 col-md-3">
+            <a asp-controller="Forum" asp-action="Index" class="card text-decoration-none shadow-sm border-0 bg-dark text-white h-100">
+                <div class="card-body d-flex align-items-center justify-content-between p-3">
+                    <div>
+                        <h6 class="fw-bold mb-1">Fórum Interno</h6>
+                        <small class="opacity-75">Avisos da equipa</small>
+                    </div>
+                    <i class="bi bi-chat-dots fs-1"></i>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm text-center py-3"
-                 style="background: linear-gradient(135deg, #3d1a6b, #6f42c1);">
-                <div class="card-body text-white">
-                    <i class="bi bi-ticket-perforated fs-1"></i>
-                    <h3 class="fw-bold mt-2">@ViewBag.TotalTickets</h3>
-                    <small>Bilhetes Vendidos</small>
-                </div>
-            </div>
+            </a>
         </div>
     </div>
 
-    <h5 class="text-muted fw-semibold text-uppercase small mb-3">
-        <i class="bi bi-clipboard me-1"></i>Operações
-    </h5>
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
-            <a asp-controller="Flight" asp-action="Index"
-               class="card text-decoration-none text-dark shadow-sm h-100 border-0">
-                <div class="card-body text-center py-4">
-                    <i class="bi bi-calendar3 text-primary fs-1"></i>
-                    <p class="fw-semibold mt-2 mb-0">Voos</p>
-                    <small class="text-muted">Gerir voos</small>
+    <!-- Módulo Principal: Estado Operacional & Notificações -->
+    <div class="row g-4 mb-4">
+
+        <!-- Cartões de Resumo Rápido -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small fw-bold text-uppercase">Voos Ativos Hoje</span>
+                            <h2 class="fw-bold my-1 text-primary">@ViewBag.ActiveFlights</h2>
+                        </div>
+                        <div class="bg-primary-subtle text-primary p-3 rounded-circle">
+                            <i class="bi bi-airplane-engines fs-3"></i>
+                        </div>
+                    </div>
                 </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a asp-controller="Gate" asp-action="Index"
-               class="card text-decoration-none text-dark shadow-sm h-100 border-0">
-                <div class="card-body text-center py-4">
-                    <i class="bi bi-door-open text-warning fs-1"></i>
-                    <p class="fw-semibold mt-2 mb-0">Gates</p>
-                    <small class="text-muted">Gerir gates</small>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small fw-bold text-uppercase">Total Bilhetes Processados</span>
+                            <h2 class="fw-bold my-1 text-success">@ViewBag.TotalTickets</h2>
+                        </div>
+                        <div class="bg-success-subtle text-success p-3 rounded-circle">
+                            <i class="bi bi-ticket-perforated fs-3"></i>
+                        </div>
+                    </div>
                 </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a asp-controller="CheckIn" asp-action="EmployeeCheckIn"
-               class="card text-decoration-none text-dark shadow-sm h-100 border-0">
-                <div class="card-body text-center py-4">
-                    <i class="bi bi-person-check text-success fs-1"></i>
-                    <p class="fw-semibold mt-2 mb-0">Check-in Presencial</p>
-                    <small class="text-muted">Balcão de check-in</small>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-3">
-            <a asp-controller="Forum" asp-action="Index"
-               class="card text-decoration-none text-dark shadow-sm h-100 border-0">
-                <div class="card-body text-center py-4">
-                    <i class="bi bi-chat-dots text-danger fs-1"></i>
-                    <p class="fw-semibold mt-2 mb-0">Fórum Interno</p>
-                    <small class="text-muted">Discussão interna</small>
-                </div>
-            </a>
-        </div>
-    </div>
-    <!-- Notificações Recentes -->
-    <h5 class="text-muted fw-semibold text-uppercase small mb-3">
-        <i class="bi bi-bell me-1"></i>Notificações Recentes
-    </h5>
-    <div class="row g-3 mb-4">
-        <div class="col-12">
+            </div>
+
+            <!-- Gráfico Pequeno/Compacto -->
             <div class="card shadow-sm border-0">
-                <div class="card-header d-flex justify-content-between align-items-center bg-white">
-                    <span class="fw-semibold">
-                        <i class="bi bi-bell-fill text-primary me-2"></i>
-                        Notificações
+                <div class="card-body">
+                    <h6 class="fw-bold card-title mb-3">Distribuição por Estado</h6>
+                    <div style="max-height: 200px;" class="d-flex justify-content-center">
+                        <canvas id="chartStatus"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Painel de Notificações / Alertas Operacionais -->
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom-0">
+                    <h6 class="fw-bold mb-0">
+                        <i class="bi bi-bell-fill text-warning me-2"></i>Alertas & Notificações do Turno
                         @if (ViewBag.UnreadCount > 0)
                         {
-                            <span class="badge bg-danger ms-1">@ViewBag.UnreadCount</span>
+                            <span class="badge bg-danger rounded-pill ms-1">@ViewBag.UnreadCount novos</span>
                         }
-                    </span>
-                    <a asp-controller="Notification" asp-action="Index"
-                       class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-arrow-right me-1"></i>Ver todas
+                    </h6>
+                    <a asp-controller="Notification" asp-action="Index" class="btn btn-sm btn-outline-secondary">
+                        Ver todas
                     </a>
                 </div>
                 <div class="card-body p-0">
-                    @if (ViewBag.RecentNotifications != null &&
-                                        ((IEnumerable<LisAeroGest.Data.Entities.Notification>)ViewBag.RecentNotifications).Any())
+                    @if (recentNotifications != null && recentNotifications.Any())
                     {
                         <div class="list-group list-group-flush">
-                            @foreach (var notification in
-                                                    (IEnumerable<LisAeroGest.Data.Entities.Notification>)ViewBag.RecentNotifications)
+                            @foreach (var notification in recentNotifications)
                             {
-                                <div class="list-group-item d-flex gap-3 py-3
-                                                        @(notification.IsRead ? "opacity-75" : "")">
+                                <div class="list-group-item d-flex gap-3 py-3 align-items-start @(notification.IsRead ? "bg-light opacity-75" : "")">
                                     <div class="flex-shrink-0">
-                                        <div class="rounded-circle d-flex align-items-center justify-content-center"
-                                             style="width: 38px; height: 38px; background: #e7f1ff;">
-                                            <i class="bi @notification.Icon @notification.ColorClass"></i>
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center mt-1"
+                                             style="width: 36px; height: 36px; background: #f8f9fa;">
+                                            <i class="bi @notification.Icon @notification.ColorClass fs-5"></i>
                                         </div>
                                     </div>
                                     <div class="flex-grow-1">
-                                        <div class="d-flex justify-content-between">
+                                        <div class="d-flex justify-content-between align-items-center">
                                             <h6 class="mb-1 @(notification.IsRead ? "" : "fw-bold") small">
                                                 @if (!notification.IsRead)
                                                 {
-                                                    <span class="badge bg-primary me-1"
-                                                          style="font-size: 0.55rem;">NOVO</span>
+                                                    <span class="badge bg-primary me-1">NOVO</span>
                                                 }
                                                 @notification.Title
                                             </h6>
-                                            <small class="text-muted">
+                                            <span class="text-muted extra-small">
                                                 @notification.CreatedAt.ToString("HH:mm")
-                                            </small>
+                                            </span>
                                         </div>
-                                        <p class="mb-0 small text-muted">@notification.Message</p>
+                                        <p class="mb-0 small text-secondary">@notification.Message</p>
                                     </div>
                                 </div>
                             }
@@ -158,28 +164,15 @@
                     }
                     else
                     {
-                        <div class="text-center py-4 text-muted">
-                            <i class="bi bi-bell-slash opacity-50 fs-3 d-block mb-2"></i>
-                            Sem notificações recentes.
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-check-circle text-success fs-1 d-block mb-2"></i>
+                            Sem alertas pendentes para o seu turno.
                         </div>
                     }
                 </div>
             </div>
         </div>
-    </div>
-    <!-- Gráfico -->
-    <h5 class="text-muted fw-semibold text-uppercase small mb-3">
-        <i class="bi bi-graph-up me-1"></i>Estatísticas
-    </h5>
-    <div class="row g-3">
-        <div class="col-md-8 mx-auto">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <h5 class="card-title">Voos por Estado</h5>
-                    <canvas id="chartStatus" height="200"></canvas>
-                </div>
-            </div>
-        </div>
+
     </div>
 </div>
 
@@ -188,15 +181,21 @@
         const statusData = @Html.Raw(ViewBag.FlightsByStatus);
 
         new Chart(document.getElementById('chartStatus'), {
-            type: 'pie',
+            type: 'doughnut',
             data: {
                 labels: statusData.map(x => x.label),
                 datasets: [{
                     data: statusData.map(x => x.count),
-                    backgroundColor: ['#0d3d6b','#1F5C99','#ffc107','#dc3545','#198754','#6c757d']
+                    backgroundColor: ['#0d6efd', '#0dcaf0', '#198754', '#6c757d', '#ffc107', '#dc3545']
                 }]
             },
-            options: { responsive: true }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
         });
     </script>
 }

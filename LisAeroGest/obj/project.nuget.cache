@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "VtkAGeVNg1w=",
+  "dgSpecHash": "e6EGbNeMPZw=",
   "success": true,
   "projectFilePath": "C:\\Users\\Felix\\Desktop\\LisAeroGest\\LisAeroGest\\LisAeroGest.csproj",
   "expectedPackageFiles": [
@@ -67,7 +67,7 @@
     "C:\\Users\\Felix\\.nuget\\packages\\npgsql\\8.0.6\\npgsql.8.0.6.nupkg.sha512",
     "C:\\Users\\Felix\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\8.0.11\\npgsql.entityframeworkcore.postgresql.8.0.11.nupkg.sha512",
     "C:\\Users\\Felix\\.nuget\\packages\\qrcoder\\1.8.0\\qrcoder.1.8.0.nupkg.sha512",
-    "C:\\Users\\Felix\\.nuget\\packages\\questpdf\\2026.6.0\\questpdf.2026.6.0.nupkg.sha512",
+    "C:\\Users\\Felix\\.nuget\\packages\\questpdf\\2026.7.2\\questpdf.2026.7.2.nupkg.sha512",
     "C:\\Users\\Felix\\.nuget\\packages\\rotativa.aspnetcore\\1.4.0\\rotativa.aspnetcore.1.4.0.nupkg.sha512",
     "C:\\Users\\Felix\\.nuget\\packages\\supabase-core\\0.0.3\\supabase-core.0.0.3.nupkg.sha512",
     "C:\\Users\\Felix\\.nuget\\packages\\supabase-storage-csharp\\1.4.0\\supabase-storage-csharp.1.4.0.nupkg.sha512",

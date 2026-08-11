@@ -83,11 +83,11 @@ namespace LisAeroGest.Controllers.Api
                 claims.Add(new Claim(ClaimTypes.Role, role));
 
             var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
+            Encoding.UTF8.GetBytes(_configuration["Tokens:Key"]!));
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
+                issuer: _configuration["Tokens:Issuer"],
+                audience: _configuration["Tokens:Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddDays(7),
                 signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)

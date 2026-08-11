@@ -257,6 +257,26 @@ namespace LisAeroGest.Helpers
         IEnumerable<object> GetAirlinesByCountry(string? country);
 
 
+        /// <summary>
+        /// Devolve o texto em português correspondente ao estado do voo.
+        /// </summary>
+        /// <param name="status">Estado do voo em inglês.</param>
+        /// <returns>Texto traduzido para português.</returns>
+        string GetFlightStatusText(string status);
+
+        /// <summary>
+        /// Devolve a classe CSS do Bootstrap para colorir o badge do estado do voo.
+        /// </summary>
+        /// <param name="status">Estado do voo em inglês.</param>
+        /// <returns>Classe CSS do Bootstrap.</returns>
+        string GetFlightBadgeClass(string status);
+
+        /// <summary>
+        /// Devolve a classe CSS para destacar a linha da tabela consoante o estado do voo.
+        /// </summary>
+        /// <param name="status">Estado do voo em inglês.</param>
+        /// <returns>Classe CSS do Bootstrap para a linha da tabela.</returns>
+        string GetFlightRowClass(string status);
 
 
 
