@@ -25,6 +25,8 @@ namespace LisAeroGest.Controllers
         private readonly ISeatRepository _seatRepository;
         private readonly IConverterHelper _converterHelper;
         private readonly IFlightExportService _flightExportService;
+        private readonly INotificationRepository _notificationRepository;
+        private readonly ITicketRepository _ticketRepository;
 
         public FlightsController(
             IFlightRepository flightRepository,
@@ -34,7 +36,10 @@ namespace LisAeroGest.Controllers
             IGateRepository gateRepository,
             ISeatRepository seatRepository,
             IConverterHelper converterHelper,
-            IFlightExportService flightExportService)
+            IFlightExportService flightExportService,
+            INotificationRepository notificationRepository,
+            ITicketRepository ticketRepository
+            )
         {
             _flightRepository = flightRepository;
             _airlineRepository = airlineRepository;
@@ -44,6 +49,8 @@ namespace LisAeroGest.Controllers
             _seatRepository = seatRepository;
             _converterHelper = converterHelper;
             _flightExportService = flightExportService;
+            _notificationRepository = notificationRepository;
+            _ticketRepository = ticketRepository;
         }
 
         // ─── INDEX COM FILTROS ───────────────────────────────────────────────
@@ -264,12 +271,50 @@ namespace LisAeroGest.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            var estadoAnterior = flight.Status;
             flight.Status = newStatus;
             await _flightRepository.UpdateAsync(flight);
             await _flightRepository.SaveAsync();
 
+            if (newStatus == "Delayed" && estadoAnterior != "Delayed")
+            {
+                await NotificarPassageirosDeAtraso(flight);
+            }
+
             TempData["Success"] = $"Estado do Voo {flight.FlightNumber} alterado com sucesso!";
             return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>
+        /// Cria uma notificação para cada passageiro com bilhete válido no voo atrasado.
+        /// </summary>
+        private async Task NotificarPassageirosDeAtraso(Flight flight)
+        {
+            var tickets = await _ticketRepository.GetByFlightAsync(flight.Id);
+
+            var passageirosNotificados = new HashSet<string>();
+
+            foreach (var ticket in tickets)
+            {
+                if (ticket.Status is not ("Paid" or "CheckedIn")) continue;
+                if (ticket.Passenger?.UserId == null) continue;
+                if (!passageirosNotificados.Add(ticket.Passenger.UserId)) continue; // evita duplicados
+
+                var notification = new Notification
+                {
+                    UserId = ticket.Passenger.UserId,
+                    Title = "Voo atrasado",
+                    Message = $"O voo {flight.FlightNumber} sofreu um atraso. Consulta a nova hora prevista.",
+                    Link = $"/Flights/Details/{flight.Id}",
+                    Icon = "bi-exclamation-triangle",
+                    ColorClass = "text-warning",
+                    Type = "Delay"
+                };
+
+                await _notificationRepository.AddAsync(notification);
+            }
+
+            await _notificationRepository.SaveAsync();
         }
 
         // ─── DELETE ─────────────────────────────────────────────────────────
