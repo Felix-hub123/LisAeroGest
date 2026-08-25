@@ -30,13 +30,30 @@ if (builder.Environment.IsDevelopment())
 }
 else
 {
-    // Habilita compatibilidade de datas legadas do PostgreSQL
     AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-    // Usa PostgreSQL em Produção e lê da pasta Migrations/Postgres
+    var connectionString =
+        builder.Configuration.GetConnectionString("DefaultConnection");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        Console.WriteLine(">>> CONNECTION STRING NÃO ENCONTRADA");
+    }
+    else
+    {
+        var csb = new Npgsql.NpgsqlConnectionStringBuilder(connectionString);
+
+        Console.WriteLine(">>> DATABASE CONFIGURATION");
+        Console.WriteLine($">>> Host: {csb.Host}");
+        Console.WriteLine($">>> Port: {csb.Port}");
+        Console.WriteLine($">>> Database: {csb.Database}");
+        Console.WriteLine($">>> Username: {csb.Username}");
+        Console.WriteLine(">>> Password: [OCULTA]");
+    }
+
     builder.Services.AddDbContext<DataContext>(options =>
         options.UseNpgsql(
-            builder.Configuration.GetConnectionString("DefaultConnection"),
+            connectionString,
             b => b.MigrationsAssembly(typeof(DataContext).Assembly.FullName)
         )
     );
