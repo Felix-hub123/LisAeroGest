@@ -30,14 +30,12 @@ namespace LisAeroGest.Data.Repositories
         /// </summary>
 
         public async Task<IEnumerable<Seat>> GetSeatsByFlightAsync(int flightId)
-
-            => await _dbSet
-
+        {
+            return await _context.Seats
                 .Where(s => s.FlightId == flightId)
-
                 .OrderBy(s => s.Code)
-
                 .ToListAsync();
+        }
 
 
         /// <summary>
@@ -119,12 +117,22 @@ namespace LisAeroGest.Data.Repositories
 
         public async Task<List<int>> GetReservedSeatIdsByFlightAsync(int flightId)
         {
-           
             return await _context.Seats
-                .Where(s => !s.IsAvailable) 
+                .Where(s => s.FlightId == flightId && !s.IsAvailable)
                 .Select(s => s.Id)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Seat>> GetSeatsByFlightIdAsync(int flightId)
+        {
+            return await _context.Seats
+                .Where(s => s.FlightId == flightId && !s.WasDeleted)
+                .OrderBy(s => s.Code)
+                .ToListAsync();
+        }
+
+
+
     }
 }
 

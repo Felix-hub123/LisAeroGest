@@ -217,6 +217,19 @@ namespace LisAeroGest.Helpers
         List<SelectListItem> ToRoleSelectList();
 
         /// <summary>
+        /// Gera a lista de opções para o dropdown de filtro de estado de bilhetes,
+        /// já com a opção correta marcada como selecionada.
+        /// </summary>
+        List<SelectListItem> ToTicketStatusSelectList(string? selectedStatus);
+
+        /// <summary>
+        /// Indica se um bilhete está dentro da janela de check-in online
+        /// (entre 48h e 1h antes da partida, bilhete pago e voo não cancelado).
+        /// Única fonte de verdade desta regra — usada tanto na UI como na validação do servidor.
+        /// </summary>
+        bool CanCheckInOnline(Ticket ticket);
+
+        /// <summary>
         /// Instancia um novo User com os dados fornecidos.
         /// </summary>
         User ToUser(string email, string firstName, string lastName);
@@ -277,6 +290,14 @@ namespace LisAeroGest.Helpers
         /// <param name="status">Estado do voo em inglês.</param>
         /// <returns>Classe CSS do Bootstrap para a linha da tabela.</returns>
         string GetFlightRowClass(string status);
+
+        FlightDetailViewModel ToFlightDetailViewModel(Flight flight);
+
+        /// <summary>
+        /// Converte uma lista de entidades Flight para FlightDetailViewModel
+        /// </summary>
+        IEnumerable<FlightDetailViewModel> ToFlightDetailViewModelList(IEnumerable<Flight> flights);
+
 
 
 

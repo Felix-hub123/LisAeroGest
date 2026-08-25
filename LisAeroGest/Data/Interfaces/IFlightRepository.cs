@@ -14,5 +14,21 @@ namespace LisAeroGest.Data.Interfaces
 
         Task<IEnumerable<Flight>> GetAllWithDetailsAsync();
 
+
+        /// <summary>
+        /// Busca um voo com todos os relacionamentos (Airport, Airline, Gate, Aircraft)
+        /// </summary>
+        Task<Flight?> GetFlightWithDetailsAsync(int id);
+
+        /// <summary>
+        /// Pesquisa voos por termo (número, destino, companhia)
+        /// </summary>
+        Task<IEnumerable<Flight>> SearchFlightsAsync(string term);
+
+        /// <summary>
+        /// Busca voos disponíveis (para a API pública)
+        /// </summary>
+        Task<IEnumerable<Flight>> GetAvailableFlightsAsync();
+
     }
 }

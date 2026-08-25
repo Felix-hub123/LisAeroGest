@@ -11,10 +11,8 @@ using Microsoft.EntityFrameworkCore;
 namespace LisAeroGest.Controllers
 {
     /// <summary>
-    /// Controlador responsável pela gestão operacional de voos e exportação de dados na plataforma LisAeroGest.
-    /// Acesso permitido a Administradores e Funcionários.
+    /// Controlador responsável pela gestão operacional de voos e consulta pública no LisAeroGest.
     /// </summary>
-    [Authorize(Roles = "Admin,Employee")]
     public class FlightsController : Controller
     {
         private readonly IFlightRepository _flightRepository;
@@ -27,6 +25,7 @@ namespace LisAeroGest.Controllers
         private readonly IFlightExportService _flightExportService;
         private readonly INotificationRepository _notificationRepository;
         private readonly ITicketRepository _ticketRepository;
+        private readonly IMailHelper _emailHelper;
 
         public FlightsController(
             IFlightRepository flightRepository,
@@ -38,8 +37,8 @@ namespace LisAeroGest.Controllers
             IConverterHelper converterHelper,
             IFlightExportService flightExportService,
             INotificationRepository notificationRepository,
-            ITicketRepository ticketRepository
-            )
+            ITicketRepository ticketRepository,
+            IMailHelper emailHelper)
         {
             _flightRepository = flightRepository;
             _airlineRepository = airlineRepository;
@@ -51,13 +50,15 @@ namespace LisAeroGest.Controllers
             _flightExportService = flightExportService;
             _notificationRepository = notificationRepository;
             _ticketRepository = ticketRepository;
+            _emailHelper = emailHelper;
         }
 
-        // ─── INDEX COM FILTROS ───────────────────────────────────────────────
+        // ─── INDEX PÚBLICO COM FILTROS ───────────────────────────────────────
 
         /// <summary>
-        /// Lista os voos com suporte a filtros por companhia, origem, destino e estado.
+        /// Lista os voos com suporte a filtros. Acesso livre a visitantes.
         /// </summary>
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> Index(int? airlineId, int? originId, int? destinationId, string? status)
         {
@@ -68,7 +69,13 @@ namespace LisAeroGest.Controllers
             if (destinationId.HasValue) query = query.Where(f => f.DestinationAirportId == destinationId.Value);
             if (!string.IsNullOrEmpty(status)) query = query.Where(f => f.Status == status);
 
-            var flights = await query.OrderByDescending(f => f.DepartureTime).ToListAsync();
+            var flights = await query
+                .Include(f => f.Airline)
+                .Include(f => f.OriginAirport)
+                .Include(f => f.DestinationAirport)
+                .Include(f => f.Gate)
+                .OrderByDescending(f => f.DepartureTime)
+                .ToListAsync();
 
             var model = new FlightFilterViewModel
             {
@@ -87,12 +94,51 @@ namespace LisAeroGest.Controllers
             return View(model);
         }
 
-        // ─── EXPORTAÇÃO (XML / PDF) ──────────────────────────────────────────
+        // ─── AÇÃO DE COMPRA (NOVO) ──────────────────────────────────────────
 
         /// <summary>
-        /// Gera e transfere um relatório em formato XML com todos os voos detalhados.
+        /// Ação de compra de bilhete - EXIGE AUTENTICAÇÃO.
         /// </summary>
         [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> Purchase(int id)
+        {
+            var flight = await _flightRepository.GetWithDetailsAsync(id);
+            if (flight == null) return NotFound();
+
+            // Verifica se o voo está disponível para compra
+            if (flight.Status == "Cancelled" || flight.Status == "Departed")
+            {
+                TempData["Error"] = "Este voo não está disponível para compra.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (flight.DepartureTime < DateTime.Now.AddHours(1))
+            {
+                TempData["Error"] = "A compra de bilhetes para este voo já não está disponível (menos de 1 hora para a partida).";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Verifica se o utilizador já tem bilhete para este voo
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var existingTicket = await _ticketRepository.GetAllQueryable()
+                .AnyAsync(t => t.FlightId == id && t.Passenger.UserId == userId && t.Status != "Cancelled");
+
+            if (existingTicket)
+            {
+                TempData["Error"] = "Já possui um bilhete para este voo.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Redireciona para o fluxo de checkout (Booking/SelectSeat)
+            // NOTA: Assumindo que tens um controller Booking com ação SelectSeat
+            return RedirectToAction("SelectSeat", "Booking", new { flightId = id });
+        }
+
+        // ─── EXPORTAÇÃO (PROTEGIDO) ──────────────────────────────────────────
+
+        [HttpGet]
+        [Authorize(Roles = "Admin,Employee")]
         public async Task<IActionResult> ExportXml()
         {
             var xmlBytes = await _flightExportService.ExportFlightsToXmlAsync();
@@ -100,10 +146,8 @@ namespace LisAeroGest.Controllers
             return File(xmlBytes, "application/xml", fileName);
         }
 
-        /// <summary>
-        /// Gera e transfere um relatório em formato PDF com a listagem de voos.
-        /// </summary>
         [HttpGet]
+        [Authorize(Roles = "Admin,Employee")]
         public async Task<IActionResult> ExportPdf()
         {
             var pdfBytes = await _flightExportService.ExportFlightsToPdfAsync();
@@ -111,11 +155,9 @@ namespace LisAeroGest.Controllers
             return File(pdfBytes, "application/pdf", fileName);
         }
 
-        // ─── DETAILS ────────────────────────────────────────────────────────
+        // ─── DETAILS PÚBLICO ────────────────────────────────────────────────
 
-        /// <summary>
-        /// Exibe os detalhes de um voo específico.
-        /// </summary>
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
@@ -125,11 +167,8 @@ namespace LisAeroGest.Controllers
             return View(flight);
         }
 
-        // ─── CREATE ─────────────────────────────────────────────────────────
+        // ─── CREATE (PROTEGIDO) ─────────────────────────────────────────────
 
-        /// <summary>
-        /// Apresenta o formulário para criação de um novo voo (Apenas Admin).
-        /// </summary>
         [HttpGet]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create()
@@ -144,9 +183,6 @@ namespace LisAeroGest.Controllers
             return View(vm);
         }
 
-        /// <summary>
-        /// Processa a submissão do formulário de criação de voo.
-        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
@@ -178,18 +214,14 @@ namespace LisAeroGest.Controllers
             await _flightRepository.AddAsync(flight);
             await _flightRepository.SaveAsync();
 
-            // Gera automaticamente os lugares associados ao voo recém-criado
             await _seatRepository.GenerateSeatsForFlightAsync(flight.Id, viewModel.AircraftId);
 
             TempData["Success"] = $"Voo {flight.FlightNumber} criado com sucesso!";
             return RedirectToAction(nameof(Index));
         }
 
-        // ─── EDIT ───────────────────────────────────────────────────────────
+        // ─── EDIT (PROTEGIDO) ───────────────────────────────────────────────
 
-        /// <summary>
-        /// Apresenta o formulário de edição de um voo existente (Apenas Admin).
-        /// </summary>
         [HttpGet]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
@@ -203,9 +235,6 @@ namespace LisAeroGest.Controllers
             return View(vm);
         }
 
-        /// <summary>
-        /// Processa as alterações a um voo existente.
-        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
@@ -252,76 +281,40 @@ namespace LisAeroGest.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ─── CHANGE STATUS ──────────────────────────────────────────────────
+        // ─── CHANGE STATUS (PROTEGIDO) ───────────────────────────────────────
 
-        /// <summary>
-        /// Altera o estado operacional do voo a partir da listagem.
-        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Employee")]
         public async Task<IActionResult> ChangeStatus(int id, string newStatus)
         {
             var flight = await _flightRepository.GetByIdAsync(id);
             if (flight == null) return NotFound();
 
-            var valid = new[] { "Scheduled", "CheckIn", "Boarding", "Departed", "Delayed", "Cancelled" };
-            if (!valid.Contains(newStatus))
+            var validStatuses = new[] { "Scheduled", "CheckIn", "Boarding", "Departed", "Delayed", "Cancelled" };
+            if (!validStatuses.Contains(newStatus))
             {
                 TempData["Error"] = "Estado operacional inválido.";
                 return RedirectToAction(nameof(Index));
             }
 
-            var estadoAnterior = flight.Status;
+            var previousStatus = flight.Status;
             flight.Status = newStatus;
+
             await _flightRepository.UpdateAsync(flight);
             await _flightRepository.SaveAsync();
 
-            if (newStatus == "Delayed" && estadoAnterior != "Delayed")
+            if ((newStatus == "Delayed" || newStatus == "Cancelled") && previousStatus != newStatus)
             {
-                await NotificarPassageirosDeAtraso(flight);
+                await NotifyPassengersAboutStatusChangeAsync(flight, newStatus);
             }
 
-            TempData["Success"] = $"Estado do Voo {flight.FlightNumber} alterado com sucesso!";
+            TempData["Success"] = $"Estado do Voo {flight.FlightNumber} alterado para {newStatus} com sucesso!";
             return RedirectToAction(nameof(Index));
         }
 
-        /// <summary>
-        /// Cria uma notificação para cada passageiro com bilhete válido no voo atrasado.
-        /// </summary>
-        private async Task NotificarPassageirosDeAtraso(Flight flight)
-        {
-            var tickets = await _ticketRepository.GetByFlightAsync(flight.Id);
+        // ─── DELETE (PROTEGIDO) ─────────────────────────────────────────────
 
-            var passageirosNotificados = new HashSet<string>();
-
-            foreach (var ticket in tickets)
-            {
-                if (ticket.Status is not ("Paid" or "CheckedIn")) continue;
-                if (ticket.Passenger?.UserId == null) continue;
-                if (!passageirosNotificados.Add(ticket.Passenger.UserId)) continue; // evita duplicados
-
-                var notification = new Notification
-                {
-                    UserId = ticket.Passenger.UserId,
-                    Title = "Voo atrasado",
-                    Message = $"O voo {flight.FlightNumber} sofreu um atraso. Consulta a nova hora prevista.",
-                    Link = $"/Flights/Details/{flight.Id}",
-                    Icon = "bi-exclamation-triangle",
-                    ColorClass = "text-warning",
-                    Type = "Delay"
-                };
-
-                await _notificationRepository.AddAsync(notification);
-            }
-
-            await _notificationRepository.SaveAsync();
-        }
-
-        // ─── DELETE ─────────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Apresenta a página de confirmação para remoção de um voo (Apenas Admin).
-        /// </summary>
         [HttpGet]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
@@ -332,9 +325,6 @@ namespace LisAeroGest.Controllers
             return View(flight);
         }
 
-        /// <summary>
-        /// Executa a remoção do voo, verificando antes se existem assentos/bilhetes vendidos.
-        /// </summary>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
@@ -368,6 +358,52 @@ namespace LisAeroGest.Controllers
             vm.Aircrafts = _converterHelper.ToComboAircrafts(await _aircraftRepository.GetAllAsync(), vm.AircraftId);
             vm.Gates = _converterHelper.ToComboGates(await _gateRepository.GetAllAsync(), vm.GateId);
             vm.Statuses = _converterHelper.ToComboStatuses(selectedStatus);
+        }
+
+        private async Task NotifyPassengersAboutStatusChangeAsync(Flight flight, string newStatus)
+        {
+            var tickets = await _ticketRepository.GetByFlightIdAsync(flight.Id);
+            var validTickets = tickets.Where(t => t.Status == "Paid" || t.Status == "CheckedIn").ToList();
+
+            foreach (var ticket in validTickets)
+            {
+                if (ticket.Passenger?.User?.Email == null) continue;
+
+                var passengerName = $"{ticket.Passenger.FirstName} {ticket.Passenger.LastName}";
+                var passengerEmail = ticket.Passenger.User.Email;
+
+                string subject;
+                string body;
+
+                if (newStatus == "Delayed")
+                {
+                    subject = $"[LisAeroGest] AVISO: Atraso no voo {flight.FlightNumber}";
+                    body = $"<p>Olá <b>{passengerName}</b>,</p>" +
+                           $"<p>Informativo: O seu voo <b>{flight.FlightNumber}</b> com destino a " +
+                           $"<b>{flight.DestinationAirport?.City}</b> encontra-se <span style='color:red;'>ATRASADO</span>.</p>" +
+                           $"<p>Por favor, acompanhe o painel de saídas para atualizações dos novos horários.</p>";
+                }
+                else
+                {
+                    subject = $"[LisAeroGest] IMPORTANTE: Cancelamento do voo {flight.FlightNumber}";
+                    body = $"<p>Olá <b>{passengerName}</b>,</p>" +
+                           $"<p>Lamentamos informar que o seu voo <b>{flight.FlightNumber}</b> foi <span style='color:red;'>CANCELADO</span>.</p>" +
+                           $"<p>Por favor, dirija-se ao balcão de apoio ao cliente ou aceda à sua área reservada para reagendamento.</p>";
+                }
+
+                await _notificationRepository.AddAsync(new Notification
+                {
+                    UserId = ticket.Passenger.UserId,
+                    Title = subject,
+                    Message = body,
+                    CreatedAt = DateTime.UtcNow,
+                    IsRead = false
+                });
+
+                await _emailHelper.SendEmailAsync(passengerEmail, subject, body);
+            }
+
+            await _notificationRepository.SaveAsync();
         }
     }
 }

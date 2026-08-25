@@ -65,7 +65,6 @@ namespace LisAeroGest.Controllers
         /// Dashboard completo para Administradores com estatísticas globais e KPIs do aeroporto.
         /// </summary>
         /// <returns>View com gráficos e indicadores globais.</returns>
-        [Authorize(Roles = "Admin")]
         private async Task<IActionResult> AdminDashboard()
         {
             var flights = (await _flightRepository.GetAllWithDetailsAsync()).ToList();
@@ -173,7 +172,6 @@ namespace LisAeroGest.Controllers
         /// Dashboard operacional para Funcionários com foco na operação diária de voos.
         /// </summary>
         /// <returns>View com indicadores operacionais.</returns>
-        [Authorize(Roles = "Employee")]
         private async Task<IActionResult> EmployeeDashboard()
         {
             var flights = await _flightRepository.GetAllAsync();
@@ -207,7 +205,6 @@ namespace LisAeroGest.Controllers
         /// Dashboard pessoal para Passageiros com a gestão dos seus bilhetes e histórico de voos.
         /// </summary>
         /// <returns>View com os dados do passageiro.</returns>
-        [Authorize(Roles = "Passenger")]
         private async Task<IActionResult> PassengerDashboard()
         {
             var user = await GetAuthenticatedUserAsync();

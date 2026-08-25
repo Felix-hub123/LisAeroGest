@@ -1,0 +1,122 @@
+﻿@model LisAeroGest.Models.FlightDetailViewModel
+
+<div class="flight-card" data-flight-id="@Model.Id" data-flight-number="@Model.FlightNumber">
+    <div class="flight-card-inner">
+        <!-- Cabeçalho: Número do Voo + Estado -->
+        <div class="flight-card-header d-flex justify-content-between align-items-start">
+            <div>
+                <span class="flight-number">@Model.FlightNumber</span>
+                <span class="flight-airline text-muted ms-2">@Model.Airline</span>
+            </div>
+            <span class="flight-status-badge status-@Model.Status.ToLower().Replace(" ", "-")">
+                <span class="status-dot"></span>
+                @Model.Status
+            </span>
+        </div>
+
+        <!-- Corpo: Rota + Horários -->
+        <div class="flight-card-body">
+            <div class="flight-route d-flex align-items-center">
+                <div class="route-origin">
+                    <span class="route-code">@Model.Origin</span>
+                    <span class="route-city d-block small text-muted">@Model.OriginCity</span>
+                </div>
+                <div class="route-arrow mx-3">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+                <div class="route-destination">
+                    <span class="route-code">@Model.Destination</span>
+                    <span class="route-city d-block small text-muted">@Model.DestinationCity</span>
+                </div>
+            </div>
+
+            <div class="flight-times d-flex justify-content-between mt-2">
+                <div>
+                    <small class="text-muted d-block">Previsto</small>
+                    <span class="scheduled-time">@Model.DepartureTime.ToString("HH:mm")</span>
+                </div>
+                @if (Model.EstimatedTime.HasValue)
+                {
+                    <div class="text-end">
+                        <small class="text-muted d-block">Estimado</small>
+                        <span class="estimated-time fw-bold @(Model.IsDelayed ? "text-danger" : "")">
+                            @Model.EstimatedTime.Value.ToString("HH:mm")
+                            @if (Model.IsDelayed && Model.DelayMinutes.HasValue)
+                            {
+                                <span class="delay-badge">+@Model.DelayMinutes min</span>
+                            }
+                        </span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Rodapé: Gate + Ações -->
+        <div class="flight-card-footer d-flex justify-content-between align-items-center">
+            <div>
+                <span class="gate-info">
+                    <i class="bi bi-door-open me-1"></i> Gate @Model.Gate
+                </span>
+                @if (!string.IsNullOrEmpty(Model.Terminal))
+                {
+                    <span class="terminal-info ms-2">Terminal @Model.Terminal</span>
+                }
+            </div>
+            <div class="flight-actions">
+                <button class="btn btn-sm btn-outline-secondary favorite-btn"
+                        data-flight-id="@Model.Id"
+                        onclick="FlightCards.toggleFavorite('@Model.Id')">
+                    <i class="bi bi-star"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-primary detail-btn"
+                        data-flight-id="@Model.Id"
+                        onclick="FlightCards.openDetail('@Model.Id')">
+                    <i class="bi bi-info-circle"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-success share-btn"
+                        data-flight-id="@Model.Id"
+                        onclick="FlightCards.shareFlight('@Model.Id')">
+                    <i class="bi bi-share"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Barra de Progresso do Ciclo de Vida -->
+        <div class="flight-progress mt-2">
+            <div class="progress-steps d-flex justify-content-between">
+                <span class="step @(Model.Status == "Previsto" || Model.Status == "Scheduled" ? "active" : "")">Previsto</span>
+                <span class="step @(Model.Status == "Check-in" || Model.Status == "CheckIn" ? "active" : "")">Check-in</span>
+                <span class="step @(Model.Status == "A Embarcar" || Model.Status == "Boarding" ? "active" : "")">Embarque</span>
+                <span class="step @(Model.Status == "Partiu" || Model.Status == "Departed" ? "active" : "")">Partiu</span>
+                <span class="step @(Model.Status == "Concluído" || Model.Status == "Completed" ? "active" : "")">Concluído</span>
+            </div>
+            <div class="progress">
+                <div class="progress-bar" style="width: @GetProgressPercentage(Model.Status)%"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    private int GetProgressPercentage(string status)
+    {
+        var map = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Previsto", 10 },
+            { "Scheduled", 10 },
+            { "Check-in", 30 },
+            { "CheckIn", 30 },
+            { "A Embarcar", 55 },
+            { "Boarding", 55 },
+            { "Partiu", 80 },
+            { "Departed", 80 },
+            { "Concluído", 100 },
+            { "Completed", 100 },
+            { "Atrasado", 25 },
+            { "Delayed", 25 },
+            { "Cancelado", 0 },
+            { "Cancelled", 0 }
+        };
+        return map.TryGetValue(status, out var value) ? value : 0;
+    }
+}

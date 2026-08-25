@@ -267,7 +267,18 @@
                         </a>
                     </div>
                     <div class="col-6 col-md-3">
-                        <a asp-controller="Flight" asp-action="ExportXml" class="menu-card h-100">
+                        <a asp-controller="Tickets" asp-action="Index" class="menu-card h-100">
+                            <div class="menu-icon bg-primary-subtle text-primary">
+                                <i class="bi bi-ticket-perforated-fill"></i>
+                            </div>
+                            <div class="menu-info">
+                                <strong>Bilhetes</strong>
+                                <small>Ver todos os vendidos</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a asp-controller="Flights" asp-action="ExportXml" class="menu-card h-100">
                             <div class="menu-icon bg-info-subtle text-info">
                                 <i class="bi bi-file-earmark-xml-fill"></i>
                             </div>
@@ -278,7 +289,7 @@
                         </a>
                     </div>
                     <div class="col-6 col-md-3">
-                        <a asp-controller="Flight" asp-action="ExportPdf" class="menu-card h-100">
+                        <a asp-controller="Flights" asp-action="ExportPdf" class="menu-card h-100">
                             <div class="menu-icon bg-danger-subtle text-danger">
                                 <i class="bi bi-file-earmark-pdf-fill"></i>
                             </div>

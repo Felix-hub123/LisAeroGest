@@ -72,13 +72,18 @@ namespace LisAeroGest.Data.Entities
         /// <summary>
         /// Chave estrangeira para o utilizador associado a este passageiro.
         /// </summary>
-        [Required]
         public string? UserId { get; set; }
 
         /// <summary>
         /// Navegação para o utilizador associado.
         /// </summary>
         public User? User { get; set; }
+
+
+        [Required(ErrorMessage = "O e-mail é obrigatório.")]
+        [EmailAddress(ErrorMessage = "Insira um e-mail válido.")]
+        [MaxLength(150)]
+        public string? Email { get; set; }
 
         /// <summary>
 

@@ -1,8 +1,10 @@
-﻿using LisAeroGest.Data.Interfaces;
+﻿using LisAeroGest.Data.Entities;
+using LisAeroGest.Data.Interfaces;
 using LisAeroGest.Helpers;
 using LisAeroGest.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace LisAeroGest.Controllers
 {
@@ -16,6 +18,7 @@ namespace LisAeroGest.Controllers
         private readonly IAirlineRepository _airlineRepository;
         private readonly IImageHelper _imageHelper;
         private readonly IConverterHelper _converterHelper;
+        private readonly IFlightRepository _flightRepository;  // ← NOVO
 
         /// <summary>
         /// Inicializa uma nova instância do <see cref="AirlineController"/>.
@@ -23,15 +26,78 @@ namespace LisAeroGest.Controllers
         /// <param name="airlineRepository">Repositório para operações com companhias aéreas.</param>
         /// <param name="imageHelper">Helper para gestão do upload e remoção de imagens.</param>
         /// <param name="converterHelper">Helper para conversões entre entidades e ViewModels.</param>
+        /// <param name="flightRepository">Repositório para operações com voos.</param>
         public AirlineController(
             IAirlineRepository airlineRepository,
             IImageHelper imageHelper,
-            IConverterHelper converterHelper)
+            IConverterHelper converterHelper,
+            IFlightRepository flightRepository)  // ← NOVO
         {
             _airlineRepository = airlineRepository;
             _imageHelper = imageHelper;
             _converterHelper = converterHelper;
+            _flightRepository = flightRepository;  // ← NOVO
         }
+
+        // ════════════════════════════════════════════════════════════════════
+        //  AÇÕES PÚBLICAS (ACESSÍVEIS A TODOS)  ← NOVAS
+        // ════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Lista todas as companhias aéreas que operam no aeroporto.
+        /// Acesso livre a visitantes.
+        /// </summary>
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<IActionResult> PublicIndex()
+        {
+            var airlines = await _airlineRepository.GetAllQueryable()
+                .Where(a => !a.WasDeleted)
+                .Include(a => a.Flights)
+                .OrderBy(a => a.Name)
+                .ToListAsync();
+
+            return View(airlines);
+        }
+
+        /// <summary>
+        /// Mostra os detalhes de uma companhia aérea e os seus voos.
+        /// Acesso livre a visitantes.
+        /// </summary>
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<IActionResult> PublicDetails(int id)
+        {
+            var airline = await _airlineRepository.GetAllQueryable()
+                .Include(a => a.Flights)
+                    .ThenInclude(f => f.OriginAirport)
+                .Include(a => a.Flights)
+                    .ThenInclude(f => f.DestinationAirport)
+                .Include(a => a.Flights)
+                    .ThenInclude(f => f.Gate)
+                .FirstOrDefaultAsync(a => a.Id == id && !a.WasDeleted);
+
+            if (airline == null)
+                return NotFound();
+
+            // Filtra apenas voos não eliminados e futuros
+            var futureFlights = airline.Flights?
+                .Where(f => !f.WasDeleted && f.DepartureTime >= DateTime.Now)
+                .OrderBy(f => f.DepartureTime)
+                .Take(10)
+                .ToList() ?? new List<Flight>();
+
+            ViewBag.FutureFlights = futureFlights;
+            ViewBag.TotalFlights = airline.Flights?.Count ?? 0;
+            ViewBag.ActiveFlights = airline.Flights?
+                .Count(f => !f.WasDeleted && f.DepartureTime >= DateTime.Now) ?? 0;
+
+            return View(airline);
+        }
+
+        // ════════════════════════════════════════════════════════════════════
+        //  AÇÕES DE GESTÃO (APENAS ADMIN)  ← JÁ EXISTENTES
+        // ════════════════════════════════════════════════════════════════════
 
         /// <summary>
         /// Apresenta a listagem geral das companhias aéreas registadas.
@@ -99,7 +165,6 @@ namespace LisAeroGest.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-
         /// <summary>
         /// Exibe o formulário de edição de uma companhia aérea existente (HTTP GET).
         /// </summary>
@@ -124,11 +189,9 @@ namespace LisAeroGest.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(AirlineViewModel model)
         {
-            
             var airline = await _airlineRepository.GetByIdAsync(model.Id);
             if (airline == null) return NotFound();
 
-            
             var imageId = airline.ImageId;
             if (model.ImageFile != null && model.ImageFile.Length > 0)
             {
@@ -140,10 +203,13 @@ namespace LisAeroGest.Controllers
                 imageId = await _imageHelper.UploadImageAsync(model.ImageFile, "airlines");
             }
 
-            
             airline.ImageId = imageId;
 
-            
+            // ATUALIZA OS OUTROS CAMPOS QUE FALTAM
+            airline.Name = model.Name;
+            airline.IATACode = model.IATACode?.ToUpper();
+            airline.Country = model.Country;
+
             await _airlineRepository.UpdateAsync(airline);
             await _airlineRepository.SaveAsync();
 

@@ -50,5 +50,12 @@ namespace LisAeroGest.Data.Interfaces
 
 
         Task<IEnumerable<Seat>> GetAvailableByFlightAsync(int flightId);
+
+        /// <summary>
+        /// Obtém todos os lugares ativos associados a um determinado voo.
+        /// </summary>
+        Task<IEnumerable<Seat>> GetSeatsByFlightIdAsync(int flightId);
+
+
     }
 }

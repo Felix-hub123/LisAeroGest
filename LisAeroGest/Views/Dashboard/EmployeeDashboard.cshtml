@@ -48,7 +48,14 @@
             </a>
         </div>
         <div class="col-6 col-md-3">
-            <a asp-controller="Flights" asp-action="Index" class="card text-decoration-none shadow-sm border-0 bg-primary text-white h-100">
+            <a asp-controller="Tickets" asp-action="Index" class="card text-decoration-none shadow-sm border-0 bg-primary text-white h-100">
+                <div class="card-body">
+                    <i class="bi bi-ticket-perforated-fill fs-1"></i>
+                    <h5 class="mt-2 mb-0">Bilhetes</h5>
+                    <small>Ver todos os vendidos</small>
+                </div>
+            </a>
+            <a asp-controller="Forum" asp-action="Index" class="card text-decoration-none shadow-sm border-0 bg-dark text-white h-100">
                 <div class="card-body d-flex align-items-center justify-content-between p-3">
                     <div>
                         <h6 class="fw-bold mb-1">Lista de Voos</h6>

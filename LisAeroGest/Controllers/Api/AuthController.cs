@@ -56,21 +56,24 @@ namespace LisAeroGest.Controllers.Api
                 return Unauthorized(new { message = "Email ou password incorretos." });
 
             var roles = await _userManager.GetRolesAsync(user);
-            var token = GenerateJwtToken(user, roles);
+            var expiration = DateTime.UtcNow.AddDays(7);
+            var token = GenerateJwtToken(user, roles, expiration);
 
             return Ok(new
             {
                 token,
+                expiration,
                 user.FullName,
                 user.Email,
                 roles
             });
         }
 
+
         /// <summary>
         /// Gera um token JWT para o utilizador.
         /// </summary>
-        private string GenerateJwtToken(User user, IList<string> roles)
+        private string GenerateJwtToken(User user, IList<string> roles, DateTime expiration)
         {
             var claims = new List<Claim>
             {
@@ -88,7 +91,7 @@ namespace LisAeroGest.Controllers.Api
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddDays(7),
+                expires: expiration,
                 signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
             );
 

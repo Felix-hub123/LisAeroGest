@@ -74,6 +74,15 @@ namespace LisAeroGest.Controllers
                 return View(viewModel);
             }
 
+            var existingAirport = await _airportRepository.GetByIATACodeAsync(viewModel.IATACode);
+            if (existingAirport != null)
+            {
+                ModelState.AddModelError(nameof(viewModel.IATACode), $"Já existe um aeroporto com o código IATA '{viewModel.IATACode}'.");
+                viewModel.Countries = _converterHelper.GetCountries(viewModel.Country);
+                viewModel.Cities = _converterHelper.GetCities(viewModel.Country, viewModel.City);
+                return View(viewModel);
+            }
+
             // Tratamento da Imagem
             Guid imageId = Guid.Empty;
             if (viewModel.ImageFile != null)
@@ -163,6 +172,13 @@ namespace LisAeroGest.Controllers
         {
             var airport = await _airportRepository.GetByIdAsync(id);
             if (airport == null) return NotFound();
+
+            var isUsed = await _airportRepository.IsUsedInFlightsAsync(id);
+            if (isUsed)
+            {
+                TempData["Error"] = "Não é possível eliminar este aeroporto: existem voos associados a ele.";
+                return RedirectToAction(nameof(Index));
+            }
 
             await _airportRepository.DeleteAsync(airport);
             await _airportRepository.SaveAsync();

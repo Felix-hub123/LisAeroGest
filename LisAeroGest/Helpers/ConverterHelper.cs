@@ -1,6 +1,7 @@
 ﻿using LisAeroGest.Data.Entities;
 using LisAeroGest.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using static LisAeroGest.Models.FlightDetailViewModel;
 
 namespace LisAeroGest.Helpers
 {
@@ -25,6 +26,7 @@ namespace LisAeroGest.Helpers
             {
                 FirstName = model.FirstName,
                 LastName = model.LastName,
+                Email = model.Username, 
                 DocumentType = model.DocumentType,
                 DocumentNumber = model.DocumentNumber,
                 BirthDate = model.BirthDate,
@@ -32,7 +34,6 @@ namespace LisAeroGest.Helpers
                 RegistrationDate = DateTime.UtcNow
             };
         }
-
 
         public Aircraft ToAircraft(AircraftViewModel model, Guid imageId, bool isEdit = false)
         {
@@ -392,6 +393,7 @@ namespace LisAeroGest.Helpers
                 Id = isEdit ? model.Id : 0,
                 FirstName = model.FirstName,
                 LastName = model.LastName,
+                Email = model.UserEmail,
                 DocumentType = model.DocumentType,
                 DocumentNumber = model.DocumentNumber,
                 BirthDate = model.BirthDate,
@@ -470,10 +472,10 @@ namespace LisAeroGest.Helpers
                 ExtraLuggage = extraLuggage,
                 MealIncluded = mealIncluded,
                 TotalPrice = price,
-                Status = "Reserved", 
+                Status = "Reserved",
                 CreatedByUserId = passenger.UserId,
                 PurchaseDate = DateTime.UtcNow,
-                ReservationExpiresAt = DateTime.UtcNow.AddMinutes(30) 
+                ReservationExpiresAt = DateTime.UtcNow.AddMinutes(15) 
             };
         }
 
@@ -494,6 +496,48 @@ namespace LisAeroGest.Helpers
                 new SelectListItem { Text = "Funcionário", Value = "Employee" },
                 new SelectListItem { Text = "Administrador", Value = "Admin" }
             };
+        }
+
+        public List<SelectListItem> ToTicketStatusSelectList(string? selectedStatus)
+        {
+            var statuses = new List<(string Value, string Text)>
+            {
+                ("Reserved", "Reservado"),
+                ("Paid", "Pago"),
+                ("CheckedIn", "Check-in Feito"),
+                ("Cancelled", "Cancelado")
+
+
+            };
+
+            var list = statuses.Select(s => new SelectListItem
+            {
+                Text = s.Text,
+                Value = s.Value,
+                Selected = string.Equals(s.Value, selectedStatus, StringComparison.OrdinalIgnoreCase)
+            }).ToList();
+
+            list.Insert(0, new SelectListItem
+            {
+                Text = "Todos os estados",
+                Value = string.Empty,
+                Selected = string.IsNullOrEmpty(selectedStatus)
+            });
+
+            return list;
+        }
+
+        public bool CanCheckInOnline(Ticket ticket)
+        {
+            if (ticket.Status != "Paid") return false;
+            if (ticket.Flight == null) return false;
+            if (ticket.Flight.Status == "Cancelled") return false;
+
+            var now = DateTime.UtcNow;
+            var checkInOpensAt = ticket.Flight.DepartureTime.AddHours(-48);
+            var checkInClosesAt = ticket.Flight.DepartureTime.AddHours(-1);
+
+            return now >= checkInOpensAt && now <= checkInClosesAt;
         }
 
         public User ToUser(string email, string firstName, string lastName)
@@ -1026,10 +1070,144 @@ namespace LisAeroGest.Helpers
         };
 
 
+        /// <summary>
+        /// Converte uma entidade Flight para FlightDetailViewModel (visualização detalhada)
+        /// </summary>
+        public FlightDetailViewModel ToFlightDetailViewModel(Flight flight)
+        {
+            if (flight == null)
+                throw new ArgumentNullException(nameof(flight));
+
+            // Obter nomes das cidades a partir dos aeroportos
+            var originCity = flight.OriginAirport?.City ?? "Desconhecida";
+            var destinationCity = flight.DestinationAirport?.City ?? "Desconhecida";
+            var originIata = flight.OriginAirport?.IATACode ?? "???";
+            var destinationIata = flight.DestinationAirport?.IATACode ?? "???";
+            var airlineName = flight.Airline?.Name ?? "Desconhecida";
+            var gateNumber = flight.Gate?.GateNumber ?? "—";
+            var terminal = flight.Gate?.Terminal ?? "—";
+            var aircraftModel = flight.Aircraft?.Model ?? "—";
+            var totalSeats = flight.Aircraft != null
+                ? (flight.Aircraft.EconomySeats + flight.Aircraft.BusinessSeats)
+                : 0;
+
+            // Gerar histórico virtual (sem tabela no banco)
+            var history = GenerateStatusHistory(flight);
+
+            return new FlightDetailViewModel
+            {
+                Id = flight.Id,
+                FlightNumber = flight.FlightNumber ?? "N/A",
+                Airline = airlineName,
+                Origin = originIata,
+                OriginCity = originCity,
+                Destination = destinationIata,
+                DestinationCity = destinationCity,
+                Status = GetFlightStatusText(flight.Status),
+                DepartureTime = flight.DepartureTime,
+                EstimatedTime = flight.DepartureTime,
+                Gate = gateNumber,
+                Terminal = terminal,
+                AircraftType = aircraftModel,
+                TotalSeats = totalSeats,
+                AvailableSeats = flight.AvailableSeats,  
+                IsDelayed = flight.Status == "Delayed" || flight.Status == "Atrasado",
+                DelayMinutes = flight.DelayMinutes,     
+                StatusHistory = history
+            };
+        }
+        /// <summary>
+        /// Gera histórico virtual de estados com base no status atual do voo
+        /// (NÃO utiliza tabela de histórico no banco de dados)
+        /// </summary>
+        private List<FlightStatusHistory> GenerateStatusHistory(Flight flight)
+        {
+            var history = new List<FlightStatusHistory>();
+            var now = DateTime.Now;
+            var departure = flight.DepartureTime;
+
+            // Estado inicial: Previsto (criado quando o voo foi agendado)
+            history.Add(new FlightStatusHistory
+            {
+                Timestamp = departure.AddHours(-48),
+                Status = "Previsto",
+                Detail = "Voo agendado"
+            });
+
+            // Verificar se o voo já passou por cada fase
+            var status = flight.Status;
+
+            // Se o voo já passou pelo Check-in
+            if (status == "CheckIn" || status == "Boarding" ||
+                status == "Departed" || status == "Delayed" ||
+                status == "Cancelled")
+            {
+                history.Add(new FlightStatusHistory
+                {
+                    Timestamp = departure.AddHours(-2),
+                    Status = "Check-in",
+                    Detail = "Check-in aberto para passageiros"
+                });
+            }
+
+            // Se o voo já passou pelo Embarque
+            if (status == "Boarding" || status == "Departed")
+            {
+                history.Add(new FlightStatusHistory
+                {
+                    Timestamp = departure.AddMinutes(-30),
+                    Status = "A Embarcar",
+                    Detail = "Embarque iniciado no gate " + (flight.Gate?.GateNumber ?? "—")
+                });
+            }
+
+            // Se o voo já partiu
+            if (status == "Departed")
+            {
+                history.Add(new FlightStatusHistory
+                {
+                    Timestamp = departure,
+                    Status = "Partiu",
+                    Detail = "Voo partiu à hora prevista"
+                });
+            }
+
+            // Se o voo está atrasado (CORRIGIDO)
+            if (status == "Delayed")
+            {
+                history.Add(new FlightStatusHistory
+                {
+                    Timestamp = now,
+                    Status = "Atrasado",
+                    Detail = $"Atraso estimado de {flight.DelayMinutes} minutos" 
+                });
+            }
+
+            // Se o voo foi cancelado
+            if (status == "Cancelled")
+            {
+                history.Add(new FlightStatusHistory
+                {
+                    Timestamp = now,
+                    Status = "Cancelado",
+                    Detail = "Voo cancelado pela companhia aérea"
+                });
+            }
+
+            return history;
+        }
 
 
+        /// <summary>
+        /// Converte uma lista de entidades Flight para FlightDetailViewModel
+        /// </summary>
+        public IEnumerable<FlightDetailViewModel> ToFlightDetailViewModelList(IEnumerable<Flight> flights)
+        {
+            if (flights == null)
+                return new List<FlightDetailViewModel>();
 
-
+            return flights.Select(ToFlightDetailViewModel).ToList();
+        }
 
     }
 

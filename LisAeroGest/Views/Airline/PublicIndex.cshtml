@@ -1,0 +1,130 @@
+﻿@model IEnumerable<LisAeroGest.Data.Entities.Airline>
+
+@{
+    ViewData["Title"] = "Companhias Aéreas - Aeroporto de Lisboa";
+}
+
+<div class="container mt-4">
+    <!-- Cabeçalho -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">
+                <i class="bi bi-building me-2 text-primary"></i>Companhias Aéreas
+            </h1>
+            <p class="text-muted small mb-0">
+                Todas as companhias que operam no Aeroporto de Lisboa
+            </p>
+        </div>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-gear me-1"></i> Gestão
+            </a>
+        }
+    </div>
+
+    <!-- Grid de Companhias -->
+    <div class="row g-4">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var airline in Model)
+            {
+                var flightCount = airline.Flights?.Count(f => !f.WasDeleted) ?? 0;
+
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 hover-card">
+                        <div class="card-body text-center p-4">
+                            <!-- Logótipo -->
+                            <div class="airline-logo-wrapper mb-3">
+                                <img src="@(airline.ImageFullPath ?? "/images/airlines/noimage.png")"
+                                     alt="@airline.Name"
+                                     class="airline-logo-img"
+                                     style="height: 80px; width: auto; max-width: 100%; object-fit: contain;"
+                                     onerror="this.src='/images/airlines/noimage.png'" />
+                            </div>
+
+                            <!-- Nome -->
+                            <h5 class="fw-bold mb-1">@airline.Name</h5>
+
+                            <!-- Código IATA e País -->
+                            <div class="d-flex justify-content-center gap-3 mb-3">
+                                <span class="badge bg-primary">@airline.IATACode</span>
+                                <span class="badge bg-light text-dark border">@airline.Country</span>
+                            </div>
+
+                            <!-- Número de Voos -->
+                            <div class="text-muted small mb-3">
+                                <i class="bi bi-airplane me-1"></i>
+                                @flightCount voo(s) operado(s)
+                            </div>
+
+                            <!-- Botão Ver Voos -->
+                            <a asp-action="PublicDetails" asp-route-id="@airline.Id"
+                               class="btn btn-outline-primary rounded-pill w-100">
+                                <i class="bi bi-search me-1"></i> Ver Voos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="alert alert-info text-center py-5">
+                    <i class="bi bi-building fs-1 d-block mb-3"></i>
+                    <h4>Nenhuma companhia aérea encontrada</h4>
+                    <p class="mb-0">Não existem companhias aéreas registadas no sistema.</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Call to Action para Visitantes -->
+    @if (!User.Identity.IsAuthenticated)
+    {
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="alert alert-primary d-flex align-items-center">
+                    <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+                    <div>
+                        <strong>Quer viajar connosco?</strong>
+                        <span class="d-block small">
+                            Crie uma conta grátis para comprar bilhetes e gerir as suas reservas.
+                        </span>
+                    </div>
+                    <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary ms-auto">
+                        <i class="bi bi-person-plus me-1"></i> Criar conta
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Estilos Adicionais -->
+<style>
+    .hover-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+        }
+
+    .airline-logo-wrapper {
+        min-height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .airline-logo-img {
+        transition: transform 0.3s ease;
+    }
+
+    .hover-card:hover .airline-logo-img {
+        transform: scale(1.05);
+    }
+</style>

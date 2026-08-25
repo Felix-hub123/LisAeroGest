@@ -24,7 +24,8 @@ namespace LisAeroGest.Helpers
         }
 
         /// <inheritdoc/>
-        public Response SendEmail(string to, string subject, string body)
+        /// <inheritdoc/>
+        public async Task<Response> SendEmailAsync(string to, string subject, string body)
         {
             var nameFrom = _configuration["Mail:NameFrom"] ?? "LisAeroGest";
             var from = _configuration["Mail:From"] ?? string.Empty;
@@ -32,7 +33,6 @@ namespace LisAeroGest.Helpers
             var port = int.Parse(_configuration["Mail:Port"] ?? "587");
             var password = _configuration["Mail:Password"] ?? string.Empty;
 
-            // Constrói a mensagem
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(nameFrom, from));
             message.To.Add(new MailboxAddress(to, to));
@@ -42,10 +42,10 @@ namespace LisAeroGest.Helpers
             try
             {
                 using var client = new SmtpClient();
-                client.Connect(smtp, port, SecureSocketOptions.StartTls);
-                client.Authenticate(from, password);
-                client.Send(message);
-                client.Disconnect(quit: true);
+                await client.ConnectAsync(smtp, port, SecureSocketOptions.StartTls);
+                await client.AuthenticateAsync(from, password);
+                await client.SendAsync(message);
+                await client.DisconnectAsync(quit: true);
 
                 return new Response { IsSuccess = true };
             }

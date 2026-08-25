@@ -53,6 +53,9 @@ namespace LisAeroGest.Data.Repositories
         /// Obtém as reservas temporárias válidas (não expiradas) de um determinado passageiro.
         /// Substitui o antigo GetTempByUserAsync.
         /// </summary>
+
+
+
         public async Task<IEnumerable<Ticket>> GetReservedByPassengerAsync(int passengerId)
             => await _dbSet
                 .Include(t => t.Flight).ThenInclude(f => f!.Airline)
@@ -62,6 +65,26 @@ namespace LisAeroGest.Data.Repositories
                 .Where(t => t.PassengerId == passengerId &&
                             t.Status == "Reserved" &&
                             t.ReservationExpiresAt > DateTime.UtcNow)
+                .ToListAsync();
+
+        public async Task<IEnumerable<Ticket>> GetCartByPassengerAsync(int passengerId)
+            => await _dbSet
+                .Include(t => t.Flight).ThenInclude(f => f!.Airline)
+                .Include(t => t.Flight).ThenInclude(f => f!.OriginAirport)
+                .Include(t => t.Flight).ThenInclude(f => f!.DestinationAirport)
+                .Include(t => t.Seat)
+                .Where(t => t.PassengerId == passengerId && t.Status == "Reserved")
+                .ToListAsync();
+
+        public async Task<IEnumerable<Ticket>> GetActiveByPassengerAsync(int passengerId)
+            => await _dbSet
+                .Include(t => t.Flight).ThenInclude(f => f!.Airline)
+                .Include(t => t.Flight).ThenInclude(f => f!.OriginAirport)
+                .Include(t => t.Flight).ThenInclude(f => f!.DestinationAirport)
+                .Include(t => t.Seat)
+                .Where(t => t.PassengerId == passengerId &&
+                            (t.Status == "Paid" || t.Status == "CheckedIn"))
+                .OrderByDescending(t => t.PurchaseDate)
                 .ToListAsync();
 
         public async Task<IEnumerable<Ticket>> SearchForCheckInAsync(string searchCriteria)
@@ -108,7 +131,19 @@ namespace LisAeroGest.Data.Repositories
                     .ThenInclude(f => f.OriginAirport)
                 .Include(t => t.Flight)
                     .ThenInclude(f => f.DestinationAirport)
+                .Include(t => t.Flight)
+                    .ThenInclude(f => f.Gate)
                 .FirstOrDefaultAsync(t => t.Id == id);
+        }
+
+
+        public async Task<IEnumerable<Ticket>> GetByFlightIdAsync(int flightId)
+        {
+            return await _context.Tickets
+                .Include(t => t.Passenger)
+                    .ThenInclude(p => p.User)
+                .Where(t => t.FlightId == flightId)
+                .ToListAsync();
         }
 
     }

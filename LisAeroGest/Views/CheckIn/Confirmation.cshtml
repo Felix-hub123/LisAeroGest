@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Cartão de Embarque";
+    var passengerName = Model.Ticket?.Passenger?.FirstName + " " + Model.Ticket?.Passenger?.LastName;
 }
 
 <style>
@@ -41,11 +42,11 @@
             <div class="row g-3 mb-4">
                 <div class="col-8">
                     <small class="text-muted text-uppercase d-block fs-7">Passageiro</small>
-                    <strong class="fs-5 text-dark">@(Model.Ticket?.Passenger?.User?.FullName ?? "Passageiro")</strong>
+                    <strong class="fs-5 text-dark">@passengerName</strong>
                 </div>
                 <div class="col-4 text-end">
                     <small class="text-muted text-uppercase d-block fs-7">Sequência</small>
-                    <strong class="fs-5 text-secondary">#@Model.SequenceNumber</strong>
+                    <strong class="fs-5 text-secondary">#@Model.SequenceNumber.ToString("D3")</strong>
                 </div>
             </div>
 
@@ -69,18 +70,39 @@
             <hr />
 
             <div class="text-center my-4">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=@(Uri.EscapeDataString(Model.QRCode ?? "BOARDING"))"
-                     alt="QR Code Boarding Pass"
-                     class="img-fluid border p-2 rounded shadow-sm" style="max-width: 160px;" />
+                @if (!string.IsNullOrEmpty(Model.QRCodeBase64))
+                {
+                    <img src="@Model.QRCodeBase64" alt="QR Code Boarding Pass"
+                         class="img-fluid border p-2 rounded shadow-sm" style="max-width: 160px;" />
+                }
+                else
+                {
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=@(Uri.EscapeDataString(Model.QRCode ?? "BOARDING"))"
+                         alt="QR Code Boarding Pass"
+                         class="img-fluid border p-2 rounded shadow-sm" style="max-width: 160px;" />
+                }
                 <small class="d-block text-muted mt-2">Apresente este código no portão de embarque</small>
+            </div>
+
+            <!-- Data e Hora de Emissão -->
+            <div class="text-center mt-2">
+                <small class="text-muted">
+                    <i class="bi bi-clock me-1"></i>
+                    Emitido em @Model.IssuedAt.ToString("dd/MM/yyyy HH:mm")
+                </small>
             </div>
         </div>
 
         <div class="card-footer bg-light p-3 text-center no-print">
+            <a asp-action="DownloadBoardingPassPdf" asp-route-boardingPassId="@Model.Id" class="btn btn-success me-2">
+                <i class="bi bi-file-earmark-pdf me-1"></i> Descarregar PDF
+            </a>
             <button onclick="window.print()" class="btn btn-outline-primary me-2">
-                <i class="bi bi-printer"></i> Imprimir Cartão
+                <i class="bi bi-printer me-1"></i> Imprimir
             </button>
-            <a asp-action="Index" class="btn btn-secondary">Voltar aos Meus Bilhetes</a>
+            <a asp-controller="Shop" asp-action="MyTickets" class="btn btn-secondary">
+                <i class="bi bi-ticket me-1"></i> Os Meus Bilhetes
+            </a>
         </div>
     </div>
 </div>

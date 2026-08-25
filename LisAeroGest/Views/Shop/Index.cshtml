@@ -1,188 +1,661 @@
 ﻿@model IEnumerable<LisAeroGest.Data.Entities.Flight>
 
 @{
-    ViewData["Title"] = "Pesquisar e Reservar Voos";
+    ViewData["Title"] = "Pesquisar Voos";
+
     var origin = ViewBag.Origin as string;
     var destination = ViewBag.Destination as string;
     var date = ViewBag.Date as string;
+
+    var hasFilters =
+        !string.IsNullOrWhiteSpace(origin) ||
+        !string.IsNullOrWhiteSpace(destination) ||
+        !string.IsNullOrWhiteSpace(date);
 }
 
 <div class="container my-5">
-    <!-- Cabeçalho Principal -->
-    <div class="text-center mb-5">
-        <h1 class="display-5 fw-bold text-primary">
-            <i class="bi bi-airplane-engines me-2"></i>Encontre o seu Próximo Destino
-        </h1>
-        <p class="lead text-muted">Pesquise voos disponíveis com as melhores tarifas e reserve em poucos cliques.</p>
+
+    <!-- ========================================================= -->
+    <!-- CABEÇALHO -->
+    <!-- ========================================================= -->
+
+    <div class="mb-4">
+
+        <div class="d-flex flex-column flex-md-row
+                    justify-content-between
+                    align-items-md-center
+                    gap-3">
+
+            <div>
+                <span class="text-primary fw-semibold">
+                    <i class="bi bi-airplane-engines me-1"></i>
+                    LisAeroGest
+                </span>
+
+                <h1 class="display-6 fw-bold mb-2">
+                    Pesquisar voos
+                </h1>
+
+                <p class="text-muted mb-0">
+                    Encontre um voo e escolha o seu lugar.
+                </p>
+            </div>
+
+            @if (hasFilters)
+            {
+                <div class="text-md-end">
+
+                    <span class="badge bg-primary-subtle
+                                     text-primary
+                                     border
+                                     border-primary-subtle
+                                     rounded-pill
+                                     px-3
+                                     py-2">
+
+                        <i class="bi bi-check-circle me-1"></i>
+                        Pesquisa ativa
+
+                    </span>
+
+                </div>
+            }
+
+        </div>
+
     </div>
 
-    <!-- Painel de Pesquisa / Filtros -->
-    <div class="card shadow-lg border-0 rounded-4 mb-5">
-        <div class="card-body p-4 p-md-5 bg-light rounded-4">
-            <form asp-action="Index" method="get" class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label for="origin" class="form-label fw-bold text-dark">
-                        <i class="bi bi-geo-alt-fill text-danger me-1"></i> Origem (IATA / Cidade)
+
+    <!-- ========================================================= -->
+    <!-- PAINEL DE PESQUISA -->
+    <!-- ========================================================= -->
+
+    <div class="card border-0 shadow-sm rounded-4 mb-5">
+
+        <div class="card-body p-4">
+
+            <form asp-action="Index"
+                  method="get"
+                  class="row g-3 align-items-end">
+
+                <!-- ORIGEM -->
+
+                <div class="col-12 col-md-4">
+
+                    <label for="origin"
+                           class="form-label fw-semibold">
+
+                        <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+
+                        De onde?
+
                     </label>
+
                     <input type="text"
                            id="origin"
                            name="origin"
                            value="@origin"
                            class="form-control form-control-lg text-uppercase"
-                           placeholder="Ex: LIS ou Lisboa" />
+                           placeholder="Ex.: LIS ou Lisboa"
+                           autocomplete="off" />
+
                 </div>
 
-                <div class="col-md-3">
-                    <label for="destination" class="form-label fw-bold text-dark">
-                        <i class="bi bi-pin-map-fill text-success me-1"></i> Destino (IATA / Cidade)
+
+                <!-- DESTINO -->
+
+                <div class="col-12 col-md-4">
+
+                    <label for="destination"
+                           class="form-label fw-semibold">
+
+                        <i class="bi bi-geo-alt text-primary me-1"></i>
+
+                        Para onde?
+
                     </label>
+
                     <input type="text"
                            id="destination"
                            name="destination"
                            value="@destination"
                            class="form-control form-control-lg text-uppercase"
-                           placeholder="Ex: OPO ou Porto" />
+                           placeholder="Ex.: OPO ou Porto"
+                           autocomplete="off" />
+
                 </div>
 
-                <div class="col-md-3">
-                    <label for="date" class="form-label fw-bold text-dark">
-                        <i class="bi bi-calendar-event me-1"></i> Data de Partida
+
+                <!-- DATA -->
+
+                <div class="col-12 col-md-4">
+
+                    <label for="date"
+                           class="form-label fw-semibold">
+
+                        <i class="bi bi-calendar-event me-1"></i>
+
+                        Data de partida
+
                     </label>
+
                     <input type="date"
                            id="date"
                            name="date"
                            value="@date"
                            class="form-control form-control-lg" />
+
                 </div>
 
-                <div class="col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm">
-                        <i class="bi bi-search me-1"></i> Pesquisar
-                    </button>
-                    @if (!string.IsNullOrEmpty(origin) || !string.IsNullOrEmpty(destination) || !string.IsNullOrEmpty(date))
-                    {
-                        <a asp-action="Index" class="btn btn-outline-secondary btn-lg" title="Limpar Filtros">
-                            <i class="bi bi-x-circle"></i>
-                        </a>
-                    }
+
+                <!-- BOTÕES -->
+
+                <div class="col-12">
+
+                    <div class="d-flex flex-column
+                                flex-sm-row
+                                gap-2
+                                justify-content-end">
+
+                        @if (hasFilters)
+                        {
+                            <a asp-action="Index"
+                               class="btn btn-outline-secondary">
+
+                                <i class="bi bi-x-circle me-1"></i>
+
+                                Limpar pesquisa
+
+                            </a>
+                        }
+
+                        <button type="submit"
+                                class="btn btn-primary btn-lg px-4 fw-bold">
+
+                            <i class="bi bi-search me-1"></i>
+
+                            Pesquisar voos
+
+                        </button>
+
+                    </div>
+
                 </div>
+
             </form>
+
         </div>
+
     </div>
 
-    <!-- Mensagens de Notificação -->
-    @if (TempData["ErrorMessage"] != null)
+
+    <!-- ========================================================= -->
+    <!-- MENSAGENS -->
+    <!-- ========================================================= -->
+    @if (TempData["Error"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="alert alert-danger
+                        alert-dismissible
+                        fade show
+                        rounded-3
+                        mb-4"
+             role="alert">
+
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+            @TempData["Error"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Fechar">
+            </button>
+
         </div>
     }
 
-    @if (TempData["SuccessMessage"] != null)
+    @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="alert alert-success
+                        alert-dismissible
+                        fade show
+                        rounded-3
+                        mb-4"
+             role="alert">
+
+            <i class="bi bi-check-circle-fill me-2"></i>
+
+            @TempData["Success"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Fechar">
+            </button>
+
         </div>
     }
 
-    <!-- Lista de Voos Encontrados -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="fw-bold mb-0">Voos Disponíveis</h4>
-        <span class="badge bg-secondary fs-6">@Model.Count() voo(s) encontrado(s)</span>
+    @if (TempData["Info"] != null)
+    {
+        <div class="alert alert-info
+                        alert-dismissible
+                        fade show
+                        rounded-3
+                        mb-4"
+             role="alert">
+
+            <i class="bi bi-info-circle-fill me-2"></i>
+
+            @TempData["Info"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Fechar">
+            </button>
+
+        </div>
+    }
+
+
+    <!-- ========================================================= -->
+    <!-- CABEÇALHO DOS RESULTADOS -->
+    <!-- ========================================================= -->
+
+    <div class="d-flex
+                flex-column
+                flex-sm-row
+                justify-content-between
+                align-items-sm-center
+                gap-2
+                mb-3">
+
+        <div>
+
+            <h4 class="fw-bold mb-1">
+
+                <i class="bi bi-airplane me-2 text-primary"></i>
+
+                Voos disponíveis
+
+            </h4>
+
+            @if (hasFilters)
+            {
+                <small class="text-muted">
+
+                    Resultados para
+
+                    @if (!string.IsNullOrWhiteSpace(origin))
+                    {
+                        <strong>@origin</strong>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(origin) &&
+                                    !string.IsNullOrWhiteSpace(destination))
+                    {
+                        <span> → </span>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(destination))
+                    {
+                        <strong>@destination</strong>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(date))
+                    {
+                        <span>
+                            em <strong>@date</strong>
+                        </span>
+                    }
+
+                </small>
+            }
+
+        </div>
+
+        <span class="badge bg-secondary rounded-pill px-3 py-2">
+
+            @Model.Count() voo(s)
+
+        </span>
+
     </div>
 
+
+    <!-- ========================================================= -->
+    <!-- NENHUM RESULTADO -->
+    <!-- ========================================================= -->
     @if (!Model.Any())
     {
-        <div class="card text-center p-5 shadow-sm border-0 rounded-4">
+        <div class="card
+                        border-0
+                        shadow-sm
+                        rounded-4
+                        text-center
+                        py-5">
+
             <div class="card-body">
-                <i class="bi bi-search text-muted display-1 mb-3"></i>
-                <h4>Nenhum voo localizado</h4>
-                <p class="text-muted">Não encontramos voos disponíveis para os critérios selecionados.</p>
-                <a asp-action="Index" class="btn btn-outline-primary mt-2">Ver Todos os Voos</a>
+
+                <div class="mb-3">
+
+                    <i class="bi bi-airplane display-1 text-muted"></i>
+
+                </div>
+
+                <h4 class="fw-bold">
+                    Nenhum voo encontrado
+                </h4>
+
+                <p class="text-muted mb-4">
+
+                    Não encontramos voos disponíveis
+                    para os critérios selecionados.
+
+                </p>
+
+                <a asp-action="Index"
+                   class="btn btn-outline-primary">
+
+                    <i class="bi bi-arrow-clockwise me-1"></i>
+
+                    Ver todos os voos
+
+                </a>
+
             </div>
+
         </div>
     }
+
     else
     {
-        <div class="row g-4">
+
+        <!-- ===================================================== -->
+        <!-- RESULTADOS -->
+        <!-- ===================================================== -->
+
+        <div class="d-flex flex-column gap-3">
+
             @foreach (var flight in Model)
             {
-                <div class="col-12">
-                    <div class="card shadow-sm border-0 rounded-4 overflow-hidden card-hover">
-                        <div class="card-body p-4">
-                            <div class="row align-items-center g-3">
-                                <!-- Informações do Voo -->
-                                <div class="col-md-3 border-end-md text-center text-md-start">
-                                    <span class="badge bg-primary px-3 py-2 fs-6 mb-2">
+                var duration =
+                flight.ArrivalTime -
+                flight.DepartureTime;
+
+                <div class="card
+                                    border-0
+                                    shadow-sm
+                                    rounded-4
+                                    flight-result-card">
+
+                    <div class="card-body p-4">
+
+                        <div class="row align-items-center g-4">
+
+
+                            <!-- ================================================= -->
+                            <!-- COMPANHIA / VOO -->
+                            <!-- ================================================= -->
+
+                            <div class="col-12 col-lg-2">
+
+                                <div class="text-center text-lg-start">
+
+                                    <span class="badge
+                                                         bg-primary
+                                                         rounded-pill
+                                                         px-3
+                                                         py-2">
+
                                         Voo @flight.FlightNumber
+
                                     </span>
-                                    <div class="text-muted small">
-                                        Aeronave: <strong>@(flight.Aircraft?.Model ?? "N/A")</strong>
-                                    </div>
+
+                                    @if (flight.Aircraft != null)
+                                    {
+                                        <small class="text-muted d-block mt-2">
+
+                                            @flight.Aircraft.Model
+
+                                        </small>
+                                    }
+
                                 </div>
 
-                                <!-- Rota e Horários -->
-                                <div class="col-md-5">
-                                    <div class="d-flex align-items-center justify-content-between text-center">
-                                        <div>
-                                            <h3 class="fw-bold mb-0">@flight.OriginAirport?.IATACode</h3>
-                                            <small class="text-muted d-block">@flight.OriginAirport?.City</small>
-                                            <strong class="text-dark">@flight.DepartureTime.ToString("HH:mm")</strong>
-                                        </div>
-
-                                        <div class="flex-grow-1 px-3">
-                                            <div class="text-muted small mb-1">
-                                                @{
-                                                    var duration = flight.ArrivalTime - flight.DepartureTime;
-                                                }
-                                                @($"{duration.Hours}h {duration.Minutes}m")
-                                            </div>
-                                            <div class="position-relative d-flex align-items-center justify-content-center">
-                                                <hr class="w-100 my-0 border-2" />
-                                                <i class="bi bi-airplane-fill position-absolute text-primary bg-white px-2"></i>
-                                            </div>
-                                            <small class="text-success fw-semibold d-block mt-1">Direto</small>
-                                        </div>
-
-                                        <div>
-                                            <h3 class="fw-bold mb-0">@flight.DestinationAirport?.IATACode</h3>
-                                            <small class="text-muted d-block">@flight.DestinationAirport?.City</small>
-                                            <strong class="text-dark">@flight.ArrivalTime.ToString("HH:mm")</strong>
-                                        </div>
-                                    </div>
-                                    <div class="text-center text-muted small mt-2">
-                                        <i class="bi bi-calendar3 me-1"></i> Data: @flight.DepartureTime.ToString("dd/MM/yyyy")
-                                    </div>
-                                </div>
-
-                                <!-- Preço e Seleção -->
-                                <div class="col-md-4 text-center text-md-end border-start-md">
-                                    <small class="text-muted d-block fs-7">A partir de</small>
-                                    <div class="fs-2 fw-bold text-success mb-2">
-                                        @flight.BasePrice.ToString("C2")
-                                    </div>
-                                    <a asp-action="SelectSeat" asp-route-flightId="@flight.Id" class="btn btn-primary btn-lg fw-bold w-100 shadow-sm">
-                                        <i class="bi bi-journal-check me-1"></i> Selecionar Lugar
-                                    </a>
-                                </div>
                             </div>
+
+
+                            <!-- ================================================= -->
+                            <!-- ROTA -->
+                            <!-- ================================================= -->
+
+                            <div class="col-12 col-lg-6">
+
+                                <div class="flight-route">
+
+                                    <div class="row align-items-center text-center">
+
+                                        <!-- ORIGEM -->
+
+                                        <div class="col-4">
+
+                                            <div class="fs-3 fw-bold">
+
+                                                @flight.OriginAirport?.IATACode
+
+                                            </div>
+
+                                            <div class="small text-muted">
+
+                                                @flight.OriginAirport?.City
+
+                                            </div>
+
+                                            <div class="fw-bold mt-1">
+
+                                                @flight.DepartureTime.ToString("HH:mm")
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <!-- TRAJETO -->
+
+                                        <div class="col-4">
+
+                                            <div class="small text-muted mb-2">
+
+                                                @duration.Hours h
+                                                @duration.Minutes min
+
+                                            </div>
+
+                                            <div class="position-relative">
+
+                                                <hr class="my-0" />
+
+                                                <i class="bi bi-airplane-fill
+                                                                  position-absolute
+                                                                  top-50
+                                                                  start-50
+                                                                  translate-middle
+                                                                  bg-white
+                                                                  px-2
+                                                                  text-primary">
+                                                </i>
+
+                                            </div>
+
+                                            <small class="text-success
+                                                                 fw-semibold
+                                                                 d-block
+                                                                 mt-2">
+
+                                                Voo direto
+
+                                            </small>
+
+                                        </div>
+
+
+                                        <!-- DESTINO -->
+
+                                        <div class="col-4">
+
+                                            <div class="fs-3 fw-bold">
+
+                                                @flight.DestinationAirport?.IATACode
+
+                                            </div>
+
+                                            <div class="small text-muted">
+
+                                                @flight.DestinationAirport?.City
+
+                                            </div>
+
+                                            <div class="fw-bold mt-1">
+
+                                                @flight.ArrivalTime.ToString("HH:mm")
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- DATA -->
+
+                                    <div class="text-center
+                                                        text-muted
+                                                        small
+                                                        mt-3">
+
+                                        <i class="bi bi-calendar3 me-1"></i>
+
+                                        @flight.DepartureTime.ToString("dd/MM/yyyy")
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ================================================= -->
+                            <!-- PREÇO -->
+                            <!-- ================================================= -->
+
+                            <div class="col-12 col-lg-2">
+
+                                <div class="text-center">
+
+                                    <small class="text-muted d-block">
+
+                                        Desde
+
+                                    </small>
+
+                                    <div class="fs-3
+                                                        fw-bold
+                                                        text-success">
+
+                                        @flight.BasePrice.ToString("C2")
+
+                                    </div>
+
+                                    <small class="text-muted">
+
+                                        preço base
+
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ================================================= -->
+                            <!-- AÇÃO -->
+                            <!-- ================================================= -->
+
+                            <div class="col-12 col-lg-2">
+
+                                <a asp-action="SelectSeat"
+                                   asp-route-flightId="@flight.Id"
+                                   class="btn
+                                                  btn-primary
+                                                  btn-lg
+                                                  w-100
+                                                  fw-bold">
+
+                                    <i class="bi bi-person-seat me-1"></i>
+
+                                    Escolher voo
+
+                                </a>
+
+                            </div>
+
                         </div>
+
                     </div>
+
                 </div>
             }
+
         </div>
     }
+
 </div>
 
+
+<!-- ============================================================= -->
+<!-- ESTILOS ESPECÍFICOS -->
+<!-- ============================================================= -->
+
 <style>
-    .card-hover {
+
+    .flight-result-card {
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-        .card-hover:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+        .flight-result-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .12) !important;
         }
+
+    .flight-route hr {
+        border-top: 2px solid #dee2e6;
+        opacity: 1;
+    }
+
+    @@media (max-width: 991.98px) {
+        .flight-route
+
+    {
+        border-top: 1px solid #eee;
+        border-bottom: 1px solid #eee;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    }
+
+    @@media (max-width: 575.98px) {
+        .flight-route .fs-3
+
+    {
+        font-size: 1.5rem !important;
+    }
+
+    .flight-result-card .card-body {
+        padding: 1.25rem !important;
+    }
+
+    }
 </style>

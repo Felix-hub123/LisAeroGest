@@ -11,5 +11,7 @@ namespace LisAeroGest.Data.Interfaces
         Task<Passenger?> GetWithTicketsAndFlightsAsync(int id);
 
         IQueryable<Passenger> GetAllQueryable();
+
+        Task<Passenger?> GetByEmailAsync(string email);
     }
 }

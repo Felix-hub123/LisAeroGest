@@ -1,0 +1,144 @@
+﻿@model LisAeroGest.Data.Entities.Airline
+
+@{
+    ViewData["Title"] = $"{Model.Name} - Voos";
+    var futureFlights = ViewBag.FutureFlights as IEnumerable<LisAeroGest.Data.Entities.Flight> ?? new List<LisAeroGest.Data.Entities.Flight>();
+    var totalFlights = ViewBag.TotalFlights as int? ?? 0;
+    var activeFlights = ViewBag.ActiveFlights as int? ?? 0;
+}
+
+<div class="container mt-4">
+    <!-- Cabeçalho da Companhia -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    <img src="@(Model.ImageFullPath ?? "/images/airlines/noimage.png")"
+                         alt="@Model.Name"
+                         style="height: 100px; width: auto; max-width: 100%; object-fit: contain;"
+                         onerror="this.src='/images/airlines/noimage.png'" />
+                </div>
+                <div class="col-md-7">
+                    <h2 class="fw-bold mb-1">@Model.Name</h2>
+                    <div class="d-flex gap-3 mb-2">
+                        <span class="badge bg-primary fs-6">@Model.IATACode</span>
+                        <span class="badge bg-light text-dark border fs-6">@Model.Country</span>
+                    </div>
+                    <div class="text-muted small">
+                        <span class="me-3"><i class="bi bi-airplane me-1"></i> @totalFlights voos no total</span>
+                        <span><i class="bi bi-calendar-check me-1"></i> @activeFlights voos ativos</span>
+                    </div>
+                </div>
+                <div class="col-md-3 text-md-end">
+                    <a asp-action="PublicIndex" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Próximos Voos -->
+    <h4 class="fw-bold mb-3">
+        <i class="bi bi-clock-history me-2 text-primary"></i>Próximos Voos
+    </h4>
+
+    @if (futureFlights.Any())
+    {
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Voo</th>
+                                <th>Origem</th>
+                                <th>Destino</th>
+                                <th>Partida</th>
+                                <th>Estado</th>
+                                <th>Gate</th>
+                                <th class="text-center">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var flight in futureFlights)
+                            {
+                                <tr>
+                                    <td class="fw-bold">@flight.FlightNumber</td>
+                                    <td>@(flight.OriginAirport?.City ?? "N/A")</td>
+                                    <td>@(flight.DestinationAirport?.City ?? "N/A")</td>
+                                    <td>@flight.DepartureTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <span class="badge @(GetStatusBadgeColor(flight.Status))">
+                                            @GetStatusDisplay(flight.Status)
+                                        </span>
+                                    </td>
+                                  <td>
+                                        @if (flight.Gate != null)
+                                        {
+                                            <span class="badge bg-secondary">@flight.Gate.GateNumber</span>  
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">---</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <a asp-controller="Flights" asp-action="PublicIndex"
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            Nenhum voo futuro encontrado para esta companhia.
+        </div>
+    }
+
+    <!-- Link para voltar -->
+    <div class="mt-4">
+        <a asp-action="PublicIndex" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Ver todas as companhias
+        </a>
+    </div>
+</div>
+
+@functions {
+    private string GetStatusBadgeColor(string status)
+    {
+        return status switch
+        {
+            "Scheduled" => "bg-primary",
+            "CheckIn" => "bg-warning",
+            "Boarding" => "bg-success",
+            "Departed" => "bg-secondary",
+            "Delayed" => "bg-danger",
+            "Cancelled" => "bg-dark",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetStatusDisplay(string status)
+    {
+        return status switch
+        {
+            "Scheduled" => "Previsto",
+            "CheckIn" => "Em check-in",
+            "Boarding" => "Embarcando",
+            "Departed" => "Partido",
+            "Delayed" => "Atrasado",
+            "Cancelled" => "Cancelado",
+            _ => status
+        };
+    }
+}

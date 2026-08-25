@@ -8,6 +8,9 @@ namespace LisAeroGest.Models
 
         public IEnumerable<Flight> Arrivals { get; set; } = new List<Flight>();
 
+        public IEnumerable<FlightDetailViewModel> DepartureDetails { get; set; } = new List<FlightDetailViewModel>();
+        public IEnumerable<FlightDetailViewModel> ArrivalDetails { get; set; } = new List<FlightDetailViewModel>();
+
 
         public int TotalPartidas => Departures.Count();
 
@@ -29,6 +32,9 @@ namespace LisAeroGest.Models
 
         public List<Announcement> Announcements { get; set; } = new();
 
+        public int TotalPartidasFuturas => Departures?.Count() ?? 0;
+        public int TotalChegadasFuturas => Arrivals?.Count() ?? 0;
+
     }
 
 
@@ -45,6 +51,8 @@ namespace LisAeroGest.Models
         public int Voos { get; set; }
 
     }
+
+
 
 
     public class FlightWarning
@@ -75,4 +83,6 @@ namespace LisAeroGest.Models
         public string Color { get; set; } = "text-primary";
 
     }
+
+
 }

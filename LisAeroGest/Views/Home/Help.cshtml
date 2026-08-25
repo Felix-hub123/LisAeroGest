@@ -1,0 +1,37 @@
+﻿@{
+    ViewData["Title"] = "Ajuda";
+}
+
+<div class="container mt-4">
+    <h1><i class="bi bi-question-circle me-2 text-primary"></i>Ajuda</h1>
+    <hr />
+    <div class="row">
+        <div class="col-md-8">
+            <h4>Como comprar um bilhete?</h4>
+            <p>1. Pesquise voos na página inicial ou na lista de voos.</p>
+            <p>2. Selecione o voo pretendido.</p>
+            <p>3. Escolha o lugar e opções adicionais.</p>
+            <p>4. Faça login ou crie uma conta.</p>
+            <p>5. Finalize o pagamento.</p>
+
+            <h4 class="mt-4">Como fazer check-in?</h4>
+            <p>O check-in online está disponível entre 48h e 1h antes do voo.</p>
+            <p>Aceda à área "Os Meus Bilhetes" e selecione "Check-in".</p>
+
+            <h4 class="mt-4">Precisa de mais ajuda?</h4>
+            <p>Contacte-nos através da página de <a asp-action="Contact">Contactos</a>.</p>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5><i class="bi bi-info-circle me-2"></i>Links úteis</h5>
+                    <ul class="list-unstyled">
+                        <li><a asp-controller="Flights" asp-action="PublicIndex">Estado dos voos</a></li>
+                        <li><a asp-controller="Airline" asp-action="PublicIndex">Companhias aéreas</a></li>
+                        <li><a asp-action="Contact">Contactos</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

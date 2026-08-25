@@ -215,7 +215,15 @@ namespace LisAeroGest.Controllers
             var aircraft = await _aircraftRepository.GetByIdAsync(id);
             if (aircraft == null) return NotFound();
 
-            // Elimina o ficheiro da imagem física caso exista
+          
+            var isUsed = await _aircraftRepository.IsUsedInFlightsAsync(id);
+            if (isUsed)
+            {
+                TempData["Error"] = "Não é possível eliminar esta aeronave: existem voos associados a ela.";
+                return RedirectToAction(nameof(Index));
+            }
+
+
             if (aircraft.ImageId != Guid.Empty)
             {
                 await _imageHelper.DeleteImageAsync(aircraft.ImageId, "aircraft");

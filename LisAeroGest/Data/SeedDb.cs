@@ -190,6 +190,65 @@ namespace LisAeroGest.Data
             await _context.SaveChangesAsync();
         }
 
+
+        /// <summary>
+        /// Gera os lugares (Economy/Business) para um voo semeado, com base na
+        /// capacidade da aeronave associada.
+        /// </summary>
+        private static List<Seat> GenerateSeatsForFlight(int flightId, int aircraftId, int economySeats, int businessSeats)
+        {
+            var seats = new List<Seat>();
+            char[] businessLetters = { 'A', 'B', 'C', 'D' };
+            char[] economyLetters = { 'A', 'B', 'C', 'D', 'E', 'F' };
+
+            int row = 1;
+            int created = 0;
+            int businessRows = (int)Math.Ceiling(businessSeats / (double)businessLetters.Length);
+
+            for (int r = 0; r < businessRows && created < businessSeats; r++)
+            {
+                foreach (var letter in businessLetters)
+                {
+                    if (created >= businessSeats) break;
+                    seats.Add(new Seat
+                    {
+                        Code = $"{row}{letter}",
+                        SeatClass = "Business",
+                        BasePrice = 80m,
+                        IsAvailable = true,
+                        AircraftId = aircraftId,
+                        FlightId = flightId
+                    });
+                    created++;
+                }
+                row++;
+            }
+
+            created = 0;
+            int economyRows = (int)Math.Ceiling(economySeats / (double)economyLetters.Length);
+
+            for (int r = 0; r < economyRows && created < economySeats; r++)
+            {
+                foreach (var letter in economyLetters)
+                {
+                    if (created >= economySeats) break;
+                    seats.Add(new Seat
+                    {
+                        Code = $"{row}{letter}",
+                        SeatClass = "Economy",
+                        BasePrice = 0m,
+                        IsAvailable = true,
+                        AircraftId = aircraftId,
+                        FlightId = flightId
+                    });
+                    created++;
+                }
+                row++;
+            }
+
+            return seats;
+        }
+
         /// <summary>
         /// Cria as companhias aéreas iniciais se ainda não existirem.
         /// </summary>
@@ -304,162 +363,206 @@ namespace LisAeroGest.Data
             // Garante que os dados essenciais existem
             if (lis == null || tap == null || a320 == null) return;
 
+            // 🔧 ALTERAÇÃO: Data atual para os voos
             var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
 
             var flights = new List<Flight>
-            {
-                // ─── Partidas de Lisboa ───────────────────────────────────
-                new Flight
-                {
-                    FlightNumber = "TP401",
-                    AirlineId = tap.Id,
-                    OriginAirportId = lis.Id,
-                    DestinationAirportId = opo!.Id,
-                    AircraftId = a320.Id,
-                    GateId = gateA01!.Id,
-                    DepartureTime = today.AddHours(7).AddMinutes(30),
-                    ArrivalTime = today.AddHours(8).AddMinutes(30),
-                    BasePrice = 89.99m,
-                    Status = "Departed"
-                },
-                new Flight
-                {
-                    FlightNumber = "TP531",
-                    AirlineId = tap.Id,
-                    OriginAirportId = lis.Id,
-                    DestinationAirportId = cdg!.Id,
-                    AircraftId = a321!.Id,
-                    GateId = gateA02!.Id,
-                    DepartureTime = today.AddHours(9).AddMinutes(15),
-                    ArrivalTime = today.AddHours(12).AddMinutes(45),
-                    BasePrice = 149.99m,
-                    Status = "Departed"
-                },
-                new Flight
-                {
-                    FlightNumber = "FR1234",
-                    AirlineId = ryanair!.Id,
-                    OriginAirportId = lis.Id,
-                    DestinationAirportId = mad!.Id,
-                    AircraftId = b737!.Id,
-                    GateId = gateB01!.Id,
-                    DepartureTime = today.AddHours(10).AddMinutes(0),
-                    ArrivalTime = today.AddHours(11).AddMinutes(45),
-                    BasePrice = 49.99m,
-                    Status = "CheckIn"
-                },
-                new Flight
-                {
-                    FlightNumber = "U2441",
-                    AirlineId = easyjet!.Id,
-                    OriginAirportId = lis.Id,
-                    DestinationAirportId = lhr!.Id,
-                    AircraftId = a320.Id,
-                    GateId = gateB02!.Id,
-                    DepartureTime = today.AddHours(11).AddMinutes(30),
-                    ArrivalTime = today.AddHours(13).AddMinutes(50),
-                    BasePrice = 79.99m,
-                    Status = "Boarding"
-                },
-                new Flight
-                {
-                    FlightNumber = "LH1810",
-                    AirlineId = lufthansa!.Id,
-                    OriginAirportId = lis.Id,
-                    DestinationAirportId = fra!.Id,
-                    AircraftId = b787!.Id,
-                    GateId = gateA03!.Id,
-                    DepartureTime = today.AddHours(13).AddMinutes(0),
-                    ArrivalTime = today.AddHours(16).AddMinutes(30),
-                    BasePrice = 199.99m,
-                    Status = "Scheduled"
-                },
-                new Flight
-                {
-                    FlightNumber = "TP781",
-                    AirlineId = tap.Id,
-                    OriginAirportId = lis.Id,
-                    DestinationAirportId = ams!.Id,
-                    AircraftId = a330!.Id,
-                    GateId = gateB03!.Id,
-                    DepartureTime = today.AddHours(15).AddMinutes(45),
-                    ArrivalTime = today.AddHours(19).AddMinutes(15),
-                    BasePrice = 179.99m,
-                    Status = "Scheduled"
-                },
-                new Flight
-                {
-                    FlightNumber = "IB3210",
-                    AirlineId = iberia!.Id,
-                    OriginAirportId = lis.Id,
-                    DestinationAirportId = mad.Id,
-                    AircraftId = a321.Id,
-                    GateId = null,
-                    DepartureTime = today.AddHours(18).AddMinutes(20),
-                    ArrivalTime = today.AddHours(20).AddMinutes(5),
-                    BasePrice = 129.99m,
-                    Status = "Delayed",
-                    DelayedDepartureTime = today.AddHours(19).AddMinutes(30)
-                },
+    {
+        // ─── Partidas de Lisboa (HOJE) ───────────────────────────────
+        new Flight
+        {
+            FlightNumber = "TP401",
+            AirlineId = tap.Id,
+            OriginAirportId = lis.Id,
+            DestinationAirportId = opo!.Id,
+            AircraftId = a320.Id,
+            GateId = gateA01!.Id,
+            DepartureTime = today.AddHours(7).AddMinutes(30),
+            ArrivalTime = today.AddHours(8).AddMinutes(30),
+            BasePrice = 89.99m,
+            Status = "Departed"
+        },
+        new Flight
+        {
+            FlightNumber = "TP531",
+            AirlineId = tap.Id,
+            OriginAirportId = lis.Id,
+            DestinationAirportId = cdg!.Id,
+            AircraftId = a321!.Id,
+            GateId = gateA02!.Id,
+            DepartureTime = today.AddHours(9).AddMinutes(15),
+            ArrivalTime = today.AddHours(12).AddMinutes(45),
+            BasePrice = 149.99m,
+            Status = "Departed"
+        },
+        new Flight
+        {
+            FlightNumber = "FR1234",
+            AirlineId = ryanair!.Id,
+            OriginAirportId = lis.Id,
+            DestinationAirportId = mad!.Id,
+            AircraftId = b737!.Id,
+            GateId = gateB01!.Id,
+            DepartureTime = today.AddHours(10).AddMinutes(0),
+            ArrivalTime = today.AddHours(11).AddMinutes(45),
+            BasePrice = 49.99m,
+            Status = "CheckIn"
+        },
+        new Flight
+        {
+            FlightNumber = "U2441",
+            AirlineId = easyjet!.Id,
+            OriginAirportId = lis.Id,
+            DestinationAirportId = lhr!.Id,
+            AircraftId = a320.Id,
+            GateId = gateB02!.Id,
+            DepartureTime = today.AddHours(11).AddMinutes(30),
+            ArrivalTime = today.AddHours(13).AddMinutes(50),
+            BasePrice = 79.99m,
+            Status = "Boarding"
+        },
+        new Flight
+        {
+            FlightNumber = "LH1810",
+            AirlineId = lufthansa!.Id,
+            OriginAirportId = lis.Id,
+            DestinationAirportId = fra!.Id,
+            AircraftId = b787!.Id,
+            GateId = gateA03!.Id,
+            DepartureTime = today.AddHours(13).AddMinutes(0),
+            ArrivalTime = today.AddHours(16).AddMinutes(30),
+            BasePrice = 199.99m,
+            Status = "Scheduled"
+        },
+        new Flight
+        {
+            FlightNumber = "TP781",
+            AirlineId = tap.Id,
+            OriginAirportId = lis.Id,
+            DestinationAirportId = ams!.Id,
+            AircraftId = a330!.Id,
+            GateId = gateB03!.Id,
+            DepartureTime = today.AddHours(15).AddMinutes(45),
+            ArrivalTime = today.AddHours(19).AddMinutes(15),
+            BasePrice = 179.99m,
+            Status = "Scheduled"
+        },
+        new Flight
+        {
+            FlightNumber = "IB3210",
+            AirlineId = iberia!.Id,
+            OriginAirportId = lis.Id,
+            DestinationAirportId = mad.Id,
+            AircraftId = a321.Id,
+            GateId = null,
+            DepartureTime = today.AddHours(18).AddMinutes(20),
+            ArrivalTime = today.AddHours(20).AddMinutes(5),
+            BasePrice = 129.99m,
+            Status = "Delayed",
+            DelayedDepartureTime = today.AddHours(19).AddMinutes(30)
+        },
 
-                // ─── Chegadas a Lisboa ────────────────────────────────────
-                new Flight
-                {
-                    FlightNumber = "TP402",
-                    AirlineId = tap.Id,
-                    OriginAirportId = opo.Id,
-                    DestinationAirportId = lis.Id,
-                    AircraftId = a320.Id,
-                    GateId = gateA01.Id,
-                    DepartureTime = today.AddHours(6).AddMinutes(0),
-                    ArrivalTime = today.AddHours(7).AddMinutes(0),
-                    BasePrice = 89.99m,
-                    Status = "Departed"
-                },
-                new Flight
-                {
-                    FlightNumber = "FR5678",
-                    AirlineId = ryanair.Id,
-                    OriginAirportId = mad.Id,
-                    DestinationAirportId = lis.Id,
-                    AircraftId = b737.Id,
-                    GateId = gateB01.Id,
-                    DepartureTime = today.AddHours(8).AddMinutes(30),
-                    ArrivalTime = today.AddHours(10).AddMinutes(15),
-                    BasePrice = 49.99m,
-                    Status = "Departed"
-                },
-                new Flight
-                {
-                    FlightNumber = "LH1811",
-                    AirlineId = lufthansa.Id,
-                    OriginAirportId = fra.Id,
-                    DestinationAirportId = lis.Id,
-                    AircraftId = b787.Id,
-                    GateId = gateA02.Id,
-                    DepartureTime = today.AddHours(10).AddMinutes(0),
-                    ArrivalTime = today.AddHours(13).AddMinutes(30),
-                    BasePrice = 199.99m,
-                    Status = "Scheduled"
-                },
-                new Flight
-                {
-                    FlightNumber = "U2442",
-                    AirlineId = easyjet.Id,
-                    OriginAirportId = lhr.Id,
-                    DestinationAirportId = lis.Id,
-                    AircraftId = a320.Id,
-                    GateId = gateB02.Id,
-                    DepartureTime = today.AddHours(12).AddMinutes(0),
-                    ArrivalTime = today.AddHours(14).AddMinutes(20),
-                    BasePrice = 79.99m,
-                    Status = "Scheduled"
-                }
-            };
+        // ─── Chegadas a Lisboa (HOJE) ────────────────────────────────
+        new Flight
+        {
+            FlightNumber = "TP402",
+            AirlineId = tap.Id,
+            OriginAirportId = opo.Id,
+            DestinationAirportId = lis.Id,
+            AircraftId = a320.Id,
+            GateId = gateA01.Id,
+            DepartureTime = today.AddHours(6).AddMinutes(0),
+            ArrivalTime = today.AddHours(7).AddMinutes(0),
+            BasePrice = 89.99m,
+            Status = "Departed"
+        },
+        new Flight
+        {
+            FlightNumber = "FR5678",
+            AirlineId = ryanair.Id,
+            OriginAirportId = mad.Id,
+            DestinationAirportId = lis.Id,
+            AircraftId = b737.Id,
+            GateId = gateB01.Id,
+            DepartureTime = today.AddHours(8).AddMinutes(30),
+            ArrivalTime = today.AddHours(10).AddMinutes(15),
+            BasePrice = 49.99m,
+            Status = "Departed"
+        },
+        new Flight
+        {
+            FlightNumber = "LH1811",
+            AirlineId = lufthansa.Id,
+            OriginAirportId = fra.Id,
+            DestinationAirportId = lis.Id,
+            AircraftId = b787.Id,
+            GateId = gateA02.Id,
+            DepartureTime = today.AddHours(10).AddMinutes(0),
+            ArrivalTime = today.AddHours(13).AddMinutes(30),
+            BasePrice = 199.99m,
+            Status = "Scheduled"
+        },
+        new Flight
+        {
+            FlightNumber = "U2442",
+            AirlineId = easyjet.Id,
+            OriginAirportId = lhr.Id,
+            DestinationAirportId = lis.Id,
+            AircraftId = a320.Id,
+            GateId = gateB02.Id,
+            DepartureTime = today.AddHours(12).AddMinutes(0),
+            ArrivalTime = today.AddHours(14).AddMinutes(20),
+            BasePrice = 79.99m,
+            Status = "Scheduled"
+        },
 
+        // ─── Voos para AMANHÃ ─────────────────────────────────────────
+        new Flight
+        {
+            FlightNumber = "TP501",
+            AirlineId = tap.Id,
+            OriginAirportId = lis.Id,
+            DestinationAirportId = cdg.Id,
+            AircraftId = a321.Id,
+            GateId = gateA01.Id,
+            DepartureTime = tomorrow.AddHours(8).AddMinutes(0),
+            ArrivalTime = tomorrow.AddHours(11).AddMinutes(30),
+            BasePrice = 159.99m,
+            Status = "Scheduled"
+        },
+        new Flight
+        {
+            FlightNumber = "FR6789",
+            AirlineId = ryanair.Id,
+            OriginAirportId = lis.Id,
+            DestinationAirportId = lhr.Id,
+            AircraftId = b737.Id,
+            GateId = gateB01.Id,
+            DepartureTime = tomorrow.AddHours(10).AddMinutes(30),
+            ArrivalTime = tomorrow.AddHours(13).AddMinutes(0),
+            BasePrice = 59.99m,
+            Status = "Scheduled"
+        }
+    };
             await _context.Flights.AddRangeAsync(flights);
             await _context.SaveChangesAsync();
-        }
 
+            // Gera os lugares de cada voo semeado, com base na aeronave associada.
+            // Sem isto, os voos ficam sem lugares disponíveis para reserva.
+            foreach (var flight in flights)
+            {
+                var aircraft = await _context.Aircrafts.FindAsync(flight.AircraftId);
+                if (aircraft == null) continue;
+
+                var seatsForFlight = GenerateSeatsForFlight(
+                    flight.Id, aircraft.Id, aircraft.EconomySeats, aircraft.BusinessSeats);
+
+                await _context.Seats.AddRangeAsync(seatsForFlight);
+            }
+            await _context.SaveChangesAsync();
+        }
     }
+
+    
 }

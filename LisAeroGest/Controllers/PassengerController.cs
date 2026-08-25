@@ -1,12 +1,13 @@
-﻿using System;
-using System.Threading.Tasks;
-using LisAeroGest.Data.Entities;
+﻿using LisAeroGest.Data.Entities;
 using LisAeroGest.Data.Interfaces;
+using LisAeroGest.Data.Repositories;
 using LisAeroGest.Helpers;
 using LisAeroGest.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 
 namespace LisAeroGest.Controllers
 {
@@ -21,17 +22,20 @@ namespace LisAeroGest.Controllers
         private readonly UserManager<User> _userManager;
         private readonly IImageHelper _imageHelper;
         private readonly IConverterHelper _converterHelper;
+        private readonly ITicketRepository _ticketRepository;
 
         public PassengerController(
             IPassengerRepository passengerRepository,
             UserManager<User> userManager,
             IImageHelper imageHelper,
-            IConverterHelper converterHelper)
+            IConverterHelper converterHelper,
+              ITicketRepository ticketRepository)
         {
             _passengerRepository = passengerRepository;
             _userManager = userManager;
             _imageHelper = imageHelper;
             _converterHelper = converterHelper;
+            _ticketRepository = ticketRepository;
         }
 
         // ─── INDEX ──────────────────────────────────────────────────────────
@@ -221,6 +225,15 @@ namespace LisAeroGest.Controllers
         {
             var passenger = await _passengerRepository.GetByIdAsync(id);
             if (passenger == null) return NotFound();
+
+            // Impede eliminar um passageiro com bilhetes: o nome do passageiro
+            // desapareceria dos bilhetes/cartões de embarque já emitidos.
+            var tickets = await _ticketRepository.GetByPassengerAsync(id);
+            if (tickets.Any())
+            {
+                TempData["Error"] = "Não é possível eliminar este passageiro: existem bilhetes associados ao seu perfil.";
+                return RedirectToAction(nameof(Index));
+            }
 
             await _passengerRepository.DeleteAsync(passenger);
             await _passengerRepository.SaveAsync();

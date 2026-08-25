@@ -28,6 +28,23 @@
                             Crie a sua conta para comprar bilhetes, fazer check-in e gerir as suas viagens.
                         </p>
 
+                        <!-- ================================================ -->
+                        <!-- 🔥 ALERTA: Veio do Checkout Convidado           -->
+                        <!-- ================================================ -->
+                        @if (!string.IsNullOrEmpty(ViewBag.PendingEmail))
+                        {
+                            <div class="alert alert-success d-flex align-items-center border-0 shadow-sm rounded-3" role="alert">
+                                <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+                                <div>
+                                    <strong>Ótima escolha!</strong>
+                                    <span class="d-block small">
+                                        Vamos criar a sua conta usando o email <strong>@ViewBag.PendingEmail</strong>.
+                                        Os seus bilhetes serão automaticamente associados à sua conta.
+                                    </span>
+                                </div>
+                            </div>
+                        }
+
                         <form asp-action="Register" method="post" class="auth-form" id="registerForm">
                             @Html.AntiForgeryToken()
                             <div asp-validation-summary="ModelOnly" class="alert alert-danger small" role="alert"></div>

@@ -110,5 +110,46 @@ namespace LisAeroGest.Data.Entities
         /// Indica se o voo foi eliminado logicamente.
         /// </summary>
         public bool WasDeleted { get; set; }
+
+
+
+
+        /// <summary>
+        /// Minutos de atraso (calculado com base no DelayedDepartureTime)
+        /// </summary>
+        [NotMapped]
+        public int DelayMinutes
+        {
+            get
+            {
+                if (Status == "Delayed" && DelayedDepartureTime.HasValue)
+                {
+                    return (int)(DelayedDepartureTime.Value - DepartureTime).TotalMinutes;
+                }
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Número de lugares disponíveis (calculado com base nos assentos)
+        /// </summary>
+        [NotMapped]
+        public int AvailableSeats
+        {
+            get
+            {
+                if (Seats == null || !Seats.Any())
+                {
+                    return 0;
+                }
+                return Seats.Count(s => s.IsAvailable);
+            }
+        }
+
+        /// <summary>
+        /// Verifica se o voo está atrasado
+        /// </summary>
+        [NotMapped]
+        public bool IsDelayed => Status == "Delayed";
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LisAeroGest.Data.Entities
 {
@@ -40,7 +41,16 @@ namespace LisAeroGest.Data.Entities
         /// </summary>
         public Guid ImageId { get; set; }
 
-       
+
+        /// <summary>
+        /// URL completo do logótipo da companhia aérea.
+        /// </summary>
+        [NotMapped]
+        public string ImageFullPath => ImageId == Guid.Empty
+            ? "/images/airlines/noimage.png"
+            : $"/images/airlines/{ImageId}.png";
+
+
         /// <summary>
         /// Lista de voos operados por esta companhia aérea.
         /// </summary>

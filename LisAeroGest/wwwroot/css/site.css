@@ -467,3 +467,645 @@ html, body {
         flex-shrink: 0;
     }
 
+/* ============================================
+   LISAEROGEST - ESTILOS PERSONALIZADOS
+   ============================================ */
+
+/* ---------- HERO SECTION ---------- */
+.hero-momondo {
+    background: linear-gradient(135deg, #1b0a2a 0%, #321147 100%);
+}
+
+/* ---------- BOTÃO PESQUISAR ---------- */
+.btn-pesquisar {
+    background-color: #d81b60;
+    border: none;
+}
+
+    .btn-pesquisar:hover {
+        background-color: #c2185b;
+    }
+
+/* ---------- DESTINOS POPULARES ---------- */
+.dest-card-image {
+    height: 160px;
+    background: linear-gradient(135deg, #2b1055, #7597de);
+}
+
+.dest-card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .dest-card-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12) !important;
+    }
+
+/* ---------- TEMPOS DETALHE ---------- */
+.tempo-detalhe {
+    font-size: 0.75rem;
+}
+
+/* ---------- CTA REGISTO ---------- */
+.cta-registo {
+    background: linear-gradient(135deg, #0d3d6b 0%, #d81b60 100%);
+}
+
+/* ---------- RODAPÉ MOMONDO ---------- */
+.footer-momondo {
+    background-color: #1b0a2a !important;
+}
+
+.footer-link {
+    transition: color 0.2s ease-in-out;
+}
+
+    .footer-link:hover {
+        color: #ffffff !important;
+    }
+
+/* ---------- APP DOWNLOAD ---------- */
+.app-download-buttons {
+    max-width: 160px;
+}
+
+.app-store-label {
+    font-size: 0.65rem;
+}
+
+.app-store-name {
+    font-size: 0.85rem;
+}
+
+/* ---------- DROPDOWN DE SUGESTÕES ---------- */
+.suggestions-dropdown {
+    max-height: 250px;
+    z-index: 1000;
+}
+
+.suggestion-item {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+    .suggestion-item:hover {
+        background-color: var(--bs-gray-100);
+    }
+
+    .suggestion-item .flight-code {
+        font-weight: 600;
+        color: var(--bs-primary);
+    }
+
+    .suggestion-item .destination-name {
+        font-weight: 500;
+    }
+
+    .suggestion-item .time-info {
+        font-size: 0.85rem;
+        color: var(--bs-gray-600);
+    }
+
+/* ============================================
+   FLIGHT CARDS - ESTILOS PERSONALIZADOS
+   ============================================ */
+
+/* Container de Cartões */
+.flight-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+/* Cartão Individual */
+.flight-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 1rem;
+    transition: all 0.25s ease;
+    cursor: pointer;
+    border: 1px solid #e9ecef;
+}
+
+    .flight-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        border-color: #dee2e6;
+    }
+
+.flight-card-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Número do Voo */
+.flight-number {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #0d6efd;
+}
+
+.flight-airline {
+    font-size: 0.85rem;
+}
+
+/* Badge de Estado */
+.flight-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+/* Cores de Estado */
+.status-previsto {
+    background: #e9ecef;
+    color: #495057;
+}
+
+    .status-previsto .status-dot {
+        background: #6c757d;
+    }
+
+.status-check-in {
+    background: #cfe2ff;
+    color: #0d6efd;
+}
+
+    .status-check-in .status-dot {
+        background: #0d6efd;
+        animation: pulse-dot 1.5s infinite;
+    }
+
+.status-a-embarcar {
+    background: #d1e7dd;
+    color: #198754;
+}
+
+    .status-a-embarcar .status-dot {
+        background: #198754;
+        animation: pulse-dot 1.5s infinite;
+    }
+
+.status-partiu {
+    background: #d1e7dd;
+    color: #198754;
+}
+
+    .status-partiu .status-dot {
+        background: #198754;
+    }
+
+.status-atrasado {
+    background: #fff3cd;
+    color: #856404;
+}
+
+    .status-atrasado .status-dot {
+        background: #ffc107;
+        animation: pulse-dot 0.8s infinite;
+    }
+
+.status-cancelado {
+    background: #f8d7da;
+    color: #dc3545;
+}
+
+    .status-cancelado .status-dot {
+        background: #dc3545;
+    }
+
+@keyframes pulse-dot {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(0.8);
+    }
+}
+
+/* Rota */
+.route-code {
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.route-city {
+    font-size: 0.75rem;
+}
+
+.route-arrow {
+    color: #adb5bd;
+}
+
+/* Horários */
+.scheduled-time {
+    font-weight: 500;
+    font-size: 1.05rem;
+}
+
+.estimated-time {
+    font-size: 1.05rem;
+}
+
+.delay-badge {
+    background: #dc3545;
+    color: white;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+/* Footer */
+.flight-card-footer {
+    border-top: 1px solid #f1f3f5;
+    padding-top: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.gate-info, .terminal-info {
+    font-size: 0.8rem;
+    color: #495057;
+}
+
+/* Ações */
+.flight-actions .btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.favorite-btn.active {
+    background: #fff3cd;
+    border-color: #ffc107;
+}
+
+/* Barra de Progresso */
+.flight-progress .progress {
+    height: 4px;
+    background: #e9ecef;
+    border-radius: 2px;
+}
+
+.flight-progress .progress-bar {
+    background: linear-gradient(90deg, #0d6efd, #0dcaf0);
+    border-radius: 2px;
+    transition: width 0.6s ease;
+}
+
+.progress-steps {
+    font-size: 0.6rem;
+    color: #adb5bd;
+    margin-bottom: 2px;
+}
+
+    .progress-steps .step {
+        transition: color 0.3s ease;
+    }
+
+        .progress-steps .step.active {
+            color: #0d6efd;
+            font-weight: 600;
+        }
+
+/* Modal de Detalhes */
+.info-card {
+    background: #f8f9fa;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+}
+
+/* Timeline */
+.timeline {
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 4px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+
+.timeline-item {
+    position: relative;
+    padding: 0.5rem 0;
+    padding-left: 1rem;
+}
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -1.3rem;
+        top: 0.7rem;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #0d6efd;
+        border: 2px solid white;
+        box-shadow: 0 0 0 2px #0d6efd;
+    }
+
+.timeline-time {
+    font-weight: 600;
+    font-size: 0.8rem;
+    margin-right: 0.75rem;
+}
+
+.timeline-status {
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+
+.timeline-detail {
+    font-size: 0.85rem;
+}
+
+
+/* ============================================
+   LISAEROGEST - FLIGHT CARDS & SEARCH
+   ============================================ */
+
+/* Flight Cards Grid */
+.flight-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+/* Flight Card */
+.flight-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 1rem;
+    transition: all 0.25s ease;
+    cursor: pointer;
+    border: 1px solid #e9ecef;
+}
+
+    .flight-card:hover {
+        transform: translateY(-2px);
+        /* ========================================================== */
+        /* CARDS "COMO CHEGAR" - EFEITO HOVER                         */
+        /* ========================================================== */
+        .hover-card
+
+{
+    transition: all 0.25s ease;
+    cursor: default;
+}
+
+.hover-card:hover {
+    background-color: var(--bs-gray-100);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.hover-card .btn {
+    flex-shrink: 0;
+}
+
+
+/* Legenda do Mapa de Lugares */
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend-box {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+.legend-available {
+    background: #e9ecef;
+    border: 1px solid #ced4da;
+}
+
+.legend-selected {
+    background: #198754;
+}
+
+.legend-occupied {
+    background: #dc3545;
+}
+
+.legend-business {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+}
+
+/* Estrutura da Fuselagem da Aeronave */
+.airplane-fuselage {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 45px;
+    padding: 25px 18px 35px;
+    max-width: 520px;
+    margin: auto;
+}
+
+.cockpit {
+    background: #343a40;
+    color: #ffffff;
+    padding: 14px;
+    text-align: center;
+    border-radius: 35px 35px 12px 12px;
+    font-size: .75rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.cabin-title {
+    text-align: center;
+    color: #6c757d;
+    font-size: .75rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+/* Grelha e Botões de Lugares */
+.seat-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+}
+
+.seat-button {
+    border: 1px solid transparent;
+    border-radius: 8px;
+    min-height: 52px;
+    padding: 5px;
+    font-size: .75rem;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: all .2s ease;
+}
+
+    .seat-button small {
+        font-size: .62rem;
+        font-weight: normal;
+        margin-top: 2px;
+    }
+
+/* Estados dos Lugares */
+.seat-available {
+    background: #e9ecef;
+    color: #343a40;
+    border-color: #ced4da;
+}
+
+    .seat-available:hover {
+        background: #0d6efd;
+        color: #ffffff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,.15);
+    }
+
+.seat-business {
+    background: #fff3cd;
+    color: #664d03;
+    border-color: #ffe69c;
+}
+
+    .seat-business:hover {
+        background: #ffc107;
+        color: #212529;
+        transform: translateY(-2px);
+    }
+
+.seat-occupied {
+    background: #dc3545 !important;
+    color: #ffffff !important;
+    border-color: #dc3545 !important;
+    opacity: .55;
+    cursor: not-allowed;
+}
+
+.seat-selected {
+    background: #198754 !important;
+    color: #ffffff !important;
+    border-color: #146c43 !important;
+    transform: scale(1.08);
+    box-shadow: 0 0 0 3px rgba(25,135,84,.2);
+}
+
+/* Painel de Resumo */
+.selection-box {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 18px;
+    text-align: center;
+    border: 1px solid #e9ecef;
+}
+
+.price-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.extra-option {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Adaptabilidade Mobile */
+@media (max-width: 576px) {
+    .seat-grid {
+        gap: 5px;
+    }
+
+    .seat-button {
+        min-height: 45px;
+        font-size: .68rem;
+    }
+
+        .seat-button small {
+            display: none;
+        }
+
+    .airplane-fuselage {
+        padding: 18px 10px 25px;
+    }
+}
+
+.footer-momondo {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    margin-top: 2rem;
+}
+
+.footer-link {
+    transition: color 0.2s ease;
+}
+
+    .footer-link:hover {
+        color: #ffffff !important;
+        text-decoration: underline !important;
+    }
+
+.cta-registo {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+}
+
+/* Footer Styles */
+.footer-link {
+    transition: color 0.2s ease-in-out;
+}
+
+    .footer-link:hover {
+        color: #ffffff !important;
+        text-decoration: underline !important;
+    }
+
+/* Footer Responsive */
+@media (max-width: 768px) {
+    footer .row > div {
+        text-align: center !important;
+    }
+
+    footer .col-md-6.text-md-end {
+        text-align: center !important;
+    }
+}

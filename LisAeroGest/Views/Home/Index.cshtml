@@ -1,230 +1,933 @@
 ﻿@model LisAeroGest.Models.HomeBoardViewModel
+
 @{
-    ViewData["Title"] = "Painel de Voos — Aeroporto de Lisboa";
-    var culture = new System.Globalization.CultureInfo("pt-PT");
+    ViewData["Title"] = "LisAeroGest — Voos e Bilhetes";
 }
 
-<!-- Envolve todo o painel num wrapper com padding-bottom de segurança -->
-<div class="container-fluid py-3 flightboard-wrapper pb-5">
+<div class="lisaero-home">
 
-    <!-- Hero Section -->
-    <section class="hero-section rounded-4 mb-4 p-4 p-md-5 text-white position-relative"
-             style="background: url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1400&q=80') center/cover no-repeat;"
+    <!-- ========================================================= -->
+    <!-- HERO / PESQUISA PRINCIPAL                                 -->
+    <!-- ========================================================= -->
+
+    <section class="hero-section hero-momondo rounded-4 overflow-hidden mb-5"
              data-aos="fade-in">
 
         <div class="hero-overlay"></div>
 
-        <div class="hero-content">
+        <div class="container position-relative py-5">
+
             <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="display-5 fw-bold mb-2">Aeroporto de Lisboa</h1>
-                    <p class="fs-5 mb-2 opacity-75">Humberto Delgado Airport — LIS</p>
-                    <p class="mb-0 opacity-50">
-                        <i class="bi bi-calendar3 me-1"></i>
-                        @DateTime.Now.ToString("dddd, dd 'de' MMMM 'de' yyyy", culture)
+
+                <div class="col-lg-8 text-white">
+
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-2 mb-3">
+                        <i class="bi bi-airplane-fill me-1"></i>
+                        LisAeroGest
+                    </span>
+
+                    <h1 class="display-4 fw-bold mb-3">
+                        Para onde queres ir?
+                    </h1>
+
+                    <p class="lead mb-0 opacity-75">
+                        Pesquisa voos, compara opções e encontra o melhor voo
+                        a partir do Aeroporto de Lisboa.
                     </p>
 
-                    @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Passenger"))
-                    {
-                        <div class="mt-3" data-aos="zoom-in" data-aos-delay="200">
-                            <a class="btn btn-light btn-lg fw-semibold" asp-controller="Shop" asp-action="Index">
-                                <i class="bi bi-cart me-2"></i>Comprar Bilhete
-                            </a>
-                        </div>
-                    }
                 </div>
 
-                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="col-lg-4 text-lg-end mt-4 mt-lg-0 text-white">
+
                     <div class="digital-clock d-inline-block">
-                        <div class="clock-time" id="clockTime">00:00:00</div>
-                        <div class="clock-date" id="clockDate"></div>
+
+                        <div class="clock-time fs-3 fw-bold"
+                             id="clockTime">
+                            00:00:00
+                        </div>
+
+                        <small class="clock-date opacity-75"
+                               id="clockDate">
+                        </small>
+
                     </div>
+
                 </div>
+
             </div>
+
+
+            <!-- ================================================= -->
+            <!-- FORMULÁRIO DE PESQUISA DE VOOS                    -->
+            <!-- ================================================= -->
+
+            <div class="card border-0 shadow-lg rounded-4 bg-white text-dark mt-4 p-3 p-md-4">
+
+                <form id="flightSearchForm"
+                      method="get"
+                      action="/Shop/Index">
+
+                    <div class="row g-3">
+
+                        <!-- ORIGEM -->
+                        <div class="col-12 col-md-6 col-lg-3">
+
+                            <label for="origin"
+                                   class="form-label fw-semibold">
+                                <i class="bi bi-airplane-engines me-1 text-primary"></i>
+                                De
+                            </label>
+
+                            <select id="origin"
+                                    name="origin"
+                                    class="form-select form-select-lg">
+
+                                <option value="LIS"
+                                        selected>
+                                    Lisboa (LIS)
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- DESTINO -->
+                        <div class="col-12 col-md-6 col-lg-3">
+
+                            <label for="destination"
+                                   class="form-label fw-semibold">
+                                <i class="bi bi-geo-alt me-1 text-primary"></i>
+                                Para
+                            </label>
+
+                            <input type="text"
+                                   id="destination"
+                                   name="destination"
+                                   class="form-control form-control-lg"
+                                   placeholder="Cidade ou aeroporto"
+                                   autocomplete="off"
+                                   required />
+
+                        </div>
+
+
+                        <!-- DATA IDA -->
+                        <div class="col-12 col-md-4 col-lg-2">
+
+                            <label for="departureDate"
+                                   class="form-label fw-semibold">
+                                <i class="bi bi-calendar-event me-1 text-primary"></i>
+                                Ida
+                            </label>
+
+                            <input type="date"
+                                   id="departureDate"
+                                   name="date"
+                                   class="form-control form-control-lg"
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                   required />
+
+                        </div>
+
+
+                        <!-- DATA VOLTA -->
+                        <div class="col-12 col-md-4 col-lg-2">
+
+                            <label for="returnDate"
+                                   class="form-label fw-semibold">
+                                <i class="bi bi-calendar-event me-1 text-primary"></i>
+                                Volta
+                            </label>
+
+                            <input type="date"
+                                   id="returnDate"
+                                   name="returnDate"
+                                   class="form-control form-control-lg"
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+
+                        </div>
+
+
+                        <!-- PASSAGEIROS -->
+                        <div class="col-12 col-md-4 col-lg-2">
+
+                            <label for="passengers"
+                                   class="form-label fw-semibold">
+                                <i class="bi bi-people me-1 text-primary"></i>
+                                Passageiros
+                            </label>
+
+                            <select id="passengers"
+                                    name="passengers"
+                                    class="form-select form-select-lg">
+
+                                <option value="1" selected>1 passageiro</option>
+                                <option value="2">2 passageiros</option>
+                                <option value="3">3 passageiros</option>
+                                <option value="4">4 passageiros</option>
+                                <option value="5">5 passageiros</option>
+                                <option value="6">6 passageiros</option>
+                                <option value="7">7 passageiros</option>
+                                <option value="8">8 passageiros</option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- OPÇÕES -->
+                    <div class="row mt-3 align-items-center">
+
+                        <div class="col-md-8">
+
+                            <div class="d-flex flex-wrap gap-3">
+
+                                <div class="form-check">
+
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           id="directOnly"
+                                           name="directOnly"
+                                           value="true" />
+
+                                    <label class="form-check-label"
+                                           for="directOnly">
+                                        Apenas voos diretos
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- BOTÃO -->
+                        <div class="col-md-4 mt-3 mt-md-0">
+
+                            <button type="submit"
+                                    class="btn btn-primary btn-lg w-100 fw-bold rounded-3">
+
+                                <i class="bi bi-search me-2"></i>
+
+                                Pesquisar voos
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
         </div>
+
     </section>
 
-    <!-- Ticker de Avisos -->
-    @if (Model.ActiveWarnings.Any())
-    {
-        <div class="boarding-ticker mb-4" data-aos="fade-in" data-aos-delay="100">
-            <div class="ticker-inner">
-                @for (int i = 0; i < 2; i++)
-                {
-                    foreach (var w in Model.ActiveWarnings)
-                    {
-                        <span class="ticker-item">
-                            <i class="bi bi-megaphone-fill"></i>
-                            <strong>Última chamada</strong> — @w.FlightNumber
-                            · @w.Origin → @w.Destination
-                            <span class="ticker-badge">@w.Status</span>
-                        </span>
-                    }
-                }
-            </div>
-        </div>
-    }
 
-    <!-- KPIs -->
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-lg-3" data-aos="fade-up" data-aos-delay="0">
-            <div class="card border-0 shadow-sm h-100 text-center py-3 kpi-card">
-                <div class="card-body">
-                    <i class="bi bi-airplane text-primary fs-2"></i>
-                    <h4 class="fw-bold mb-0 mt-2">@Model.TotalPartidas</h4>
-                    <small class="text-muted">Partidas</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
-            <div class="card border-0 shadow-sm h-100 text-center py-3 kpi-card">
-                <div class="card-body">
-                    <i class="bi bi-airplane-engines-fill text-success fs-2"></i>
-                    <h4 class="fw-bold mb-0 mt-2">@Model.TotalChegadas</h4>
-                    <small class="text-muted">Chegadas</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
-            <div class="card border-0 shadow-sm h-100 text-center py-3 kpi-card">
-                <div class="card-body">
-                    <i class="bi bi-check-circle-fill text-success fs-2"></i>
-                    <h4 class="fw-bold mb-0 mt-2">@Model.ActiveFlightsCount</h4>
-                    <small class="text-muted">Em Operação</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3" data-aos="fade-up" data-aos-delay="300">
-            <div class="card border-0 shadow-sm h-100 text-center py-3 kpi-card">
-                <div class="card-body">
-                    <i class="bi bi-exclamation-triangle-fill text-warning fs-2"></i>
-                    <h4 class="fw-bold mb-0 mt-2">@Model.DisruptedFlightsCount</h4>
-                    <small class="text-muted">Perturbados</small>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Destinos Populares -->
-    @if (Model.PopularDestinations.Any())
+    <!-- ========================================================= -->
+    <!-- DESTINOS POPULARES                                         -->
+    <!-- ========================================================= -->
+    @if (Model.PopularDestinations != null && Model.PopularDestinations.Any())
     {
-        <div class="destinations-section mb-4" data-aos="fade-up" data-aos-delay="100">
-            <h5 class="mb-3">
-                <i class="bi bi-globe2 me-2"></i>Destinos Populares
-            </h5>
-            <div class="row g-3">
-                @foreach (var d in Model.PopularDestinations)
+        <section class="container-fluid px-3 px-md-4 mb-5"
+                 data-aos="fade-up">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+
+                <div>
+
+                    <h2 class="fw-bold mb-1">
+                        <i class="bi bi-fire text-danger me-2"></i>
+                        Destinos populares
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        Descobre alguns dos destinos mais procurados a partir de Lisboa.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="row g-4">
+
+                @foreach (var destination in Model.PopularDestinations)
                 {
-                    <div class="col-6 col-md-4 col-lg-2" data-aos="zoom-in" data-aos-delay="100">
-                        <div class="dest-card">
-                            <div class="dest-image" style="background: linear-gradient(135deg, #0d3d6b, #1F5C99);">
-                                <div class="dest-badge">@d.Voos voos</div>
-                                <div class="text-center text-white py-4">
-                                    <i class="bi bi-geo-alt-fill fs-1"></i>
+                    <div class="col-12 col-sm-6 col-lg-3">
+
+                        <div class="card destination-card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+
+                            <div class="destination-image position-relative">
+
+                                <div class="destination-placeholder">
+
+                                    <i class="bi bi-airplane display-4"></i>
+
                                 </div>
+
+                                <div class="position-absolute top-0 end-0 p-3">
+
+                                    <span class="badge bg-dark bg-opacity-75 rounded-pill">
+
+                                        @destination.Voos voos/semana
+
+                                    </span>
+
+                                </div>
+
+                                <div class="position-absolute bottom-0 start-0 p-3 text-white">
+
+                                    <span class="badge bg-warning text-dark fw-bold mb-1">
+                                        @destination.IATA
+                                    </span>
+
+                                    <h4 class="fw-bold mb-0">
+                                        @destination.Cidade
+                                    </h4>
+
+                                    <small>
+                                        @destination.Pais
+                                    </small>
+
+                                </div>
+
                             </div>
-                            <div class="dest-info text-center">
-                                <h6 class="mb-0 fw-bold">@d.Cidade</h6>
-                                <small class="text-muted">@d.Pais</small><br />
-                                <span class="badge bg-primary mt-1">@d.IATA</span>
+
+
+                            <div class="card-body">
+
+                                <div class="d-flex justify-content-between align-items-center">
+
+                                    <div>
+
+                                        <small class="text-muted d-block">
+                                            Voos a partir de Lisboa
+                                        </small>
+
+                                        <span class="fw-bold text-success">
+                                            Consulte os voos disponíveis
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+
+                                <button type="button"
+                                        class="btn btn-outline-primary rounded-pill w-100 mt-3"
+                                        onclick="searchDestination('@destination.Cidade')">
+
+                                    <i class="bi bi-search me-1"></i>
+                                    Ver voos
+
+                                </button>
+
                             </div>
+
                         </div>
+
                     </div>
                 }
+
             </div>
-        </div>
+
+        </section>
     }
 
-    <!-- Live Indicator -->
-    <div class="d-flex justify-content-between align-items-center mb-2" data-aos="fade-in" data-aos-delay="200">
-        <div class="live-indicator">
-            <div class="live-dot"></div>
-            <span>Painel ao vivo — actualizado há <span id="secondsAgo">0</span>s</span>
+
+    <!-- ========================================================= -->
+    <!-- FAVORITOS                                                  -->
+    <!-- ========================================================= -->
+
+    <section id="favoritesSection"
+             class="container-fluid px-3 px-md-4 mb-5 d-none"
+             data-aos="fade-up">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+
+            <div>
+
+                <h2 class="fw-bold mb-1">
+
+                    <i class="bi bi-star-fill text-warning me-2"></i>
+
+                    Os teus voos favoritos
+
+                </h2>
+
+                <p class="text-muted mb-0">
+                    Guarda voos para os encontrares rapidamente.
+                </p>
+
+            </div>
+
         </div>
-        <small class="text-muted">
-            <i class="bi bi-arrow-clockwise me-1"></i>Actualização automática
-        </small>
-    </div>
 
-    <!-- Filtro -->
-    <div class="input-group mb-3" data-aos="fade-up" data-aos-delay="250">
-        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-        <input type="text" id="flightSearch" class="form-control form-control-lg"
-               placeholder="Pesquisar voo, destino, companhia..."
-               onkeyup="filterFlights()" />
-    </div>
 
-    <!-- Tabs -->
-    <div data-aos="fade-up" data-aos-delay="300">
-        <ul class="nav nav-tabs mb-0">
-            <li class="nav-item">
-                <button class="nav-link active fw-semibold px-4"
-                        data-bs-toggle="tab" data-bs-target="#departures">
-                    <i class="bi bi-airplane me-2"></i>Partidas
-                    <span class="badge bg-primary ms-2">@Model.TotalPartidas</span>
-                </button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link fw-semibold px-4"
-                        data-bs-toggle="tab" data-bs-target="#arrivals">
-                    <i class="bi bi-airplane-fill me-2"></i>Chegadas
-                    <span class="badge bg-secondary ms-2">@Model.TotalChegadas</span>
-                </button>
-            </li>
-        </ul>
-    </div>
+        <div id="favoritesContainer"
+             class="row g-3">
+        </div>
 
-    <!-- Tabelas de Voos com margem de fecho garantida (mb-5) -->
-    <div class="tab-content border border-top-0 rounded-bottom shadow-sm bg-white mb-5" data-aos="fade-up" data-aos-delay="350">
-        <div class="tab-pane fade show active p-0" id="departures">
-            @{
-                ViewData["Type"] = "Departures";
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- INFORMAÇÕES ÚTEIS                                          -->
+    <!-- ========================================================= -->
+
+    <section class="container-fluid px-3 px-md-4 mb-5"
+             data-aos="fade-up">
+
+        <div class="row g-4">
+
+
+            <!-- METEOROLOGIA -->
+            @if (Model.Weather?.Main != null)
+            {
+                var weather = Model.Weather.Weather?.FirstOrDefault();
+
+                <div class="col-lg-4">
+
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                        <div class="card-body p-4">
+
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                                <h5 class="fw-bold mb-0">
+
+                                    <i class="bi bi-cloud-sun text-warning me-2"></i>
+
+                                    Meteorologia em Lisboa
+
+                                </h5>
+
+                                <span class="badge bg-light text-dark">
+                                    Agora
+                                </span>
+
+                            </div>
+
+
+                            <div class="d-flex align-items-center justify-content-between">
+
+                                <div>
+
+                                    <div class="display-5 fw-bold">
+
+                                        @Math.Round(Model.Weather.Main.Temp)°C
+
+                                    </div>
+
+                                    <div class="text-muted text-capitalize">
+
+                                        @weather?.Description
+
+                                    </div>
+
+                                </div>
+
+
+                                @if (!string.IsNullOrEmpty(weather?.Icon))
+                                {
+                                    <img src="https://openweathermap.org/img/wn/@(weather.Icon)@("@2x.png")"
+                                         width="75"
+                                         alt="Estado do tempo" />
+                                }
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
             }
-            <partial name="_FlightTable" model="Model.Departures" view-data="ViewData" />
+
+
+            <!-- TRANSPORTES -->
+            <div class="col-lg-4">
+
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                    <div class="card-body p-4">
+
+                        <h5 class="fw-bold mb-3">
+
+                            <i class="bi bi-train-front text-danger me-2"></i>
+
+                            Como chegar
+
+                        </h5>
+
+                        <div class="d-flex align-items-start gap-3 mb-3">
+
+                            <i class="bi bi-subway text-danger fs-3"></i>
+
+                            <div>
+
+                                <strong>Metro</strong>
+
+                                <small class="text-muted d-block">
+                                    Linha Vermelha — Estação Aeroporto
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                        <div class="d-flex align-items-start gap-3">
+
+                            <i class="bi bi-bus-front text-primary fs-3"></i>
+
+                            <div>
+
+                                <strong>Autocarros</strong>
+
+                                <small class="text-muted d-block">
+                                    Várias ligações para Lisboa
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ESTADO DOS VOOS -->
+            <div class="col-lg-4">
+
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+
+                    <div class="card-body p-4">
+
+                        <h5 class="fw-bold mb-3">
+
+                            <i class="bi bi-airplane text-primary me-2"></i>
+
+                            Estado dos voos
+
+                        </h5>
+
+                        <p class="text-muted">
+
+                            Consulta partidas e chegadas e acompanha
+                            o estado dos voos do Aeroporto de Lisboa.
+
+                        </p>
+
+                        <a asp-controller="Flights"
+                           asp-action="PublicIndex"
+                           class="btn btn-outline-primary rounded-pill">
+                            Ver estado dos voos
+                            <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
-        <div class="tab-pane fade p-0" id="arrivals">
-            @{
-                ViewData["Type"] = "Arrivals";
-            }
-            <partial name="_FlightTable" model="Model.Arrivals" view-data="ViewData" />
+
+    </section>
+
+
+    <!-- ========================================================= -->
+    <!-- INFORMAÇÃO PARA VISITANTES                                 -->
+    <!-- ========================================================= -->
+    @if (User.Identity?.IsAuthenticated != true)
+    {
+        <section class="container-fluid px-3 px-md-4 mb-5"
+                 data-aos="zoom-in">
+
+            <div class="cta-registo rounded-4 p-4 p-md-5 text-center text-white">
+
+                <div class="mb-3">
+
+                    <i class="bi bi-person-plus-fill display-5"></i>
+
+                </div>
+
+                <h2 class="fw-bold mb-2">
+                    Viaja com a LisAeroGest
+                </h2>
+
+                <p class="mb-4 opacity-75">
+
+                    Cria uma conta para guardares os teus voos,
+                    acompanhares as tuas reservas e teres os teus
+                    bilhetes sempre disponíveis.
+
+                </p>
+
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+
+                    <a asp-area="Identity"
+                       asp-page="/Account/Register"
+                       class="btn btn-light btn-lg rounded-pill px-4 fw-bold">
+
+                        Criar conta grátis
+
+                    </a>
+
+                    <a asp-area="Identity"
+                       asp-page="/Account/Login"
+                       class="btn btn-outline-light btn-lg rounded-pill px-4">
+
+                        Já tenho conta
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+    }
+
+
+    <!-- ========================================================= -->
+    <!-- FOOTER                                                     -->
+    <!-- ========================================================= -->
+
+    <footer class="footer-momondo text-white pt-5 pb-4 rounded-top-4">
+
+        <div class="container-fluid px-4 px-md-5">
+
+            <div class="row g-4 mb-4">
+
+
+                <!-- MARCA -->
+                <div class="col-12 col-md-4">
+
+                    <h5 class="fw-bold text-white mb-3">
+                        <i class="bi bi-airplane-fill me-2"></i>
+                        LisAeroGest
+                    </h5>
+
+                    <p class="text-white-50 mb-0">
+
+                        Pesquisa e gestão de voos a partir
+                        do Aeroporto de Lisboa.
+
+                    </p>
+
+                </div>
+
+
+                <!-- PASSAGEIROS -->
+                <div class="col-6 col-md-4">
+
+                    <h6 class="fw-bold text-white mb-3">
+                        Passageiros
+                    </h6>
+
+                    <ul class="list-unstyled mb-0">
+
+                        <li class="mb-2">
+                            <a asp-controller="Flights"
+                               asp-action="Index"
+                               class="text-white-50 text-decoration-none footer-link">
+                                Estado dos voos
+                            </a>
+                        </li>
+
+                        <li class="mb-2">
+                            <a href="#"
+                               class="text-white-50 text-decoration-none footer-link">
+                                Perguntas frequentes
+                            </a>
+                        </li>
+
+                        <li class="mb-2">
+                            <a href="#"
+                               class="text-white-50 text-decoration-none footer-link">
+                                Contactos
+                            </a>
+                        </li>
+
+                    </ul>
+
+                </div>
+
+
+                <!-- CONTA -->
+                <div class="col-6 col-md-4">
+
+                    <h6 class="fw-bold text-white mb-3">
+                        A tua conta
+                    </h6>
+
+                    <ul class="list-unstyled mb-0">
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="mb-2">
+
+                                <a href="#"
+                                   class="text-white-50 text-decoration-none footer-link">
+
+                                    Os meus bilhetes
+
+                                </a>
+
+                            </li>
+
+                            <li class="mb-2">
+
+                                <a href="#"
+                                   class="text-white-50 text-decoration-none footer-link">
+
+                                    Perfil
+
+                                </a>
+
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="mb-2">
+
+                                <a asp-area="Identity"
+                                   asp-page="/Account/Login"
+                                   class="text-white-50 text-decoration-none footer-link">
+
+                                    Iniciar sessão
+
+                                </a>
+
+                            </li>
+
+                            <li class="mb-2">
+
+                                <a asp-area="Identity"
+                                   asp-page="/Account/Register"
+                                   class="text-white-50 text-decoration-none footer-link">
+
+                                    Criar conta
+
+                                </a>
+
+                            </li>
+                        }
+
+                    </ul>
+
+                </div>
+
+            </div>
+
+
+            <hr class="border-secondary opacity-25 my-4" />
+
+
+            <div class="row align-items-center g-3 text-white-50 small">
+
+                <div class="col-md-8">
+
+                    <span>
+                        &copy; @DateTime.Now.Year LisAeroGest
+                    </span>
+
+                    <span class="mx-2">·</span>
+
+                    <a href="#"
+                       class="text-white-50 text-decoration-none footer-link">
+                        Privacidade
+                    </a>
+
+                    <span class="mx-2">·</span>
+
+                    <a href="#"
+                       class="text-white-50 text-decoration-none footer-link">
+                        Termos e Condições
+                    </a>
+
+                </div>
+
+
+                <div class="col-md-4 text-md-end">
+
+                    <span>
+                        <i class="bi bi-globe me-1"></i>
+                        Português · € EUR
+                    </span>
+
+                </div>
+
+            </div>
+
         </div>
-    </div>
+
+    </footer>
 
 </div>
 
-@section Scripts {
+
+<!-- ============================================================= -->
+<!-- SCRIPTS                                                       -->
+<!-- ============================================================= -->
+@section Scripts
+{
+    <script src="~/js/flightFavorites.js"></script>
+
     <script>
-        // Relógio
+
+        /* =========================================================
+           RELÓGIO
+           ========================================================= */
+
         function updateClock() {
-            var now = new Date();
-            document.getElementById('clockTime').textContent = now.toLocaleTimeString('pt-PT');
-            document.getElementById('clockDate').textContent = now.toLocaleDateString('pt-PT', {
-                weekday: 'long', day: 'numeric', month: 'long'
-            });
+
+            const now = new Date();
+
+            const timeElement = document.getElementById("clockTime");
+            const dateElement = document.getElementById("clockDate");
+
+            if (timeElement) {
+                timeElement.textContent = now.toLocaleTimeString("pt-PT");
+            }
+
+            if (dateElement) {
+                dateElement.textContent = now.toLocaleDateString("pt-PT", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long"
+                });
+            }
         }
-        setInterval(updateClock, 1000);
+
         updateClock();
+        setInterval(updateClock, 1000);
 
-        // Contador de segundos
-        var seconds = 0;
-        setInterval(function () {
-            seconds++;
-            var el = document.getElementById("secondsAgo");
-            if (el) el.textContent = seconds;
-            if (seconds >= 60) location.reload();
-        }, 1000);
 
-        // Filtro
-        function filterFlights() {
-            var input = document.getElementById("flightSearch");
-            var filter = input.value.toUpperCase();
-            document.querySelectorAll(".tab-pane.active table tbody tr").forEach(function (row) {
-                row.style.display = (row.textContent || row.innerText).toUpperCase().indexOf(filter) > -1 ? "" : "none";
-            });
+        /* =========================================================
+           DATA DE IDA / VOLTA
+           ========================================================= */
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const departureInput = document.getElementById("departureDate");
+            const returnInput = document.getElementById("returnDate");
+
+            if (departureInput && returnInput) {
+
+                departureInput.addEventListener("change", function () {
+
+                    if (this.value) {
+                        returnInput.min = this.value;
+
+                        if (returnInput.value && returnInput.value < this.value) {
+                            returnInput.value = "";
+                        }
+                        returnInput.classList.remove("is-invalid");
+                    }
+                });
+
+                returnInput.addEventListener("change", function () {
+                    if (this.value && departureInput.value && this.value < departureInput.value) {
+                        this.classList.add("is-invalid");
+                    } else {
+                        this.classList.remove("is-invalid");
+                    }
+                });
+            }
+        });
+
+
+        /* =========================================================
+           PESQUISA DE DESTINO (COM PREENCHIMENTO DE DATA)
+           ========================================================= */
+
+        function searchDestination(destination) {
+
+            const destinationInput = document.getElementById("destination");
+            const departureInput = document.getElementById("departureDate");
+
+            if (!destinationInput) {
+                return;
+            }
+
+            destinationInput.value = destination;
+
+            // Se a data de ida estiver vazia, preenche com a data atual para passar na validação
+            if (departureInput && !departureInput.value) {
+                const today = new Date().toISOString().split('T')[0];
+                departureInput.value = today;
+            }
+
+            const form = document.getElementById("flightSearchForm");
+
+            if (form) {
+                form.submit();
+            }
         }
 
-        document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(function (btn) {
-            btn.addEventListener("shown.bs.tab", function () { filterFlights(); });
+
+        /* =========================================================
+           VALIDAÇÃO DO FORMULÁRIO
+           ========================================================= */
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const form = document.getElementById("flightSearchForm");
+
+            if (!form) {
+                return;
+            }
+
+            form.addEventListener("submit", function (event) {
+
+                const destination = document.getElementById("destination");
+                const departureDate = document.getElementById("departureDate");
+                const returnDate = document.getElementById("returnDate");
+
+                if (!destination || destination.value.trim() === "") {
+                    event.preventDefault();
+                    destination.focus();
+                    destination.classList.add("is-invalid");
+                    return;
+                }
+
+                destination.classList.remove("is-invalid");
+
+                if (returnDate && returnDate.value && departureDate && departureDate.value && returnDate.value < departureDate.value) {
+                    event.preventDefault();
+                    returnDate.classList.add("is-invalid");
+                    return;
+                }
+
+                if (returnDate) {
+                    returnDate.classList.remove("is-invalid");
+                }
+            });
         });
+
+
+        /* =========================================================
+           FAVORITOS
+           ========================================================= */
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            if (typeof FlightFavorites !== "undefined" && typeof FlightFavorites.init === "function") {
+                FlightFavorites.init();
+            }
+        });
+
     </script>
 }

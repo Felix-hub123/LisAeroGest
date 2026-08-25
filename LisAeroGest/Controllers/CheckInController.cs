@@ -1,9 +1,11 @@
 ﻿using LisAeroGest.Data.Entities;
 using LisAeroGest.Data.Interfaces;
+using LisAeroGest.Data.Repositories;
 using LisAeroGest.Helpers;
 using LisAeroGest.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace LisAeroGest.Controllers
 {
@@ -18,6 +20,9 @@ namespace LisAeroGest.Controllers
         private readonly IPassengerRepository _passengerRepository;
         private readonly IUserHelper _userHelper;
         private readonly PdfService _pdfService;
+        private readonly IQrCodeService _qrCodeService;
+        private readonly IFlightRepository _flightRepository;
+        private readonly IConverterHelper _converterHelper;
 
         /// <summary>
         /// Inicializa uma nova instância do controlador <see cref="CheckInController"/>.
@@ -27,18 +32,25 @@ namespace LisAeroGest.Controllers
         /// <param name="passengerRepository">Repositório para dados do passageiro.</param>
         /// <param name="userHelper">Helper de gestão de utilizadores.</param>
         /// <param name="pdfService">Serviço de geração de documentos PDF.</param>
+        /// <param name="qrCodeService">Serviço de geração local de QR Codes.</param>
         public CheckInController(
             ITicketRepository ticketRepository,
             IBoardingPassRepository boardingPassRepository,
             IPassengerRepository passengerRepository,
             IUserHelper userHelper,
-            PdfService pdfService)
+            PdfService pdfService,
+            IQrCodeService qrCodeService,
+            IFlightRepository flightRepository,
+            IConverterHelper converterHelper)
         {
             _ticketRepository = ticketRepository;
             _boardingPassRepository = boardingPassRepository;
             _passengerRepository = passengerRepository;
             _userHelper = userHelper;
             _pdfService = pdfService;
+            _qrCodeService = qrCodeService;
+            _flightRepository = flightRepository;
+            _converterHelper = converterHelper;
         }
 
         /// <summary>
@@ -129,13 +141,54 @@ namespace LisAeroGest.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ProcessCheckIn(int ticketId)
         {
-            var passenger = await GetCurrentPassengerAsync();
-            if (passenger == null) return RedirectToAction("Index", "Home");
+           
+            var isStaff = User.IsInRole("Employee") || User.IsInRole("Admin");
 
             var ticket = await _ticketRepository.GetTicketWithDetailsAsync(ticketId);
-            if (ticket == null || ticket.PassengerId != passenger.Id || ticket.Status != "Paid")
+            if (ticket == null)
             {
-                TempData["Error"] = "Bilhete inválido para check-in.";
+                TempData["Error"] = "Bilhete não encontrado.";
+                return RedirectToAction(isStaff ? nameof(EmployeeCheckIn) : nameof(Index));
+            }
+
+            if (!isStaff)
+            {
+                // Check-in online: só o próprio passageiro pode fazer check-in do seu bilhete
+                var passenger = await GetCurrentPassengerAsync();
+                if (passenger == null || ticket.PassengerId != passenger.Id)
+                {
+                    TempData["Error"] = "Bilhete inválido para check-in.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+            // Check-in presencial: o funcionário já está autorizado pelo [Authorize] da EmployeeCheckIn,
+            // pode processar qualquer bilhete válido apresentado ao balcão.
+
+            if (ticket.Status != "Paid")
+            {
+                TempData["Error"] = "Este bilhete não está pago ou já tem check-in feito.";
+                return RedirectToAction(isStaff ? nameof(EmployeeCheckIn) : nameof(Index));
+            }
+
+            if (ticket.Flight == null)
+            {
+                TempData["Error"] = "Dados do voo indisponíveis para este bilhete.";
+                return RedirectToAction(isStaff ? nameof(EmployeeCheckIn) : nameof(Index));
+            }
+
+            if (ticket.Flight.Status == "Cancelled")
+            {
+                TempData["Error"] = "Não é possível fazer check-in: o voo foi cancelado.";
+                return RedirectToAction(isStaff ? nameof(EmployeeCheckIn) : nameof(Index));
+            }
+
+            // A janela de 48h-1h aplica-se só ao check-in online;
+            // ao balcão o funcionário pode processar até à hora de partida.
+            // A janela de 48h-1h aplica-se só ao check-in online (regra centralizada no ConverterHelper);
+            // ao balcão o funcionário pode processar até à hora de partida.
+            if (!isStaff && !_converterHelper.CanCheckInOnline(ticket))
+            {
+                TempData["Error"] = "Este bilhete não está dentro da janela de check-in online (entre 48h e 1h antes da partida).";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -143,20 +196,22 @@ namespace LisAeroGest.Controllers
             ticket.Status = "CheckedIn";
             await _ticketRepository.UpdateAsync(ticket);
 
-            // Cria o Cartão de Embarque
+            // Cria o Cartão de Embarque com o gate real do voo
+            var gateNumber = ticket.Flight.Gate?.GateNumber ?? "TBA";
+
             var boardingPass = new BoardingPass
             {
                 TicketId = ticket.Id,
                 IssuedAt = DateTime.UtcNow,
-                Gate = "A12", // Atribuição de portão
-                SequenceNumber = Random.Shared.Next(1, 150),
-                QRCode = $"BOARDING|{ticket.Id}|{ticket.Flight?.FlightNumber}|A12"
+                Gate = gateNumber,
+                SequenceNumber = await _boardingPassRepository.GetNextSequenceNumberAsync(ticket.FlightId),
+                QRCode = $"BOARDING|{ticket.Id}|{ticket.Flight.FlightNumber}|{gateNumber}"
             };
 
             await _boardingPassRepository.AddAsync(boardingPass);
             await _boardingPassRepository.SaveAsync();
 
-            TempData["Success"] = "Check-in realizado com sucesso! O seu cartão de embarque está pronto.";
+            TempData["Success"] = "Check-in realizado com sucesso! O cartão de embarque está pronto.";
             return RedirectToAction(nameof(Confirmation), new { boardingPassId = boardingPass.Id });
         }
 
@@ -166,12 +221,33 @@ namespace LisAeroGest.Controllers
         /// <param name="boardingPassId">Identificador do cartão de embarque.</param>
         [HttpGet]
         [Authorize]
+        [HttpGet]
+        [Authorize]
         public async Task<IActionResult> Confirmation(int boardingPassId)
         {
             var boardingPass = await _boardingPassRepository.GetBoardingPassWithDetailsAsync(boardingPassId);
             if (boardingPass == null) return NotFound();
 
+        
+            var qrBytes = _qrCodeService.GenerateQrCode(boardingPass.QRCode ?? "BOARDING");
+            ViewBag.QrCodeBase64 = qrBytes.Length > 0 ? Convert.ToBase64String(qrBytes) : null;
+
             return View(boardingPass);
+        }
+
+        /// <summary>
+        /// Ponte de conveniência: recebe o Id do bilhete (usado no dashboard do passageiro),
+        /// encontra o cartão de embarque correspondente e redireciona para a Confirmation.
+        /// </summary>
+        /// <param name="ticketId">Identificador do bilhete já com check-in feito.</param>
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> ConfirmationByTicket(int ticketId)
+        {
+            var boardingPass = await _boardingPassRepository.GetByTicketIdAsync(ticketId);
+            if (boardingPass == null) return NotFound();
+
+            return RedirectToAction(nameof(Confirmation), new { boardingPassId = boardingPass.Id });
         }
 
         /// <summary>
@@ -182,17 +258,38 @@ namespace LisAeroGest.Controllers
         [Authorize]
         public async Task<IActionResult> DownloadBoardingPassPdf(int boardingPassId)
         {
-            var passenger = await GetCurrentPassengerAsync();
-            if (passenger == null) return RedirectToAction("Index", "Home");
-
             var boardingPass = await _boardingPassRepository.GetBoardingPassWithDetailsAsync(boardingPassId);
-            if (boardingPass == null || boardingPass.Ticket?.PassengerId != passenger.Id)
+            if (boardingPass == null) return NotFound();
+
+            var isStaff = User.IsInRole("Employee") || User.IsInRole("Admin");
+            if (!isStaff)
             {
-                return NotFound();
+                // Um passageiro só pode descarregar o seu próprio cartão de embarque
+                var passenger = await GetCurrentPassengerAsync();
+                if (passenger == null || boardingPass.Ticket?.PassengerId != passenger.Id)
+                    return NotFound();
             }
 
             var pdfBytes = _pdfService.GenerateBoardingPassPdf(boardingPass);
             return File(pdfBytes, "application/pdf", $"CartaoEmbarque_{boardingPass.Id}.pdf");
+        }
+
+        /// <summary>
+        /// Lista todos os bilhetes/passageiros de um voo específico, para gestão por
+        /// Administradores e Funcionários (ex: ver quem falta fazer check-in).
+        /// </summary>
+        /// <param name="flightId">Identificador do voo.</param>
+        [HttpGet]
+        [Authorize(Roles = "Admin,Employee")]
+        public async Task<IActionResult> FlightCheckIn(int flightId)
+        {
+            var flight = await _flightRepository.GetWithDetailsAsync(flightId);
+            if (flight == null) return NotFound();
+
+            var tickets = await _ticketRepository.GetByFlightAsync(flightId);
+
+            ViewBag.Flight = flight;
+            return View(tickets.OrderBy(t => t.Seat?.Code));
         }
     }
 }

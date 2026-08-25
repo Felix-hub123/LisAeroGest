@@ -1,6 +1,7 @@
 ﻿using LisAeroGest.Controllers.Api.Entities;
 using LisAeroGest.Data.Entities;
 using LisAeroGest.Data.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -9,6 +10,7 @@ namespace LisAeroGest.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     public class CheckInApiController : ControllerBase
     {
         private readonly ITicketRepository _ticketRepository;

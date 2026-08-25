@@ -41,34 +41,24 @@ namespace BilheticaAeronauticaWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null!)
         {
-            if (!ModelState.IsValid)
-                return View(model);
-
-            var result = await _userHelper.LoginAsync(model);
-
-            if (result.Succeeded)
+            if (ModelState.IsValid)
             {
-                if (Request.Query.Keys.Contains("ReturnUrl"))
-                    return Redirect(Request.Query["ReturnUrl"].First()!);
+                var result = await _userHelper.LoginAsync(model);
+                if (result.Succeeded)
+                {
+                    
+                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    {
+                        return Redirect(returnUrl);
+                    }
 
-                return RedirectToAction("Index", "Dashboard");
+                   
+                    return RedirectToAction("Index", "Dashboard");
+                }
+                ModelState.AddModelError(string.Empty, "Login inválido.");
             }
-
-            if (result.IsLockedOut)
-            {
-                ModelState.AddModelError(string.Empty, "Conta bloqueada temporariamente. Tente novamente em 15 minutos.");
-                return View(model);
-            }
-
-            if (result.IsNotAllowed)
-            {
-                ModelState.AddModelError(string.Empty, "Confirme o seu email antes de fazer login.");
-                return View(model);
-            }
-
-            ModelState.AddModelError(string.Empty, "Email ou password incorretos.");
             return View(model);
         }
 
@@ -123,12 +113,38 @@ namespace BilheticaAeronauticaWeb.Controllers
             // 3. Atribuir a role "Passenger"
             await _userHelper.AddUserToRoleAsync(user, "Passenger");
 
-            // 4. Usar o ConverterHelper para criar a entidade Passageiro associada
-            var passenger = _converterHelper.ToPassenger(model, user.Id);
-            await _passengerRepository.AddAsync(passenger);
-            await _passengerRepository.SaveAsync();
+            // ================================================================
+            // 4. 🔥 VERIFICAR SE EXISTE PASSAGEIRO CONVIDADO COM ESTE EMAIL
+            // ================================================================
+            var existingPassenger = await _passengerRepository.GetByEmailAsync(model.Username!);
 
+            if (existingPassenger != null && string.IsNullOrEmpty(existingPassenger.UserId))
+            {
+                // ✅ Associar o passageiro convidado ao novo utilizador
+                existingPassenger.UserId = user.Id;
+                existingPassenger.FirstName = model.FirstName ?? existingPassenger.FirstName;
+                existingPassenger.LastName = model.LastName ?? existingPassenger.LastName;
+                existingPassenger.DocumentNumber = model.DocumentNumber ?? existingPassenger.DocumentNumber;
+                existingPassenger.DocumentType = model.DocumentType ?? existingPassenger.DocumentType;
+
+                await _passengerRepository.UpdateAsync(existingPassenger);
+                await _passengerRepository.SaveAsync();
+
+                // Log (opcional)
+                // _logger.LogInformation("Passageiro convidado {Email} associado ao utilizador {UserId}", model.Username, user.Id);
+            }
+            else if (existingPassenger == null)
+            {
+                // ✅ Se não existir passageiro, criar novo (utilizador normal)
+                var passenger = _converterHelper.ToPassenger(model, user.Id);
+                await _passengerRepository.AddAsync(passenger);
+                await _passengerRepository.SaveAsync();
+            }
+            // Se existingPassenger != null e já tem UserId, não faz nada (já está associado)
+
+            // ================================================================
             // 5. Gerar token e enviar email de confirmação
+            // ================================================================
             var token = await _userHelper.GenerateEmailConfirmationTokenAsync(user);
             var confirmationLink = Url.Action(
                 "ConfirmEmail", "Account",
@@ -136,14 +152,14 @@ namespace BilheticaAeronauticaWeb.Controllers
                 protocol: HttpContext.Request.Scheme);
 
             var emailBody = $@"
-                <h2>Bem-vindo ao LisAeroGest!</h2>
-                <p>Olá {user.FirstName},</p>
-                <p>Obrigado por se registar. Clique no link abaixo para confirmar o seu email:</p>
-                <p><a href='{confirmationLink}'>Confirmar Email</a></p>
-                <br/>
-                <p>LisAeroGest — Aeroporto de Lisboa</p>";
+            <h2>Bem-vindo ao LisAeroGest!</h2>
+            <p>Olá {user.FirstName},</p>
+            <p>Obrigado por se registar. Clique no link abaixo para confirmar o seu email:</p>
+            <p><a href='{confirmationLink}'>Confirmar Email</a></p>
+            <br/>
+            <p>LisAeroGest — Aeroporto de Lisboa</p>";
 
-            var response = _mailHelper.SendEmail(model.Username!, "Confirmação de Email — LisAeroGest", emailBody);
+            var response = await _mailHelper.SendEmailAsync(model.Username!, "Confirmação de Email — LisAeroGest", emailBody);
 
             if (!response.IsSuccess)
             {
@@ -151,11 +167,43 @@ namespace BilheticaAeronauticaWeb.Controllers
                 return View(model);
             }
 
+            // ================================================================
+            // 6. Verificar se o utilizador veio do checkout convidado
+            // ================================================================
+            var pendingEmail = HttpContext.Session.GetString("PendingRegistration");
+            if (!string.IsNullOrEmpty(pendingEmail) && pendingEmail == model.Username)
+            {
+                // Limpar a sessão
+                HttpContext.Session.Remove("PendingRegistration");
+
+                // Redirecionar para a página de bilhetes com mensagem de boas-vindas
+                TempData["Success"] = "Conta criada com sucesso! Os seus bilhetes foram associados à sua conta.";
+                return RedirectToAction("MyTickets", "Shop");
+            }
+
             ViewBag.Message = "Registo efetuado com sucesso! Verifique o seu email para confirmar a conta.";
             return View("RegisterConfirmation");
         }
 
         // ─── Confirmação de Email ─────────────────────────────────────────────
+
+
+        /// <summary>
+        /// Procura reservas de convidado associadas ao e-mail do utilizador
+        /// e associa-as ao perfil de passageiro recém-autenticado/registado.
+        /// </summary>
+        private async Task ClaimGuestTicketsAsync(string email, string userId)
+        {
+            var guestPassenger = await _passengerRepository.GetByEmailAsync(email);
+
+            if (guestPassenger != null)
+            {
+                // 1. Associa o UserId do novo utilizador ao passageiro
+                guestPassenger.UserId = userId;
+                await _passengerRepository.UpdateAsync(guestPassenger);
+                await _passengerRepository.SaveAsync();
+            }
+        }
 
         [HttpGet]
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
@@ -169,9 +217,16 @@ namespace BilheticaAeronauticaWeb.Controllers
 
             var result = await _userHelper.ConfirmEmailAsync(user, token);
 
-            ViewBag.Message = result.Succeeded
-                ? "Email confirmado com sucesso! Já pode fazer login."
-                : "Erro ao confirmar email. O link pode ter expirado.";
+            if (result.Succeeded)
+            {
+               await ClaimGuestTicketsAsync(user.Email!, user.Id);
+
+                ViewBag.Message = "Email confirmado com sucesso! Os seus bilhetes anteriores, se existirem, já estão associados à sua conta. Já pode fazer login.";
+            }
+            else
+            {
+                ViewBag.Message = "Erro ao confirmar email. O link pode ter expirado.";
+            }
 
             return View();
         }
@@ -200,14 +255,15 @@ namespace BilheticaAeronauticaWeb.Controllers
                     protocol: HttpContext.Request.Scheme);
 
                 var emailBody = $@"
-                    <h2>Recuperação de Password — LisAeroGest</h2>
-                    <p>Olá {user.FirstName},</p>
-                    <p>Recebemos um pedido para redefinir a sua password.</p>
-                    <p><a href='{resetLink}'>Clique aqui para redefinir a sua password</a></p>
-                    <br/>
-                    <p>LisAeroGest — Aeroporto de Lisboa</p>";
+            <h2>Recuperação de Password — LisAeroGest</h2>
+            <p>Olá {user.FirstName},</p>
+            <p>Recebemos um pedido para redefinir a sua password.</p>
+            <p><a href='{resetLink}'>Clique aqui para redefinir a sua password</a></p>
+            <br/>
+            <p>LisAeroGest — Aeroporto de Lisboa</p>";
 
-                _mailHelper.SendEmail(model.Email!, "Recuperação de Password — LisAeroGest", emailBody);
+               
+                await _mailHelper.SendEmailAsync(model.Email!, "Recuperação de Password — LisAeroGest", emailBody);
             }
 
             ViewBag.Message = "Se este email estiver registado, receberá um link de recuperação.";

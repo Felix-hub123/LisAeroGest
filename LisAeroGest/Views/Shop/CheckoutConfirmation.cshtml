@@ -1,0 +1,313 @@
+﻿@model LisAeroGest.Models.CheckoutConfirmationViewModel
+
+@{
+    ViewData["Title"] = "Reserva Confirmada!";
+    var isGuest = ViewBag.IsGuest ?? false;
+    var isPaid = Model.Ticket?.Status == "Paid";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Card Principal -->
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-success text-white text-center py-4">
+                    <div class="display-1">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <h2 class="fw-bold mb-0">
+                        @if (isPaid)
+                        {
+                            <span>Pagamento Confirmado! ✅</span>
+                        }
+                        else
+                        {
+                            <span>Reserva Confirmada!</span>
+                        }
+                    </h2>
+                    <p class="mb-0 opacity-75">
+                        @if (isPaid)
+                        {
+                            <span>O seu bilhete foi pago com sucesso</span>
+                        }
+                        else
+                        {
+                            <span>O seu bilhete foi reservado com sucesso</span>
+                        }
+                    </p>
+                </div>
+
+                <div class="card-body p-4">
+
+                    <!-- Número do Bilhete -->
+                    <div class="text-center mb-4">
+                        <small class="text-muted d-block">Número do Bilhete</small>
+                        <div class="display-6 fw-bold text-primary">@ViewBag.TicketDisplayId</div>
+                        <span class="badge @(isPaid ? "bg-success" : "bg-warning text-dark") mt-1">
+                            @Model.Ticket?.Status
+                        </span>
+
+                        <!-- ⚠️ CONTADOR SÓ SE NÃO ESTIVER PAGO -->
+                        @if (!isPaid)
+                        {
+                            <br />
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                A reserva expira em 30 minutos.
+                                <span class="fw-bold" id="countdownTimer">29:59</span>
+                            </small>
+                        }
+                        else
+                        {
+                            <br />
+                            <small class="text-success">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Pagamento confirmado! O seu bilhete está disponível.
+                            </small>
+                        }
+                    </div>
+
+                    <!-- Detalhes da Viagem -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="bg-light rounded-3 p-3">
+                                <small class="text-muted d-block">Voo</small>
+                                <strong>@Model.Flight?.FlightNumber</strong>
+                                <br />
+                                <small>@Model.Flight?.OriginAirport?.IATACode → @Model.Flight?.DestinationAirport?.IATACode</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="bg-light rounded-3 p-3">
+                                <small class="text-muted d-block">Lugar</small>
+                                <strong>@Model.Seat?.Code</strong>
+                                <br />
+                                <small>@Model.Seat?.SeatClass</small>
+                            </div>
+                        </div>
+                    </div>
+
+              
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="bg-light rounded-3 p-3">
+                                <small class="text-muted d-block">Partida</small>
+                                <strong>@Model.Flight?.DepartureTime.ToString("dd/MM/yyyy HH:mm")</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="bg-light rounded-3 p-3">
+                                <small class="text-muted d-block">Chegada</small>
+                                <strong>@Model.Flight?.ArrivalTime.ToString("dd/MM/yyyy HH:mm")</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                
+                    <div class="bg-light rounded-3 p-3 mb-4">
+                        <div class="d-flex justify-content-between">
+                            <span>Preço Base</span>
+                            <strong>@((Model.TotalPrice - (Model.ExtraLuggage ? 30m : 0m) - (Model.MealIncluded ? 15m : 0m)).ToString("C2"))</strong>
+                        </div>
+                        @if (Model.ExtraLuggage)
+                        {
+                            <div class="d-flex justify-content-between">
+                                <span><i class="bi bi-suitcase me-1"></i> Bagagem Extra</span>
+                                <strong>+30,00 €</strong>
+                            </div>
+                        }
+                        @if (Model.MealIncluded)
+                        {
+                            <div class="d-flex justify-content-between">
+                                <span><i class="bi bi-egg-fried me-1"></i> Refeição</span>
+                                <strong>+15,00 €</strong>
+                            </div>
+                        }
+                        <hr />
+                        <div class="d-flex justify-content-between fw-bold fs-5">
+                            <span>Total</span>
+                            <span class="text-success">@Model.TotalPrice.ToString("C2")</span>
+                        </div>
+                    </div>
+
+                 
+                    <div class="bg-light rounded-3 p-3 mb-4">
+                        <h6 class="fw-bold"><i class="bi bi-person me-2"></i>Passageiro</h6>
+                        <p class="mb-0"><strong>@Model.Passenger?.FullName</strong></p>
+                        <p class="mb-0"><small>@Model.Passenger?.Email</small></p>
+                        <p class="mb-0"><small>Doc: @Model.Passenger?.DocumentNumber</small></p>
+                    </div>
+
+                  
+                    @if (isGuest && !isPaid)
+                    {
+                        <div class="card border-0 shadow-lg rounded-4 mt-4">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-start gap-3">
+                                    <div class="display-6 text-primary">
+                                        <i class="bi bi-person-plus"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold mb-1">Crie a sua conta grátis!</h5>
+                                        <p class="text-muted mb-2">
+                                            Com uma conta, pode gerir os seus bilhetes, fazer check-in online,
+                                            guardar os seus dados e muito mais.
+                                        </p>
+
+                                        <div class="d-flex flex-wrap gap-3 mt-3">
+                                            <a asp-controller="Account" asp-action="Register"
+                                               asp-route-email="@Model.Passenger?.Email"
+                                               asp-route-firstName="@Model.Passenger?.FirstName"
+                                               asp-route-lastName="@Model.Passenger?.LastName"
+                                               class="btn btn-primary btn-lg px-4">
+                                                <i class="bi bi-person-plus me-2"></i> Criar Conta
+                                            </a>
+                                            <a asp-controller="Shop" asp-action="MyTickets"
+                                               class="btn btn-outline-secondary btn-lg px-4">
+                                                <i class="bi bi-ticket me-2"></i> Ver os meus bilhetes
+                                            </a>
+                                        </div>
+
+                                        <small class="text-muted d-block mt-3">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Pode criar conta a qualquer momento usando o mesmo email.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else if (isGuest && isPaid)
+                    {
+                        <!-- ✅ CONVIDADO COM BILHETE PAGO -->
+                        <div class="card border-0 shadow-lg rounded-4 mt-4">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-start gap-3">
+                                    <div class="display-6 text-success">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold mb-1 text-success">Pagamento Confirmado!</h5>
+                                        <p class="text-muted mb-2">
+                                            O seu bilhete foi pago com sucesso.
+                                            <br />
+                                            <span class="text-muted small">Crie uma conta para gerir os seus bilhetes e fazer check-in online.</span>
+                                        </p>
+
+                                        <div class="d-flex flex-wrap gap-3 mt-3">
+                                            <a asp-controller="Account" asp-action="Register"
+                                               asp-route-email="@Model.Passenger?.Email"
+                                               asp-route-firstName="@Model.Passenger?.FirstName"
+                                               asp-route-lastName="@Model.Passenger?.LastName"
+                                               class="btn btn-primary btn-lg px-4">
+                                                <i class="bi bi-person-plus me-2"></i> Criar Conta
+                                            </a>
+                                            <a asp-controller="Shop" asp-action="MyTickets"
+                                               class="btn btn-outline-success btn-lg px-4">
+                                                <i class="bi bi-ticket me-2"></i> Ver os meus bilhetes
+                                            </a>
+
+                                            <!-- 🔥 BOTÃO PDF COM LOGIN PARA VISITANTES -->
+                                            @if (User.Identity.IsAuthenticated)
+                                            {
+                                                <a asp-controller="Shop" asp-action="DownloadTicketPdf"
+                                                   asp-route-ticketId="@Model.Ticket?.Id"
+                                                   class="btn btn-outline-primary btn-lg px-4">
+                                                    <i class="bi bi-file-pdf me-2"></i> Descarregar PDF
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <div class="alert alert-info d-flex align-items-center mt-2" role="alert">
+                                                    <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+                                                    <div>
+                                                        <strong>Faça login para descarregar o seu bilhete</strong>
+                                                        <span class="d-block small">
+                                                            O bilhete contém dados pessoais.
+                                                            <a asp-controller="Account" asp-action="Login"
+                                                               asp-route-returnUrl="@Context.Request.Path"
+                                                               class="fw-bold text-decoration-underline">Iniciar sessão</a>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else if (!isGuest && isPaid)
+                    {
+                        <!-- ✅ UTILIZADOR AUTENTICADO COM BILHETE PAGO -->
+                        <div class="card border-0 shadow-sm rounded-4 mt-4">
+                            <div class="card-body p-4 text-center">
+                                <i class="bi bi-check-circle-fill text-success display-6 d-block mb-2"></i>
+                                <h5 class="fw-bold">Pagamento Confirmado!</h5>
+                                <p class="text-muted">
+                                    O bilhete foi pago e está disponível na sua conta.
+                                </p>
+                                <div class="d-flex flex-wrap justify-content-center gap-3">
+                                    <a asp-controller="Shop" asp-action="MyTickets" class="btn btn-primary">
+                                        <i class="bi bi-ticket me-2"></i> Ver os meus bilhetes
+                                    </a>
+                                    <a asp-controller="Shop" asp-action="DownloadTicketPdf"
+                                       asp-route-ticketId="@Model.Ticket?.Id"
+                                       class="btn btn-outline-primary">
+                                        <i class="bi bi-file-pdf me-2"></i> Descarregar PDF
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Botão Voltar -->
+                    <div class="text-center mt-4">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-house me-1"></i> Voltar à Página Inicial
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @if (!isPaid)
+    {
+        <script>
+            // Contador regressivo para expiração da reserva (só se não pago)
+            document.addEventListener('DOMContentLoaded', function() {
+                const timerElement = document.getElementById('countdownTimer');
+                if (!timerElement) return;
+
+                let totalSeconds = 30 * 60;
+
+                function updateTimer() {
+                    if (totalSeconds <= 0) {
+                        timerElement.textContent = '00:00';
+                        timerElement.classList.add('text-danger');
+                        return;
+                    }
+
+                    const minutes = Math.floor(totalSeconds / 60);
+                    const seconds = totalSeconds % 60;
+                    timerElement.textContent =
+                        String(minutes).padStart(2, '0') + ':' +
+                        String(seconds).padStart(2, '0');
+
+                    if (totalSeconds < 300) {
+                        timerElement.classList.add('text-warning');
+                    }
+
+                    totalSeconds--;
+                }
+
+                updateTimer();
+                setInterval(updateTimer, 1000);
+            });
+        </script>
+    }
+}

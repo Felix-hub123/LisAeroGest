@@ -4,12 +4,13 @@ using LisAeroGest.Data.Interfaces;
 using LisAeroGest.Data.Repositories;
 using LisAeroGest.Helpers;
 using LisAeroGest.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using QuestPDF.Infrastructure;
+using System.Text;
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
@@ -66,7 +67,20 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 // ── Autenticação JWT + Cookie ─────────────────────────────────────────────────
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultScheme = "MultiScheme";
+options.DefaultScheme = "MultiScheme";
+options.DefaultChallengeScheme = "MultiScheme";
+})
+// "MultiScheme" decide, pedido a pedido, se usa Cookie (browser) ou Bearer/JWT (app mobile).
+.AddPolicyScheme("MultiScheme", "Cookie ou Bearer", options =>
+{
+options.ForwardDefaultSelector = context =>
+{
+var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+if (authHeader != null && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+return JwtBearerDefaults.AuthenticationScheme;
+
+return CookieAuthenticationDefaults.AuthenticationScheme;
+};
 })
 .AddCookie(options =>
 {
@@ -113,6 +127,9 @@ builder.Services.AddScoped<WeatherService>();
 builder.Services.AddScoped<PdfService>();
 builder.Services.AddScoped<IFlightExportService, FlightExportService>();
 builder.Services.AddScoped<IQrCodeService, QrCodeService>();
+builder.Services.AddHttpClient<PayPalService>();
+builder.Services.AddScoped<IPayPalService, PayPalService>();
+builder.Services.AddHostedService<ReservationExpirationService>();
 // ─── HttpClient (para OpenWeatherMap) ───────────────────────────────────────
 builder.Services.AddHttpClient();
 
@@ -148,6 +165,26 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapControllerRoute(
+    name: "help",
+    pattern: "ajuda",
+    defaults: new { controller = "Home", action = "Help" });
+
+app.MapControllerRoute(
+    name: "contact",
+    pattern: "contactos",
+    defaults: new { controller = "Home", action = "Contact" });
+
+app.MapControllerRoute(
+    name: "privacy",
+    pattern: "privacidade",
+    defaults: new { controller = "Home", action = "Privacy" });
+
+app.MapControllerRoute(
+    name: "terms",
+    pattern: "termos",
+    defaults: new { controller = "Home", action = "Terms" });
 
 // ── Seed da Base de Dados ─────────────────────────────────────────────────────
 using (var scope = app.Services.CreateScope())

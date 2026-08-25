@@ -9,14 +9,15 @@ namespace LisAeroGest.Data.Repositories
         public FlightRepository(DataContext context) : base(context) { }
 
         public async Task<Flight?> GetWithDetailsAsync(int id)
-     => await _dbSet
-         .Include(f => f.Airline)
-         .Include(f => f.OriginAirport)
-         .Include(f => f.DestinationAirport)
-         .Include(f => f.Aircraft)
-         .ThenInclude(a => a!.Seats) 
-         .Include(f => f.Gate)
-         .FirstOrDefaultAsync(f => f.Id == id);
+       => await _dbSet
+           .Include(f => f.Airline)
+           .Include(f => f.OriginAirport)
+           .Include(f => f.DestinationAirport)
+           .Include(f => f.Aircraft)
+           .Include(f => f.Seats)
+           .Include(f => f.Gate)
+           .FirstOrDefaultAsync(f => f.Id == id);
+
 
         public async Task<IEnumerable<Flight>> GetByAirlineAsync(int airlineId)
             => await _dbSet
@@ -83,11 +84,24 @@ namespace LisAeroGest.Data.Repositories
                 .Include(f => f.Aircraft)
                 .Where(f => f.Status != "Cancelled" && f.DepartureTime > DateTime.UtcNow);
 
-            if (!string.IsNullOrEmpty(origin))
-                query = query.Where(f => f.OriginAirport!.IATACode == origin);
+           
+            if (!string.IsNullOrWhiteSpace(origin))
+            {
+                var originTerm = origin.Trim().ToLower();
+                query = query.Where(f =>
+                    f.OriginAirport!.IATACode!.ToLower().Contains(originTerm) ||
+                    (f.OriginAirport.City != null && f.OriginAirport.City.ToLower().Contains(originTerm)) ||
+                    (f.OriginAirport.Country != null && f.OriginAirport.Country.ToLower().Contains(originTerm)));
+            }
 
-            if (!string.IsNullOrEmpty(destination))
-                query = query.Where(f => f.DestinationAirport!.IATACode == destination);
+            if (!string.IsNullOrWhiteSpace(destination))
+            {
+                var destinationTerm = destination.Trim().ToLower();
+                query = query.Where(f =>
+                    f.DestinationAirport!.IATACode!.ToLower().Contains(destinationTerm) ||
+                    (f.DestinationAirport.City != null && f.DestinationAirport.City.ToLower().Contains(destinationTerm)) ||
+                    (f.DestinationAirport.Country != null && f.DestinationAirport.Country.ToLower().Contains(destinationTerm)));
+            }
 
             if (date.HasValue)
                 query = query.Where(f => f.DepartureTime.Date == date.Value.Date);
@@ -103,6 +117,53 @@ namespace LisAeroGest.Data.Repositories
                 .Include(f => f.Aircraft)
                 .Include(f => f.Seats)
                 .OrderBy(f => f.DepartureTime)
+                .ToListAsync();
+        }
+
+
+        public async Task<Flight?> GetFlightWithDetailsAsync(int id)
+        {
+            return await _context.Flights
+                .Include(f => f.OriginAirport)
+                .Include(f => f.DestinationAirport)
+                .Include(f => f.Airline)
+                .Include(f => f.Gate)
+                .Include(f => f.Aircraft)
+                .FirstOrDefaultAsync(f => f.Id == id);
+        }
+
+        public async Task<IEnumerable<Flight>> SearchFlightsAsync(string term)
+        {
+            var lowerTerm = term.ToLower();
+            return await _context.Flights
+                .Include(f => f.OriginAirport)
+                .Include(f => f.DestinationAirport)
+                .Include(f => f.Airline)
+                .Include(f => f.Gate)
+                .Include(f => f.Aircraft)
+                .Where(f =>
+                    f.FlightNumber.ToLower().Contains(lowerTerm) ||
+                    (f.DestinationAirport != null && f.DestinationAirport.City.ToLower().Contains(lowerTerm)) ||
+                    (f.Airline != null && f.Airline.Name.ToLower().Contains(lowerTerm)) ||
+                    (f.DestinationAirport != null && f.DestinationAirport.IATACode.ToLower().Contains(lowerTerm))
+                )
+                .Take(20)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Flight>> GetAvailableFlightsAsync()
+        {
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+            return await _context.Flights
+                .Include(f => f.OriginAirport)
+                .Include(f => f.DestinationAirport)
+                .Include(f => f.Airline)
+                .Include(f => f.Gate)
+                .Include(f => f.Aircraft)
+                .Where(f => f.DepartureTime.Date == today || f.DepartureTime.Date == tomorrow)
+                .OrderBy(f => f.DepartureTime)
+                .Take(50)
                 .ToListAsync();
         }
 

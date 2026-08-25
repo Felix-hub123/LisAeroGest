@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using LisAeroGest.Data.Entities;
+﻿using LisAeroGest.Data.Entities;
+using LisAeroGest.Data.Interfaces;
 using LisAeroGest.Helpers;
 using LisAeroGest.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace LisAeroGest.Controllers
 {
@@ -22,6 +23,8 @@ namespace LisAeroGest.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUserHelper _userHelper;
         private readonly IConverterHelper _converterHelper;
+        private readonly IPassengerRepository _passengerRepository;
+        private readonly ITicketRepository _ticketRepository;
 
         /// <summary>
         /// Inicializa o UserController com as dependências necessárias.
@@ -30,12 +33,16 @@ namespace LisAeroGest.Controllers
             UserManager<User> userManager,
             RoleManager<IdentityRole> roleManager,
             IUserHelper userHelper,
-            IConverterHelper converterHelper)
+            IConverterHelper converterHelper,
+            IPassengerRepository passengerRepository,
+            ITicketRepository ticketRepository)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _userHelper = userHelper;
             _converterHelper = converterHelper;
+            _passengerRepository = passengerRepository;
+            _ticketRepository = ticketRepository;
         }
 
         /// <summary>
@@ -92,7 +99,10 @@ namespace LisAeroGest.Controllers
             // Delegado ao ConverterHelper
             var user = _converterHelper.ToUser(email, firstName, lastName);
 
-            var result = await _userManager.CreateAsync(user, "Mudar123!");
+            // Password temporária gerada aleatoriamente para cada utilizador (evita uma password fixa e previsível)
+            var temporaryPassword = GenerateTemporaryPassword();
+
+            var result = await _userManager.CreateAsync(user, temporaryPassword);
             if (!result.Succeeded)
             {
                 TempData["Error"] = "Erro ao criar utilizador.";
@@ -101,19 +111,62 @@ namespace LisAeroGest.Controllers
 
             await _userManager.AddToRoleAsync(user, role);
 
-            TempData["Success"] = $"Utilizador {role} criado com sucesso! Password temporária: Mudar123!";
+            TempData["Success"] = $"Utilizador {role} criado com sucesso! Password temporária: {temporaryPassword}";
             return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>
+        /// Gera uma password temporária aleatória que cumpre a política de password da aplicação
+        /// (mínimo 6 caracteres, pelo menos uma maiúscula e um dígito).
+        /// </summary>
+        private static string GenerateTemporaryPassword()
+        {
+            const string upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+            const string lower = "abcdefghijkmnpqrstuvwxyz";
+            const string digits = "23456789";
+
+            var random = Random.Shared;
+
+            var chars = new[]
+            {
+                upper[random.Next(upper.Length)],
+                lower[random.Next(lower.Length)],
+                digits[random.Next(digits.Length)],
+                lower[random.Next(lower.Length)],
+                digits[random.Next(digits.Length)],
+                upper[random.Next(upper.Length)]
+            };
+
+            return new string(chars);
         }
 
         /// <summary>
         /// Altera a role de um utilizador.
         /// </summary>
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangeRole(string userId, string newRole)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return NotFound();
+
+    
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser != null && currentUser.Id == user.Id)
+            {
+                TempData["Error"] = "Não podes alterar a tua própria role.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Impede remover o último Admin do sistema
+            if (await _userManager.IsInRoleAsync(user, "Admin") && newRole != "Admin")
+            {
+                var admins = await _userManager.GetUsersInRoleAsync("Admin");
+                if (admins.Count <= 1)
+                {
+                    TempData["Error"] = "Não é possível remover o último Administrador do sistema.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
 
             var currentRoles = await _userManager.GetRolesAsync(user);
             await _userManager.RemoveFromRolesAsync(user, currentRoles);
@@ -132,6 +185,39 @@ namespace LisAeroGest.Controllers
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return NotFound();
+
+            // Impede que o Admin se elimine a si próprio
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser != null && currentUser.Id == user.Id)
+            {
+                TempData["Error"] = "Não podes eliminar a tua própria conta.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Impede eliminar o último Admin do sistema
+            if (await _userManager.IsInRoleAsync(user, "Admin"))
+            {
+                var admins = await _userManager.GetUsersInRoleAsync("Admin");
+                if (admins.Count <= 1)
+                {
+                    TempData["Error"] = "Não é possível eliminar o último Administrador do sistema.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
+            // Impede eliminar um Passageiro que já tenha bilhetes associados
+            // (User → Passenger é Cascade, mas Ticket → Passenger é Restrict,
+            // por isso é preciso validar aqui antes de a base de dados recusar o cascade)
+            var passenger = await _passengerRepository.GetByUserIdAsync(user.Id);
+            if (passenger != null)
+            {
+                var tickets = await _ticketRepository.GetByPassengerAsync(passenger.Id);
+                if (tickets.Any())
+                {
+                    TempData["Error"] = "Não é possível eliminar este utilizador: existem bilhetes associados ao seu perfil de passageiro.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
 
             await _userManager.DeleteAsync(user);
             TempData["Success"] = "Utilizador eliminado com sucesso!";

@@ -1,0 +1,116 @@
+﻿@model LisAeroGest.Models.FlightDetailViewModel
+
+<div class="modal fade" id="flightDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <span class="flight-number">@Model.FlightNumber</span>
+                    <span class="flight-route ms-2">
+                        @Model.Origin → @Model.Destination
+                    </span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Grid de Informação -->
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <small class="text-muted d-block">Companhia</small>
+                            <span class="fw-bold">@Model.Airline</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <small class="text-muted d-block">Estado</small>
+                            <span class="flight-status-badge status-@Model.Status.ToLower().Replace(" ", "-")">
+                                <span class="status-dot"></span> @Model.Status
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <small class="text-muted d-block">Horário Previsto</small>
+                            <span class="fw-bold">@Model.DepartureTime.ToString("HH:mm")</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <small class="text-muted d-block">Horário Estimado</small>
+                            <span class="fw-bold @(Model.IsDelayed ? "text-danger" : "")">
+                                @(Model.EstimatedTime?.ToString("HH:mm") ?? "—")
+                                @if (Model.IsDelayed && Model.DelayMinutes.HasValue)
+                                {
+                                    <span class="delay-badge">+@Model.DelayMinutes min</span>
+                                }
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <small class="text-muted d-block">Gate</small>
+                            <span class="fw-bold">@Model.Gate</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <small class="text-muted d-block">Terminal</small>
+                            <span class="fw-bold">@Model.Terminal</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <small class="text-muted d-block">Aeronave</small>
+                            <span class="fw-bold">@Model.AircraftType</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-card">
+                            <small class="text-muted d-block">Lugares</small>
+                            <span class="fw-bold">@Model.AvailableSeats / @Model.TotalSeats</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Histórico de Estados -->
+                <div class="mt-4">
+                    <h6 class="fw-bold"><i class="bi bi-clock-history me-2"></i>Histórico do Voo</h6>
+                    <div class="timeline">
+                        @if (Model.StatusHistory != null && Model.StatusHistory.Any())
+                        {
+                            foreach (var history in Model.StatusHistory)
+                            {
+                                <div class="timeline-item">
+                                    <span class="timeline-time">@history.Timestamp.ToString("HH:mm")</span>
+                                    <span class="timeline-status">@history.Status</span>
+                                    <span class="timeline-detail text-muted">@history.Detail</span>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-muted text-center py-2">Sem histórico disponível</div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Ações -->
+                <div class="modal-actions mt-4 d-flex gap-2 flex-wrap">
+                    <button class="btn btn-outline-primary" onclick="FlightCards.toggleFavorite('@Model.Id')">
+                        <i class="bi bi-star"></i> Favorito
+                    </button>
+                    <button class="btn btn-outline-success" onclick="FlightCards.shareFlight('@Model.Id')">
+                        <i class="bi bi-share"></i> Partilhar
+                    </button>
+                    <button class="btn btn-outline-info" onclick="FlightCards.setAlert('@Model.Id')">
+                        <i class="bi bi-bell"></i> Alerta
+                    </button>
+                    <a href="#" class="btn btn-outline-secondary" onclick="FlightCards.printBoardingPass('@Model.Id')">
+                        <i class="bi bi-qr-code"></i> Cartão de Embarque
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

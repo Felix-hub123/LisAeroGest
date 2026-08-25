@@ -14,6 +14,6 @@ namespace LisAeroGest.Helpers
         /// <see cref="Response"/> indicando se o envio foi bem-sucedido
         /// ou a mensagem de erro caso tenha falhado.
         /// </returns>
-        Response SendEmail(string to, string subject, string body);
+        Task<Response> SendEmailAsync(string to, string subject, string body);
     }
 }

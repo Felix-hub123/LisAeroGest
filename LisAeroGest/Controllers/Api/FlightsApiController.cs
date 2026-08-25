@@ -37,7 +37,7 @@ namespace LisAeroGest.Controllers.Api
                     Origin = f.OriginAirport != null ? f.OriginAirport.City : string.Empty,
                     Destination = f.DestinationAirport != null ? f.DestinationAirport.City : string.Empty,
                     DestinationCode = f.DestinationAirport != null ? f.DestinationAirport.IATACode : string.Empty,
-                    GateNumber = f.Gate != null ? f.Gate.GateNumber : "TBD",
+                    Gate = f.Gate != null ? f.Gate.GateNumber : "TBD",
                     f.DepartureTime,
                     f.Status
                 })
@@ -68,7 +68,7 @@ namespace LisAeroGest.Controllers.Api
                     Origin = f.OriginAirport != null ? f.OriginAirport.City : string.Empty,
                     OriginCode = f.OriginAirport != null ? f.OriginAirport.IATACode : string.Empty,
                     Destination = f.DestinationAirport != null ? f.DestinationAirport.City : string.Empty,
-                    GateNumber = f.Gate != null ? f.Gate.GateNumber : "TBD",
+                    Gate = f.Gate != null ? f.Gate.GateNumber : "TBD",
                     f.ArrivalTime,
                     f.Status
                 })

@@ -1,0 +1,243 @@
+﻿@model FlightFilterViewModel
+
+@{
+    ViewData["Title"] = "Voos - Aeroporto de Lisboa";
+}
+
+<div class="container mt-4">
+    <!-- Cabeçalho -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">
+                <i class="bi bi-airplane me-2 text-primary"></i>Estado dos Voos
+            </h1>
+            <p class="text-muted small mb-0">
+                Consulte os voos disponíveis no Aeroporto de Lisboa
+            </p>
+        </div>
+        @if (User.Identity.IsAuthenticated && (User.IsInRole("Admin") || User.IsInRole("Employee")))
+        {
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-gear me-1"></i> Gestão de Voos
+            </a>
+        }
+    </div>
+
+    <!-- Alertas de Pesquisa -->
+    @if (!string.IsNullOrEmpty(ViewBag.SearchDestination))
+    {
+        <div class="alert alert-info mb-3 d-flex justify-content-between align-items-center">
+            <div>
+                <i class="bi bi-info-circle me-2"></i>
+                A mostrar voos para <strong>@ViewBag.SearchDestination</strong>
+                @if (!string.IsNullOrEmpty(ViewBag.SearchDate))
+                {
+                    <span>em <strong>@DateTime.Parse(ViewBag.SearchDate).ToString("dd/MM/yyyy")</strong></span>
+                }
+                @if (!string.IsNullOrEmpty(ViewBag.SearchOrigin))
+                {
+                    <span>com origem em <strong>@ViewBag.SearchOrigin</strong></span>
+                }
+            </div>
+            <a asp-action="PublicIndex" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-x"></i> Limpar
+            </a>
+        </div>
+    }
+
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light fw-bold py-3">
+            <i class="bi bi-funnel me-1"></i> Filtros de Pesquisa
+        </div>
+        <div class="card-body">
+            <form method="get" asp-action="PublicIndex" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Companhia Aérea</label>
+                    <select asp-for="FilterAirlineId" asp-items="Model.Airlines" class="form-select">
+                        <option value="">-- Todas as Companhias --</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Origem</label>
+                    <select asp-for="FilterOriginId" asp-items="Model.Airports" class="form-select">
+                        <option value="">-- Qualquer Origem --</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Destino</label>
+                    <select asp-for="FilterDestinationId" asp-items="(IEnumerable<SelectListItem>)ViewBag.Destinations" class="form-select">
+                        <option value="">-- Qualquer Destino --</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Estado</label>
+                    <select asp-for="FilterStatus" asp-items="Model.Statuses" class="form-select">
+                        <option value="">-- Todos os Estados --</option>
+                    </select>
+                </div>
+                <div class="col-12 d-flex justify-content-between align-items-center mt-3">
+                    <div class="w-50">
+                        <input type="text" id="tableSearch" class="form-control form-control-sm" placeholder="🔍 Pesquisa rápida..." />
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a asp-action="PublicIndex" class="btn btn-secondary btn-sm">
+                            <i class="bi bi-x-circle me-1"></i> Limpar
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-search me-1"></i> Pesquisar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabela Pública de Voos -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="flightsTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Companhia</th>
+                            <th>Voo</th>
+                            <th>Rota</th>
+                            <th>Partida</th>
+                            <th>Estado</th>
+                            <th>Portão</th>
+                            <th class="text-center">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Flights != null && Model.Flights.Any())
+                        {
+                            @foreach (var flight in Model.Flights)
+                            {
+                                <tr>
+                                    <td>
+                                        <img src="@(flight.Airline?.ImageFullPath ?? "/images/airlines/noimage.png")"
+                                             alt="@flight.Airline?.Name"
+                                             style="height: 25px; width: auto;"
+                                             onerror="this.src='/images/airlines/noimage.png'" />
+                                        <span class="ms-2">@(flight.Airline?.Name ?? "-")</span>
+                                    </td>
+                                    <td class="fw-bold">@flight.FlightNumber</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">@(flight.OriginAirport?.IATACode ?? "N/A")</span>
+                                        <i class="bi bi-arrow-right mx-1 text-muted"></i>
+                                        <span class="badge bg-light text-dark border">@(flight.DestinationAirport?.IATACode ?? "N/A")</span>
+                                        <br />
+                                        <small class="text-muted">
+                                            @(flight.OriginAirport?.City ?? "N/A") → @(flight.DestinationAirport?.City ?? "N/A")
+                                        </small>
+                                    </td>
+                                    <td>
+                                        @flight.DepartureTime.ToString("dd/MM HH:mm")
+                                        <br />
+                                        <small class="text-muted">@Model.GetTimeUntil(flight)</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge @Model.GetStatusBadgeColor(flight.Status)">
+                                            @Model.GetStatusDisplay(flight.Status)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (Model.IsDepartingSoon(flight))
+                                        {
+                                            <span class="badge bg-success">@Model.GetDisplayGate(flight)</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">---</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-1">
+                                            <a asp-action="Details" asp-route-id="@flight.Id" class="btn btn-sm btn-outline-primary" title="Detalhes">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+
+                                            @if (User.Identity.IsAuthenticated && Model.CanPurchase(flight))
+                                            {
+                                                <a asp-action="Purchase" asp-route-id="@flight.Id" class="btn btn-sm btn-success" title="Comprar bilhete">
+                                                    <i class="bi bi-ticket-perforated"></i> Comprar
+                                                </a>
+                                            }
+                                            else if (!User.Identity.IsAuthenticated && Model.CanPurchase(flight))
+                                            {
+                                                <a asp-controller="Account"
+                                                   asp-action="Login"
+                                                   asp-route-returnUrl="@Url.Action("Purchase", new { id = flight.Id })"
+                                                   class="btn btn-sm btn-outline-success" title="Fazer login para comprar">
+                                                    <i class="bi bi-box-arrow-in-right"></i> Login
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted small">Indisponível</span>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">
+                                    <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                                    Nenhum voo encontrado.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informação para Visitantes -->
+    @if (!User.Identity.IsAuthenticated)
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="alert alert-primary d-flex align-items-center">
+                    <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+                    <div>
+                        <strong>Deseja comprar um bilhete?</strong>
+                        <span class="d-block small">
+                            Crie uma conta grátis para comprar bilhetes, fazer check-in e gerir as suas reservas.
+                        </span>
+                    </div>
+                    <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary ms-auto">
+                        <i class="bi bi-person-plus me-1"></i> Criar conta
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Link para Companhias -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <a asp-controller="Airline" asp-action="PublicIndex" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-building me-1"></i> Ver todas as companhias aéreas
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Pesquisa rápida instantânea
+        document.getElementById('tableSearch')?.addEventListener('keyup', function () {
+            const filter = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#flightsTable tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(filter) ? '' : 'none';
+            });
+        });
+    </script>
+}

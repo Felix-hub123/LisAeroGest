@@ -38,5 +38,17 @@ namespace LisAeroGest.Data.Repositories
         public IQueryable<Passenger> GetAllQueryable()
 
             => _dbSet.Include(p => p.User).AsQueryable();
+
+
+        public async Task<Passenger?> GetByEmailAsync(string email)
+        {
+            var emailLower = email.ToLower();
+
+            return await _context.Passengers
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(p =>
+                    (p.Email != null && p.Email.ToLower() == emailLower) ||
+                    (p.User != null && p.User.Email != null && p.User.Email.ToLower() == emailLower));
+        }
     }
 }

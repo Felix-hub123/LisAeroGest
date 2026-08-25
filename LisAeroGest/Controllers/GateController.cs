@@ -2,10 +2,17 @@
 using LisAeroGest.Data.Repositories;
 using LisAeroGest.Helpers;
 using LisAeroGest.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LisAeroGest.Controllers
 {
+
+    /// <summary>
+    /// Controller responsável pela gestão de gates (portões de embarque).
+    /// Acesso permitido a Administradores e Funcionários.
+    /// </summary>
+    [Authorize(Roles = "Admin,Employee")]
     public class GateController : Controller
     {
         private readonly IGateRepository _gateRepository;
@@ -115,7 +122,7 @@ namespace LisAeroGest.Controllers
 
         /// <summary>
         /// Apresenta a página de confirmação de eliminação de um gate.
-        /// Se a tua View de Delete espera ViewModel, usa o ConverterHelper.
+        /// A view Views/Gate/Delete.cshtml usa a entidade diretamente (@model Gate).
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
@@ -124,9 +131,7 @@ namespace LisAeroGest.Controllers
             if (gate == null)
                 return NotFound();
 
-            // Se a view de Delete usar o modelo convertido:
-            var model = _converterHelper.ToGateViewModel(gate);
-            return View(model);
+            return View(gate);
         }
 
         /// <summary>

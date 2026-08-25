@@ -1,0 +1,599 @@
+﻿@model LisAeroGest.Models.HomeBoardViewModel
+@{
+    ViewData["Title"] = "Painel de Voos — Aeroporto de Lisboa";
+    var culture = new System.Globalization.CultureInfo("pt-PT");
+}
+
+<div class="container-fluid py-3 flightboard-wrapper pb-0">
+
+    <!-- ========================================================== -->
+    <!-- 1. HERO SECTION (Barra de Pesquisa)                        -->
+    <!-- ========================================================== -->
+    <section class="hero-section rounded-4 mb-4 p-4 p-md-5 text-white position-relative overflow-hidden hero-momondo"
+             data-aos="fade-in">
+
+        <div class="hero-content position-relative z-1">
+
+            <!-- Título -->
+            <div class="row align-items-center mb-4">
+                <div class="col-md-8">
+                    <h1 class="display-4 fw-bold mb-2">Para onde queres ir?</h1>
+                    <p class="fs-5 opacity-75 mb-0">Consulta horários, meteorologia e partidas em tempo real.</p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <div class="digital-clock d-inline-block">
+                        <div class="clock-time fs-3 fw-bold" id="clockTime">00:00:00</div>
+                        <small class="clock-date opacity-75" id="clockDate"></small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barra de Pesquisa -->
+            <div class="card border-0 shadow-lg rounded-4 bg-white text-dark p-3 mb-2" id="quickSearchBox">
+                <div class="row g-2 align-items-center">
+
+                    <!-- Origem -->
+                    <div class="col-md-2">
+                        <div class="form-floating">
+                            <input type="text" class="form-control border-0 bg-light" id="originInput" value="Lisboa (LIS)" readonly>
+                            <label for="originInput" class="fw-semibold">Origem</label>
+                        </div>
+                    </div>
+
+                    <!-- Destino / Número do Voo -->
+                    <div class="col-md-4 position-relative">
+                        <div class="form-floating">
+                            <input type="text" class="form-control border-0 bg-light" id="searchInput"
+                                   placeholder="Destino, cidade ou número de voo"
+                                   autocomplete="off">
+                            <label for="searchInput" class="fw-semibold">Destino ou Número do Voo</label>
+                        </div>
+                        <div id="searchSuggestions" class="d-none position-absolute w-100 bg-white shadow-sm rounded-3 mt-1 border overflow-auto suggestions-dropdown">
+                        </div>
+                    </div>
+
+                    <!-- Data -->
+                    <div class="col-md-2">
+                        <div class="form-floating">
+                            <input type="date" class="form-control border-0 bg-light" id="flightDate" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                            <label for="flightDate" class="fw-semibold">Data</label>
+                        </div>
+                    </div>
+
+                    <!-- Filtro por Estado -->
+                    <div class="col-md-2">
+                        <div class="form-floating">
+                            <select class="form-select border-0 bg-light" id="statusFilter">
+                                <option value="">Todos os voos</option>
+                                <option value="Previsto">Previsto</option>
+                                <option value="Check-in">Check-in</option>
+                                <option value="A Embarcar">A Embarcar</option>
+                                <option value="Partiu">Partiu</option>
+                                <option value="Atrasado">Atrasado</option>
+                                <option value="Cancelado">Cancelado</option>
+                            </select>
+                            <label for="statusFilter" class="fw-semibold">Estado</label>
+                        </div>
+                    </div>
+
+                    <!-- Botão Pesquisar -->
+                    <div class="col-md-2 d-grid">
+                        <button class="btn btn-primary btn-lg fw-bold h-100 rounded-3 btn-pesquisar" onclick="performSearch()">
+                            <i class="bi bi-search me-1"></i> Pesquisar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtros rápidos (chips) -->
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge bg-light text-dark border rounded-pill px-3 py-2 filter-chip" data-filter="Em Hora">
+                                <i class="bi bi-check-circle-fill text-success me-1"></i> Em Hora
+                            </span>
+                            <span class="badge bg-light text-dark border rounded-pill px-3 py-2 filter-chip" data-filter="Atrasado">
+                                <i class="bi bi-clock-fill text-warning me-1"></i> Atrasado
+                            </span>
+                            <span class="badge bg-light text-dark border rounded-pill px-3 py-2 filter-chip" data-filter="Cancelado">
+                                <i class="bi bi-x-circle-fill text-danger me-1"></i> Cancelado
+                            </span>
+                            <span class="badge bg-light text-dark border rounded-pill px-3 py-2 filter-chip" data-filter="Previsto">
+                                <i class="bi bi-calendar-check me-1"></i> Previstos
+                            </span>
+                            <button class="badge bg-light text-muted border-0 rounded-pill px-3 py-2" onclick="clearFilters()">
+                                <i class="bi bi-x me-1"></i> Limpar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ========================================================== -->
+    <!-- 2. TABELA DE VOOS (Resultados da Pesquisa)                 -->
+    <!--    (IMEDIATAMENTE ABAIXO DA BARRA DE PESQUISA)             -->
+    <!-- ========================================================== -->
+    <div id="flightsSection" class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5" data-aos="fade-up">
+        <div class="card-header bg-white border-0 p-3">
+            <ul class="nav nav-pills card-header-pills">
+                <li class="nav-item">
+                    <button class="nav-link active fw-bold px-4" data-bs-toggle="tab" data-bs-target="#departures">
+                        <i class="bi bi-airplane me-2"></i>Partidas <span id="departuresCount">(0)</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-bold px-4" data-bs-toggle="tab" data-bs-target="#arrivals">
+                        <i class="bi bi-airplane-fill me-2"></i>Chegadas <span id="arrivalsCount">(0)</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="departures">
+                @{
+                    ViewData["Type"] = "Departures";
+                }
+                <partial name="_FlightTable" model="Model.Departures" view-data="ViewData" />
+            </div>
+            <div class="tab-pane fade" id="arrivals">
+                @{
+                    ViewData["Type"] = "Arrivals";
+                }
+                <partial name="_FlightTable" model="Model.Arrivals" view-data="ViewData" />
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- 3. SECÇÃO DE FAVORITOS                                      -->
+    <!-- ========================================================== -->
+    <div id="favoritesSection" class="mb-5 d-none" data-aos="fade-up">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold m-0">
+                <i class="bi bi-star-fill text-warning me-2"></i>Os Teus Voos Favoritos
+            </h3>
+            <small class="text-muted">Guardados localmente no teu navegador</small>
+        </div>
+        <div id="favoritesContainer" class="flight-cards-grid">
+            <!-- Os cartões serão renderizados via JavaScript -->
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- 4. DESTINOS POPULARES                                       -->
+    <!-- ========================================================== -->
+    @if (Model.PopularDestinations.Any())
+    {
+        <div class="destinations-section mb-5" data-aos="fade-up">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="fw-bold m-0"><i class="bi bi-fire text-danger me-2"></i>Destinos Populares a Partir de Lisboa</h3>
+                <small class="text-muted">Preços estimados de ida e volta</small>
+            </div>
+
+            <div class="row g-3">
+                @foreach (var d in Model.PopularDestinations)
+                {
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3" data-aos="zoom-in">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden dest-card-hover">
+                            <div class="position-relative dest-card-image">
+                                <span class="badge bg-dark bg-opacity-75 position-absolute top-0 end-0 m-3 rounded-pill">
+                                    @d.Voos voos/semana
+                                </span>
+                                <div class="position-absolute bottom-0 start-0 p-3 text-white">
+                                    <span class="badge bg-warning text-dark fw-bold mb-1">@d.IATA</span>
+                                    <h5 class="fw-bold mb-0">@d.Cidade</h5>
+                                    <small class="opacity-75">@d.Pais</small>
+                                </div>
+                            </div>
+                            <div class="card-body d-flex justify-content-between align-items-center bg-white">
+                                <div>
+                                    <small class="text-muted d-block">Voo direto</small>
+                                    <span class="fw-bold text-success fs-5">desde 35 €</span>
+                                </div>
+                                <a href="javascript:void(0)" onclick="handleBooking('@d.Cidade')" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold">
+                                    Ver Voos
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- ========================================================== -->
+    <!-- 5. METEOROLOGIA + KPIs                                      -->
+    <!-- ========================================================== -->
+    <div class="row g-4 mb-5">
+
+        <!-- Meteorologia -->
+        <div class="col-lg-4" data-aos="fade-right">
+            @if (Model.Weather?.Main != null)
+            {
+                var w = Model.Weather.Weather?.FirstOrDefault();
+                var windKmh = Math.Round((Model.Weather.Wind?.Speed ?? 0) * 3.6, 0);
+
+                <div class="card border-0 shadow-sm rounded-4 bg-dark text-white overflow-hidden h-100">
+                    <div class="card-header bg-transparent border-0 pt-3 px-3 fw-bold d-flex justify-content-between">
+                        <span><i class="bi bi-cloud-sun me-2 text-warning"></i>Meteorologia LIS</span>
+                        <small class="text-white-50">Tempo Real</small>
+                    </div>
+                    <div id="weatherCarousel" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-indicators mb-1">
+                            <button type="button" data-bs-target="#weatherCarousel" data-bs-slide-to="0" class="active"></button>
+                            <button type="button" data-bs-target="#weatherCarousel" data-bs-slide-to="1"></button>
+                        </div>
+                        <div class="carousel-inner">
+                            <div class="carousel-item active p-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h1 class="display-4 fw-bold mb-0">@Math.Round(Model.Weather.Main.Temp)°C</h1>
+                                        <p class="text-white-50 mb-0 text-capitalize">@w?.Description</p>
+                                        <small class="text-white-50"><i class="bi bi-geo-alt"></i> Lisboa, PT</small>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(w?.Icon))
+                                    {
+                                        <img src="https://openweathermap.org/img/wn/@(w.Icon)@@2x.png" width="80" alt="Weather Icon">
+                                    }
+                                </div>
+                            </div>
+                            <div class="carousel-item p-4">
+                                <div class="row text-center">
+                                    <div class="col-6 mb-3">
+                                        <small class="text-white-50 d-block">Sensação</small>
+                                        <span class="fw-bold fs-5">@Math.Round(Model.Weather.Main.FeelsLike)°C</span>
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <small class="text-white-50 d-block">Vento</small>
+                                        <span class="fw-bold fs-5">@windKmh km/h</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-white-50 d-block">Humidade</small>
+                                        <span class="fw-bold fs-5">@Model.Weather.Main.Humidity%</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-white-50 d-block">Visibilidade</small>
+                                        <span class="fw-bold fs-5">@(Model.Weather.Visibility / 1000.0) km</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- KPIs -->
+        <div class="col-lg-8" data-aos="fade-left">
+            <div class="row g-3 h-100">
+                <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm rounded-4 text-center py-3 h-100">
+                        <i class="bi bi-airplane text-primary fs-2"></i>
+                        <h3 class="fw-bold mb-0 mt-1">@Model.TotalPartidas</h3>
+                        <small class="text-muted">Partidas</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm rounded-4 text-center py-3 h-100">
+                        <i class="bi bi-airplane-engines text-success fs-2"></i>
+                        <h3 class="fw-bold mb-0 mt-1">@Model.TotalChegadas</h3>
+                        <small class="text-muted">Chegadas</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm rounded-4 text-center py-3 h-100">
+                        <i class="bi bi-check-circle text-info fs-2"></i>
+                        <h3 class="fw-bold mb-0 mt-1">@Model.ActiveFlightsCount</h3>
+                        <small class="text-muted">Em Operação</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm rounded-4 text-center py-3 h-100">
+                        <i class="bi bi-exclamation-triangle text-warning fs-2"></i>
+                        <h3 class="fw-bold mb-0 mt-1">@Model.DisruptedFlightsCount</h3>
+                        <small class="text-muted">Com Atraso</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- 6. TEMPOS DE ESPERA DO TERMINAL                             -->
+    <!-- ========================================================== -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-5" data-aos="fade-up">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h5 class="fw-bold mb-0">
+                    <i class="bi bi-clock-history text-primary me-2"></i>Estado do Terminal em Tempo Real
+                </h5>
+                <small class="text-muted">Estimativa de tempo no Aeroporto Humberto Delgado (LIS)</small>
+            </div>
+            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2">
+                <i class="bi bi-circle-fill me-1 small"></i> Operação Normal
+            </span>
+        </div>
+
+        <div class="row g-3 text-center">
+            <div class="col-6 col-md-3">
+                <div class="p-3 bg-light rounded-3">
+                    <small class="text-muted d-block mb-1">Segurança / Raio-X</small>
+                    <span class="fw-bold fs-4 text-success">~ 8 min</span>
+                    <small class="d-block text-muted mt-1 tempo-detalhe">Fila Rápida</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-3 bg-light rounded-3">
+                    <small class="text-muted d-block mb-1">Controlo de Passaportes</small>
+                    <span class="fw-bold fs-4 text-warning">~ 18 min</span>
+                    <small class="d-block text-muted mt-1 tempo-detalhe">Zona Não-Schengen</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-3 bg-light rounded-3">
+                    <small class="text-muted d-block mb-1">Metro / Acessos LIS</small>
+                    <span class="fw-bold fs-4 text-success">Fluido</span>
+                    <small class="d-block text-muted mt-1 tempo-detalhe">Linha Vermelha</small>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-3 bg-light rounded-3">
+                    <small class="text-muted d-block mb-1">Parque Estacionamento</small>
+                    <span class="fw-bold fs-4 text-primary">74%</span>
+                    <small class="d-block text-muted mt-1 tempo-detalhe">Ocupação P1/P2</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- 7. COMO CHEGAR AO AEROPORTO                                -->
+    <!-- ========================================================== -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-5" data-aos="fade-up">
+        <h5 class="fw-bold mb-3">
+            <i class="bi bi-geo-alt-fill text-danger me-2"></i>Como Chegar ao Aeroporto de Lisboa
+        </h5>
+        <div class="row g-3">
+
+            <!-- Metro de Lisboa -->
+            <div class="col-md-4">
+                <div class="border rounded-3 p-3 h-100 d-flex align-items-center gap-3 hover-card">
+                    <i class="bi bi-train-front text-danger fs-2"></i>
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold mb-0">Metro de Lisboa</h6>
+                        <small class="text-muted d-block">Linha Vermelha (Estação Aeroporto)</small>
+                        <span class="badge bg-light text-dark border mt-1">~20 min do centro</span>
+                    </div>
+                    <button class="btn btn-outline-danger btn-sm rounded-pill" onclick="openMetroMap()">
+                        <i class="bi bi-map me-1"></i> Ver Mapa
+                    </button>
+                </div>
+            </div>
+
+            <!-- Carris / Autocarros -->
+            <div class="col-md-4">
+                <div class="border rounded-3 p-3 h-100 d-flex align-items-center gap-3 hover-card">
+                    <i class="bi bi-bus-front text-primary fs-2"></i>
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold mb-0">Carris / Autocarros</h6>
+                        <small class="text-muted d-block">Carreiras 705, 722, 744, 783</small>
+                        <span class="badge bg-light text-dark border mt-1">Terminal 1 & 2</span>
+                    </div>
+                    <button class="btn btn-outline-primary btn-sm rounded-pill" onclick="openCarrisWebsite()">
+                        <i class="bi bi-box-arrow-up-right me-1"></i> Site
+                    </button>
+                </div>
+            </div>
+
+            <!-- Estacionamento -->
+            <div class="col-md-4">
+                <div class="border rounded-3 p-3 h-100 d-flex align-items-center gap-3 hover-card">
+                    <i class="bi bi-p-square text-success fs-2"></i>
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold mb-0">Estacionamento</h6>
+                        <small class="text-muted d-block">Parques P1, P2 e P3</small>
+                        <span class="badge bg-light text-dark border mt-1">Kiss & Fly gratuito (10 min)</span>
+                    </div>
+                    <button class="btn btn-outline-success btn-sm rounded-pill" onclick="openParkingInfo()">
+                        <i class="bi bi-info-circle me-1"></i> Info
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- 8. CTA DE REGISTO                                          -->
+    <!-- ========================================================== -->
+    @if (User.Identity?.IsAuthenticated != true)
+    {
+        <div class="p-4 p-md-5 rounded-4 text-white text-center mb-5 cta-registo" data-aos="zoom-in">
+            <h3 class="fw-bold mb-2">Vai viajar em breve a partir de Lisboa?</h3>
+            <p class="opacity-75 mb-3">Cria a tua conta para guardar preferências, gerir voos favoritos e aceder a bilhetes.</p>
+            <a class="btn btn-light btn-lg rounded-pill px-4 fw-bold text-dark shadow-sm"
+               asp-area="Identity" asp-page="/Account/Register">
+                Criar Conta Grátis
+            </a>
+        </div>
+    }
+
+</div>
+
+<!-- ========================================================== -->
+<!-- 9. RODAPÉ                                                  -->
+<!-- ========================================================== -->
+<footer class="footer-momondo text-white pt-5 pb-4 mt-5 rounded-top-4">
+    <div class="container-fluid px-4 px-md-5">
+        <div class="row g-4 mb-4">
+            <div class="col-6 col-md-3">
+                <h6 class="fw-bold mb-3 text-white">LisAeroGest</h6>
+                <ul class="list-unstyled text-small mb-0">
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">Sobre o Aeroporto</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">Carreiras / Recrutamento</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">Imprensa e Notícias</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">Sustentabilidade</a></li>
+                </ul>
+            </div>
+            <div class="col-6 col-md-3">
+                <h6 class="fw-bold mb-3 text-white">Passageiros</h6>
+                <ul class="list-unstyled text-small mb-0">
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">Ajuda / Preguntas Frequentes</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">Perdidos e Achados</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">Mobilidade Reduzida</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">Avisos de Segurança</a></li>
+                </ul>
+            </div>
+            <div class="col-6 col-md-3">
+                <h6 class="fw-bold mb-3 text-white">Serviços</h6>
+                <ul class="list-unstyled text-small mb-0">
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">Companhias Aéreas</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">Estacionamento LIS</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">Lojas e Lounges</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none footer-link">Rent-a-Car</a></li>
+                </ul>
+            </div>
+            <div class="col-6 col-md-3">
+                <h6 class="fw-bold mb-3 text-white">Descarrega a App LisAero</h6>
+                <div class="d-flex flex-column gap-2 app-download-buttons">
+                    <a href="#" class="btn btn-outline-light btn-sm text-start rounded-3 py-2 px-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-google-play fs-4"></i>
+                            <div>
+                                <small class="d-block text-uppercase opacity-75 app-store-label">Disponível no</small>
+                                <strong class="app-store-name">Google Play</strong>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="#" class="btn btn-outline-light btn-sm text-start rounded-3 py-2 px-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-apple fs-4"></i>
+                            <div>
+                                <small class="d-block text-uppercase opacity-75 app-store-label">Descarregar na</small>
+                                <strong class="app-store-name">App Store</strong>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <hr class="border-secondary opacity-25 my-4" />
+        <div class="row align-items-center g-3 text-white-50 small">
+            <div class="col-lg-8">
+                <div class="d-flex flex-wrap gap-3 align-items-center">
+                    <span>&copy; @DateTime.Now.Year LisAeroGest</span>
+                    <a href="#" class="text-white-50 text-decoration-none footer-link">Privacidade</a>
+                    <a href="#" class="text-white-50 text-decoration-none footer-link">Termos e Condições</a>
+                    <a href="#" class="text-white-50 text-decoration-none footer-link">Acessibilidade</a>
+                    <a href="#" class="text-white-50 text-decoration-none footer-link">Cookies</a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <div class="d-inline-flex align-items-center gap-3 me-3">
+                    <a href="#" class="text-white-50 footer-link fs-5"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="text-white-50 footer-link fs-5"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="text-white-50 footer-link fs-5"><i class="bi bi-twitter-x"></i></a>
+                </div>
+                <span class="badge bg-secondary bg-opacity-50 text-white border border-secondary px-2 py-1">
+                    <i class="bi bi-globe me-1"></i> Português · € EUR
+                </span>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- ========================================================== -->
+<!-- 10. SCRIPTS                                                -->
+<!-- ========================================================== -->
+@section Scripts {
+    <script src="~/js/flightSearch.js"></script>
+    <script src="~/js/flightCards.js"></script>
+    <script src="~/js/flightFavorites.js"></script>
+
+    <script>
+        // Relógio
+        function updateClock() {
+            var now = new Date();
+            document.getElementById('clockTime').textContent = now.toLocaleTimeString('pt-PT');
+            document.getElementById('clockDate').textContent = now.toLocaleDateString('pt-PT', {
+                weekday: 'long', day: 'numeric', month: 'long'
+            });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Scroll para a tabela
+        function scrollToFlights() {
+            document.getElementById('flightsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Redirecionamento para compra
+        function handleBooking(destination) {
+            var isAuthenticated = @((User.Identity?.IsAuthenticated == true).ToString().ToLower());
+            if (!isAuthenticated) {
+                window.location.href = '/Identity/Account/Login?returnUrl=' + encodeURIComponent('/Shop/Index?destination=' + destination);
+            } else {
+                window.location.href = '/Shop/Index?destination=' + destination;
+            }
+        }
+
+        // Pesquisa
+        function performSearch() {
+            if (typeof FlightSearch !== 'undefined' && FlightSearch.performSearch) {
+                FlightSearch.performSearch();
+            } else {
+                var input = document.getElementById("searchInput");
+                var filter = input ? input.value.toUpperCase() : '';
+                document.querySelectorAll(".tab-pane.active table tbody tr").forEach(function (row) {
+                    row.style.display = (row.textContent || row.innerText).toUpperCase().indexOf(filter) > -1 ? "" : "none";
+                });
+            }
+        }
+
+        // Limpar filtros
+        function clearFilters() {
+            if (typeof FlightSearch !== 'undefined' && FlightSearch.clearFilters) {
+                FlightSearch.clearFilters();
+            } else {
+                document.getElementById('searchInput').value = '';
+                document.getElementById('statusFilter').value = '';
+                document.querySelectorAll('.filter-chip').forEach(function(chip) {
+                    chip.classList.remove('bg-primary', 'text-white');
+                    chip.classList.add('bg-light', 'text-dark');
+                });
+                performSearch();
+            }
+        }
+
+        // ==========================================================
+        // FUNÇÕES PARA SECÇÃO "COMO CHEGAR AO AEROPORTO"
+        // ==========================================================
+
+        function openMetroMap() {
+            window.open('https://www.metrolisboa.pt/viagem/mapa-rede/', '_blank');
+        }
+
+        function openCarrisWebsite() {
+            window.open('https://www.carris.pt/pt/aeroporto/', '_blank');
+        }
+
+        function openParkingInfo() {
+            window.open('https://www.aeroportolisboa.pt/pt/lis/acesso/estacionamento', '_blank');
+        }
+
+        // Inicializar módulos
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof FlightSearch !== 'undefined' && FlightSearch.init) {
+                FlightSearch.init();
+            }
+            if (typeof FlightCards !== 'undefined' && FlightCards.init) {
+                FlightCards.init();
+            }
+            if (typeof FlightFavorites !== 'undefined' && FlightFavorites.init) {
+                FlightFavorites.init();
+            }
+        });
+    </script>
+}

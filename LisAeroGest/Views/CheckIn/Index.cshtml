@@ -3,47 +3,86 @@
     ViewData["Title"] = "Check-in Online";
 }
 
-<h1 class="mb-4"><i class="bi bi-check2-square me-2"></i>Check-in Online</h1>
+<div class="container mt-4">
+    <h1 class="mb-4">
+        <i class="bi bi-check2-square me-2 text-primary"></i>Check-in Online
+    </h1>
 
-@if (!Model.Any())
-{
-    <div class="alert alert-info">Nenhum bilhete disponível para check-in neste momento.</div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead class="table-primary">
-                <tr>
-                    <th>Voo</th>
-                    <th>Rota</th>
-                    <th>Partida</th>
-                    <th>Lugar</th>
-                    <th>Estado</th>
-                    <th>Ação</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var ticket in Model)
-                {
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center py-5">
+            <i class="bi bi-info-circle display-3 d-block mb-3"></i>
+            <h4>Nenhum bilhete disponível para check-in</h4>
+            <p class="mb-0">
+                Os bilhetes só podem ser verificados entre 48h e 1h antes do voo.
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
                     <tr>
-                        <td>@ticket.Flight?.FlightNumber</td>
-                        <td>@ticket.Flight?.OriginAirport?.IATACode → @ticket.Flight?.DestinationAirport?.IATACode</td>
-                        <td>@ticket.Flight?.DepartureTime.ToString("dd/MM/yyyy HH:mm")</td>
-                        <td>@(ticket.Seat?.Code ?? "Por atribuir")</td>
-                        <td><span class="badge bg-success">Pago</span></td>
-                        <td>
-
-                            <a asp-controller="CheckIn"
-                               asp-action="DirectCheckIn"
-                               asp-route-ticketId="@ticket.Id"
-                               class="btn btn-primary btn-sm">
-                                <i class="bi bi-check-lg me-1"></i>Fazer Check-in
-                            </a>
-                        </td>
+                        <th>Voo</th>
+                        <th>Rota</th>
+                        <th>Partida</th>
+                        <th>Lugar</th>
+                        <th>Estado</th>
+                        <th>Ação</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-}
+                </thead>
+                <tbody>
+                    @foreach (var ticket in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@ticket.Flight?.FlightNumber</strong>
+                            </td>
+                            <td>
+                                @ticket.Flight?.OriginAirport?.IATACode
+                                <i class="bi bi-arrow-right mx-1"></i>
+                                @ticket.Flight?.DestinationAirport?.IATACode
+                            </td>
+                            <td>
+                                @ticket.Flight?.DepartureTime.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">@(ticket.Seat?.Code ?? "Por atribuir")</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-success">Pago</span>
+                            </td>
+                            <td>
+                               
+                                <form asp-controller="CheckIn" asp-action="ProcessCheckIn" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="ticketId" value="@ticket.Id" />
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-check-lg me-1"></i>Fazer Check-in
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

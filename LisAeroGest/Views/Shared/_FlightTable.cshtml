@@ -1,90 +1,63 @@
 ﻿@model IEnumerable<LisAeroGest.Data.Entities.Flight>
-@using LisAeroGest.Helpers
 @{
-    string type = ViewData["Type"]?.ToString() ?? "Departures";
-    bool isDeparture = type == "Departures";
+    var type = ViewData["Type"]?.ToString() ?? "Departures";
+    var isDepartures = type == "Departures";
+    var converter = ViewData["Converter"] as LisAeroGest.Helpers.IConverterHelper;
 }
 
-@if (!Model.Any())
-{
-    <div class="text-center text-muted py-5">
-        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-        Sem voos registados para hoje.
-    </div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-            <thead style="background:#0d3d6b; color:white;">
-                <tr>
-                    <th class="ps-3">Voo</th>
-                    <th>Companhia</th>
-                    <th>@(isDeparture ? "Destino" : "Origem")</th>
-                    <th>@(isDeparture ? "Partida" : "Chegada")</th>
-                    <th>Gate</th>
-                    @if (!isDeparture) { <th>Tapete</th> }
-                    <th>Estado</th>
+<table class="table table-hover align-middle mb-0">
+    <thead class="table-light">
+        <tr>
+            <th style="width: 50px;">⭐</th>
+            <th>Voo</th>
+            <th>Companhia</th>
+            <th>Destino</th>
+            <th>@(isDepartures ? "Partida" : "Chegada")</th>
+            <th>Gate</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var flight in Model)
+            {
+                var statusText = converter?.GetFlightStatusText(flight.Status) ?? flight.Status;
+                var badgeClass = converter?.GetFlightBadgeClass(flight.Status) ?? "bg-secondary";
+                var rowClass = converter?.GetFlightRowClass(flight.Status) ?? "";
+
+                <tr class="@rowClass">
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary favorite-btn"
+                                data-flight-id="@flight.Id"
+                                onclick="FlightCards.toggleFavorite('@flight.Id')">
+                            <i class="bi bi-star"></i>
+                        </button>
+                    </td>
+                    <td><strong>@flight.FlightNumber</strong></td>
+                    <td>@(flight.Airline?.Name ?? "—")</td>
+                    <td>
+                        @(flight.DestinationAirport?.City ?? "—")
+                        <small class="text-muted">(@(flight.DestinationAirport?.IATACode ?? "—"))</small>
+                    </td>
+                    <td>@(isDepartures? flight.DepartureTime.ToString("HH:mm") : flight.ArrivalTime.ToString("HH:mm"))</td>
+                    <td>@(flight.Gate?.GateNumber ?? "—")</td>
+                    <td>
+                        <span class="badge @badgeClass">
+                            @statusText
+                        </span>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach (var flight in Model)
-                {
-                    var airport = isDeparture ? flight.DestinationAirport : flight.OriginAirport;
-                    var time = isDeparture ? flight.DepartureTime : flight.ArrivalTime;
-
-                    <tr class="@FlightStatusHelper.GetRowClass(flight.Status)">
-                        <td class="ps-3 fw-bold">@flight.FlightNumber</td>
-                        <td>@flight.Airline?.Name</td>
-                        <td>
-                            <i class="bi bi-geo-alt-fill text-primary me-1"></i>
-                            @airport?.City
-                            <span class="text-muted small">(@airport?.IATACode)</span>
-                        </td>
-                        <td>
-                            <span class="fw-semibold">@time.ToString("HH:mm")</span>
-                            @if (flight.Status == "Delayed" && flight.DelayedDepartureTime.HasValue)
-                            {
-                                <br />
-                                <small class="text-danger">
-                                    <i class="bi bi-clock me-1"></i>
-                                    @flight.DelayedDepartureTime.Value.ToString("HH:mm")
-                                </small>
-                            }
-                        </td>
-                        <td>
-                            @if (flight.Gate != null)
-                            {
-                                <span class="badge bg-dark">@flight.Gate.GateNumber</span>
-                            }
-                            else
-                            {
-                                <span class="text-muted">—</span>
-                            }
-                        </td>
-                        @if (!isDeparture)
-                        {
-                            <td>
-                                <span class="badge bg-info text-dark">
-                                    @{
-                                        int HashSafe(int h) => h & int.MaxValue;
-                                        var gate = flight.Gate;
-                                        var belt = gate != null
-                                            ? (HashSafe(gate.GateNumber.GetHashCode()) % 6 + 1).ToString()
-                                            : (HashSafe(flight.FlightNumber?.GetHashCode() ?? 1) % 6 + 1).ToString();
-                                    }
-                                    <i class="bi bi-luggage me-1"></i>Tapete @belt
-                                </span>
-                            </td>
-                        }
-                        <td>
-                            <span class="badge @FlightStatusHelper.GetBadgeClass(flight.Status)">
-                                @FlightStatusHelper.GetStatusText(flight.Status)
-                            </span>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-}
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="7" class="text-center py-4 text-muted">
+                    <i class="bi bi-airplane fs-3 d-block mb-2"></i>
+                    Sem voos registados para hoje.
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
