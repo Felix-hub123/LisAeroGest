@@ -24,7 +24,12 @@ namespace LisAeroGest.Data
         public DbSet<BoardingPass> BoardingPasses { get; set; }
         public DbSet<Notification> Notifications { get; set; }
 
-        public DataContext(DbContextOptions options) : base(options)
+        public DataContext(DbContextOptions<DataContext> options) : base(options)
+        {
+        }
+
+
+        protected DataContext(DbContextOptions options) : base(options)
         {
         }
 
