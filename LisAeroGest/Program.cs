@@ -188,8 +188,22 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+var supportedCultures = new[] { new System.Globalization.CultureInfo("pt-PT") };
+
+builder.Services.Configure<Microsoft.AspNetCore.Builder.RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("pt-PT");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+});
+
+
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+
+app.UseRequestLocalization();
 
 app.UseRouting();
 
@@ -222,6 +236,9 @@ app.MapControllerRoute(
     name: "terms",
     pattern: "termos",
     defaults: new { controller = "Home", action = "Terms" });
+
+
+
 
 // ── Seed da Base de Dados ─────────────────────────────────────────────────────
 using (var scope = app.Services.CreateScope())
