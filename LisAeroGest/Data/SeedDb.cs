@@ -30,7 +30,7 @@ namespace LisAeroGest.Data
         /// </summary>
         public async Task SeedAsync()
         {
-            await _context.Database.MigrateAsync();
+          
 
             await SeedRolesAsync();
             await SeedAdminAsync();
