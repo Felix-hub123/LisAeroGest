@@ -24,7 +24,7 @@ namespace LisAeroGest.Data
         public DbSet<BoardingPass> BoardingPasses { get; set; }
         public DbSet<Notification> Notifications { get; set; }
 
-        public DataContext(DbContextOptions<DataContext> options) : base(options)
+        public DataContext(DbContextOptions options) : base(options)
         {
         }
 
@@ -47,25 +47,27 @@ namespace LisAeroGest.Data
             #endregion
 
             #region Índices Únicos (Prevenção de Duplicados)
+            var isSqlServer = Database.IsSqlServer();
+
             modelBuilder.Entity<Airport>()
                 .HasIndex(a => a.Name)
                 .IsUnique()
-                .HasFilter("[WasDeleted] = 0");
+                .HasFilter(isSqlServer ? "[WasDeleted] = 0" : "\"WasDeleted\" = false");
 
             modelBuilder.Entity<Airport>()
                 .HasIndex(a => a.IATACode)
                 .IsUnique()
-                .HasFilter("[WasDeleted] = 0");
+                .HasFilter(isSqlServer ? "[WasDeleted] = 0" : "\"WasDeleted\" = false");
 
             modelBuilder.Entity<Airline>()
                 .HasIndex(a => a.Name)
                 .IsUnique()
-                .HasFilter("[WasDeleted] = 0");
+                .HasFilter(isSqlServer ? "[WasDeleted] = 0" : "\"WasDeleted\" = false");
 
             modelBuilder.Entity<Airline>()
                 .HasIndex(a => a.IATACode)
                 .IsUnique()
-                .HasFilter("[WasDeleted] = 0");
+                .HasFilter(isSqlServer ? "[WasDeleted] = 0" : "\"WasDeleted\" = false");
             #endregion
 
             #region Tipos Decimais

@@ -20,13 +20,14 @@ var builder = WebApplication.CreateBuilder(args);
 // ── Base de Dados (SQL Server em Dev vs PostgreSQL em Prod) ──────────────
 if (builder.Environment.IsDevelopment())
 {
-    // Usa SQL Server em Desenvolvimento e lê da pasta Migrations/SqlServer
-    builder.Services.AddDbContext<DataContext>(options =>
-        options.UseSqlServer(
-            builder.Configuration.GetConnectionString("DefaultConnection"),
-            b => b.MigrationsAssembly(typeof(DataContext).Assembly.FullName)
-        )
-    );
+    // Usa SQL Server em Desenvolvimento
+    builder.Services.AddDbContext<DataContextSqlServer>(options =>
+      options.UseSqlServer(
+          builder.Configuration.GetConnectionString("DefaultConnection"),
+          b => b.MigrationsAssembly("LisAeroGest")
+               .MigrationsHistoryTable("__EFMigrationsHistory")
+      )
+  );
 }
 else
 {
@@ -51,12 +52,13 @@ else
         Console.WriteLine(">>> Password: [OCULTA]");
     }
 
-    builder.Services.AddDbContext<DataContext>(options =>
-        options.UseNpgsql(
-            connectionString,
-            b => b.MigrationsAssembly(typeof(DataContext).Assembly.FullName)
-        )
-    );
+    builder.Services.AddDbContext<DataContextPostgres>(options =>
+      options.UseNpgsql(
+          connectionString,
+          b => b.MigrationsAssembly("LisAeroGest")
+               .MigrationsHistoryTable("__EFMigrationsHistory", "public")
+      )
+  );
 }
 // ── Identity ─────────────────────────────────────────────────────────────────
 builder.Services.AddIdentity<User, IdentityRole>(options =>

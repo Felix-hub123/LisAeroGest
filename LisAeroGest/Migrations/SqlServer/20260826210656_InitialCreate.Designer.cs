@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace LisAeroGest.Migrations.Postgres
+namespace LisAeroGest.Migrations.SqlServer
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20260803204351_InitialPostgres")]
-    partial class InitialPostgres
+    [Migration("20260826210656_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -271,6 +271,9 @@ namespace LisAeroGest.Migrations.Postgres
                     b.Property<int>("ForumTopicId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("WasDeleted")
                         .HasColumnType("bit");
 
@@ -426,6 +429,11 @@ namespace LisAeroGest.Migrations.Postgres
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -443,7 +451,6 @@ namespace LisAeroGest.Migrations.Postgres
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("WasDeleted")
@@ -526,6 +533,9 @@ namespace LisAeroGest.Migrations.Postgres
                     b.Property<DateTime>("PurchaseDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("ReservationExpiresAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("SeatId")
                         .HasColumnType("int");
 
@@ -550,57 +560,6 @@ namespace LisAeroGest.Migrations.Postgres
                     b.HasIndex("SeatId");
 
                     b.ToTable("Tickets");
-                });
-
-            modelBuilder.Entity("LisAeroGest.Data.Entities.TicketTemp", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedByUserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("ExtraLuggage")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("FlightId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("MealIncluded")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("PassengerId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("SeatId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("WasDeleted")
-                        .HasColumnType("bit");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedByUserId");
-
-                    b.HasIndex("FlightId");
-
-                    b.HasIndex("PassengerId");
-
-                    b.HasIndex("SeatId");
-
-                    b.ToTable("TicketsTemp");
                 });
 
             modelBuilder.Entity("LisAeroGest.Data.Entities.User", b =>
@@ -916,8 +875,7 @@ namespace LisAeroGest.Migrations.Postgres
                     b.HasOne("LisAeroGest.Data.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("User");
                 });
@@ -955,38 +913,6 @@ namespace LisAeroGest.Migrations.Postgres
 
                     b.HasOne("LisAeroGest.Data.Entities.Passenger", "Passenger")
                         .WithMany("Tickets")
-                        .HasForeignKey("PassengerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("LisAeroGest.Data.Entities.Seat", "Seat")
-                        .WithMany()
-                        .HasForeignKey("SeatId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Flight");
-
-                    b.Navigation("Passenger");
-
-                    b.Navigation("Seat");
-                });
-
-            modelBuilder.Entity("LisAeroGest.Data.Entities.TicketTemp", b =>
-                {
-                    b.HasOne("LisAeroGest.Data.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("CreatedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("LisAeroGest.Data.Entities.Flight", "Flight")
-                        .WithMany()
-                        .HasForeignKey("FlightId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("LisAeroGest.Data.Entities.Passenger", "Passenger")
-                        .WithMany()
                         .HasForeignKey("PassengerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();

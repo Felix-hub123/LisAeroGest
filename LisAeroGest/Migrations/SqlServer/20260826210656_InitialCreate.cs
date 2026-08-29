@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LisAeroGest.Migrations.SqlServer
 {
     /// <inheritdoc />
-    public partial class InitialSqlServer : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -297,7 +297,8 @@ namespace LisAeroGest.Migrations.SqlServer
                     DocumentType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DocumentNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     BirthDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
                     WasDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -375,6 +376,7 @@ namespace LisAeroGest.Migrations.SqlServer
                     ForumTopicId = table.Column<int>(type: "int", nullable: false),
                     CreatedByUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsApproved = table.Column<bool>(type: "bit", nullable: false),
                     WasDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -439,6 +441,7 @@ namespace LisAeroGest.Migrations.SqlServer
                     MealIncluded = table.Column<bool>(type: "bit", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PurchaseDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ReservationExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CheckInDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedByUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     WasDeleted = table.Column<bool>(type: "bit", nullable: false)
@@ -466,52 +469,6 @@ namespace LisAeroGest.Migrations.SqlServer
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Tickets_Seats_SeatId",
-                        column: x => x.SeatId,
-                        principalTable: "Seats",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "TicketsTemp",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    PassengerId = table.Column<int>(type: "int", nullable: false),
-                    FlightId = table.Column<int>(type: "int", nullable: false),
-                    SeatId = table.Column<int>(type: "int", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ExtraLuggage = table.Column<bool>(type: "bit", nullable: false),
-                    MealIncluded = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedByUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    WasDeleted = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TicketsTemp", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_TicketsTemp_AspNetUsers_CreatedByUserId",
-                        column: x => x.CreatedByUserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_TicketsTemp_Flights_FlightId",
-                        column: x => x.FlightId,
-                        principalTable: "Flights",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_TicketsTemp_Passengers_PassengerId",
-                        column: x => x.PassengerId,
-                        principalTable: "Passengers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_TicketsTemp_Seats_SeatId",
                         column: x => x.SeatId,
                         principalTable: "Seats",
                         principalColumn: "Id",
@@ -692,26 +649,6 @@ namespace LisAeroGest.Migrations.SqlServer
                 name: "IX_Tickets_SeatId",
                 table: "Tickets",
                 column: "SeatId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TicketsTemp_CreatedByUserId",
-                table: "TicketsTemp",
-                column: "CreatedByUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TicketsTemp_FlightId",
-                table: "TicketsTemp",
-                column: "FlightId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TicketsTemp_PassengerId",
-                table: "TicketsTemp",
-                column: "PassengerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TicketsTemp_SeatId",
-                table: "TicketsTemp",
-                column: "SeatId");
         }
 
         /// <inheritdoc />
@@ -740,9 +677,6 @@ namespace LisAeroGest.Migrations.SqlServer
 
             migrationBuilder.DropTable(
                 name: "Notifications");
-
-            migrationBuilder.DropTable(
-                name: "TicketsTemp");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
