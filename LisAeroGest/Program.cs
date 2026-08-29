@@ -20,19 +20,27 @@ var builder = WebApplication.CreateBuilder(args);
 // ── Base de Dados (SQL Server em Dev vs PostgreSQL em Prod) ──────────────
 if (builder.Environment.IsDevelopment())
 {
-    // Usa SQL Server em Desenvolvimento
+    // Registo PRINCIPAL
+    builder.Services.AddDbContext<DataContext>(options =>
+        options.UseSqlServer(
+            builder.Configuration.GetConnectionString("DefaultConnection"),
+            b => b.MigrationsAssembly("LisAeroGest")
+                 .MigrationsHistoryTable("__EFMigrationsHistory")
+        )
+    );
+
+    // Registo EXTRA — só para migrações
     builder.Services.AddDbContext<DataContextSqlServer>(options =>
-      options.UseSqlServer(
-          builder.Configuration.GetConnectionString("DefaultConnection"),
-          b => b.MigrationsAssembly("LisAeroGest")
-               .MigrationsHistoryTable("__EFMigrationsHistory")
-      )
-  );
+        options.UseSqlServer(
+            builder.Configuration.GetConnectionString("DefaultConnection"),
+            b => b.MigrationsAssembly("LisAeroGest")
+                 .MigrationsHistoryTable("__EFMigrationsHistory")
+        )
+    );
 }
 else
 {
     AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-
     var connectionString =
         builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -43,7 +51,6 @@ else
     else
     {
         var csb = new Npgsql.NpgsqlConnectionStringBuilder(connectionString);
-
         Console.WriteLine(">>> DATABASE CONFIGURATION");
         Console.WriteLine($">>> Host: {csb.Host}");
         Console.WriteLine($">>> Port: {csb.Port}");
@@ -52,13 +59,24 @@ else
         Console.WriteLine(">>> Password: [OCULTA]");
     }
 
+    // Registo PRINCIPAL — usado pela aplicação inteira (SeedDb, controllers, repositórios, etc.)
+    builder.Services.AddDbContext<DataContext>(options =>
+        options.UseNpgsql(
+            connectionString,
+            b => b.MigrationsAssembly("LisAeroGest")
+                 .MigrationsHistoryTable("__EFMigrationsHistory", "public")
+        )
+    );
+
+    // Registo EXTRA — usado só pelas ferramentas de migração (Add-Migration/Update-Database),
+    // para conseguirem filtrar corretamente as migrações do Postgres.
     builder.Services.AddDbContext<DataContextPostgres>(options =>
-      options.UseNpgsql(
-          connectionString,
-          b => b.MigrationsAssembly("LisAeroGest")
-               .MigrationsHistoryTable("__EFMigrationsHistory", "public")
-      )
-  );
+        options.UseNpgsql(
+            connectionString,
+            b => b.MigrationsAssembly("LisAeroGest")
+                 .MigrationsHistoryTable("__EFMigrationsHistory", "public")
+        )
+    );
 }
 // ── Identity ─────────────────────────────────────────────────────────────────
 builder.Services.AddIdentity<User, IdentityRole>(options =>
