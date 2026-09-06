@@ -1,76 +1,113 @@
-﻿using LisAeroGest.Data.Entities;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace LisAeroGest.Models
 {
     /// <summary>
-    /// ViewModel para o dashboard do administrador.
-    /// Contém estatísticas gerais, dados para gráficos e listas resumidas.
+    /// ViewModel do dashboard administrativo.
+    /// Contém KPIs, dados de gráficos, alertas e informação de gestão.
     /// </summary>
     public class AdminDashboardViewModel
     {
         /// <summary>
-        /// Total de voos registados no sistema.
+        /// Total de voos registados (não eliminados).
         /// </summary>
+        [Display(Name = "Total de Voos")]
         public int TotalFlights { get; set; }
 
         /// <summary>
-        /// Total de passageiros registados no sistema.
+        /// Voos em operação (Previsto, Check-in ou A Embarcar).
         /// </summary>
-        public int TotalPassengers { get; set; }
+        [Display(Name = "Voos em Operação")]
+        public int ActiveFlights { get; set; }
 
         /// <summary>
-        /// Total de bilhetes vendidos no sistema.
+        /// Número de voos atrasados.
         /// </summary>
+        [Display(Name = "Voos Atrasados")]
+        public int DelayedFlights { get; set; }
+
+        /// <summary>
+        /// Número de voos cancelados.
+        /// </summary>
+        [Display(Name = "Voos Cancelados")]
+        public int CancelledFlights { get; set; }
+
+        /// <summary>
+        /// Total de bilhetes vendidos.
+        /// </summary>
+        [Display(Name = "Bilhetes Vendidos")]
         public int TotalTickets { get; set; }
 
         /// <summary>
-        /// Total de companhias aéreas registadas.
+        /// Receita total dos bilhetes pagos e com check-in.
         /// </summary>
-        public int TotalAirlines { get; set; }
-
-        /// <summary>
-        /// Número de voos agendados para hoje.
-        /// </summary>
-        public int TodayFlights { get; set; }
-
-        /// <summary>
-        /// Número de voos atrasados ou cancelados hoje.
-        /// </summary>
-        public int DisruptedFlights { get; set; }
-
-        /// <summary>
-        /// Receita total gerada pelos bilhetes vendidos.
-        /// </summary>
+        [Display(Name = "Receita Total")]
         public decimal TotalRevenue { get; set; }
 
         /// <summary>
-        /// Dados para o gráfico de voos por estado (labels).
+        /// Taxa média de ocupação dos voos (percentagem).
         /// </summary>
-        public List<string> FlightStatusLabels { get; set; } = new();
+        [Display(Name = "Taxa de Ocupação")]
+        public double OccupancyRate { get; set; }
 
         /// <summary>
-        /// Dados para o gráfico de voos por estado (valores).
+        /// Número de lugares ocupados.
         /// </summary>
-        public List<int> FlightStatusData { get; set; } = new();
+        [Display(Name = "Lugares Ocupados")]
+        public int OccupiedSeats { get; set; }
 
         /// <summary>
-        /// Dados para o gráfico de voos por companhia aérea (labels).
+        /// Número total de lugares disponíveis.
         /// </summary>
-        public List<string> AirlineLabels { get; set; } = new();
+        [Display(Name = "Total de Lugares")]
+        public int TotalSeats { get; set; }
 
         /// <summary>
-        /// Dados para o gráfico de voos por companhia aérea (valores).
+        /// Dados para o gráfico de voos por companhia aérea.
         /// </summary>
-        public List<int> AirlineData { get; set; } = new();
+        [Display(Name = "Voos por Companhia")]
+        public List<ChartItemViewModel> FlightsByAirline { get; set; } = new();
 
         /// <summary>
-        /// Lista dos voos mais recentes para exibição no dashboard.
+        /// Dados para o gráfico de voos por estado.
         /// </summary>
-        public List<Flight> RecentFlights { get; set; } = new();
+        [Display(Name = "Voos por Estado")]
+        public List<ChartItemViewModel> FlightsByStatus { get; set; } = new();
 
         /// <summary>
-        /// Lista dos tópicos mais recentes do fórum interno.
+        /// Receita mensal dos últimos 12 meses.
         /// </summary>
-        public List<ForumTopic> RecentTopics { get; set; } = new();
+        [Display(Name = "Receita por Mês")]
+        public List<RevenueMonthViewModel> RevenueByMonth { get; set; } = new();
+
+        /// <summary>
+        /// Top 5 rotas mais populares.
+        /// </summary>
+        [Display(Name = "Rotas Mais Populares")]
+        public List<RouteStatViewModel> TopRoutes { get; set; } = new();
+
+        /// <summary>
+        /// Receita e bilhetes por companhia aérea.
+        /// </summary>
+        [Display(Name = "Receita por Companhia")]
+        public List<AirlineRevenueViewModel> RevenueByAirline { get; set; } = new();
+
+        /// <summary>
+        /// Alertas administrativos relevantes.
+        /// </summary>
+        [Display(Name = "Alertas")]
+        public List<DashboardAlertViewModel> Alerts { get; set; } = new();
+
+        /// <summary>
+        /// Nome do administrador autenticado.
+        /// </summary>
+        [Display(Name = "Administrador")]
+        public string AdminName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Data e hora da última atualização dos dados.
+        /// </summary>
+        [Display(Name = "Última Atualização")]
+        public DateTime LastUpdated { get; set; } = DateTime.Now;
     }
 }

@@ -8,7 +8,7 @@ using System.Security.Claims;
 
 namespace LisAeroGest.Controllers.Api
 {
-    [Route("api/[controller]")]
+    [Route("api/checkin")]
     [ApiController]
     [Authorize(AuthenticationSchemes = "Bearer")]
     public class CheckInApiController : ControllerBase

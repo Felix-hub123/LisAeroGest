@@ -3,6 +3,7 @@ using LisAeroGest.Data.Entities;
 using LisAeroGest.Data.Interfaces;
 using LisAeroGest.Data.Repositories;
 using LisAeroGest.Helpers;
+using LisAeroGest.Hub;
 using LisAeroGest.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -167,6 +168,8 @@ builder.Services.AddScoped<IQrCodeService, QrCodeService>();
 builder.Services.AddHttpClient<PayPalService>();
 builder.Services.AddScoped<IPayPalService, PayPalService>();
 builder.Services.AddHostedService<ReservationExpirationService>();
+builder.Services.AddSignalR();
+builder.Services.AddSignalR();
 // ─── HttpClient (para OpenWeatherMap) ───────────────────────────────────────
 builder.Services.AddHttpClient();
 
@@ -178,7 +181,18 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+var supportedCultures = new[] { new System.Globalization.CultureInfo("pt-PT") };
+
+builder.Services.Configure<Microsoft.AspNetCore.Builder.RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("pt-PT");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+});
+
 var app = builder.Build();
+
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -188,14 +202,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-var supportedCultures = new[] { new System.Globalization.CultureInfo("pt-PT") };
 
-builder.Services.Configure<Microsoft.AspNetCore.Builder.RequestLocalizationOptions>(options =>
-{
-    options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("pt-PT");
-    options.SupportedCultures = supportedCultures;
-    options.SupportedUICultures = supportedCultures;
-});
 
 
 
@@ -213,6 +220,7 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
+app.MapHub<NotificationHub>("/hubs/notifications");
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

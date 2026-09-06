@@ -18,6 +18,11 @@ namespace LisAeroGest.Models
 
         public decimal MealIncludedPrice { get; set; }
 
+        /// <summary>
+        /// Filas do mapa da cabine, já agrupadas para a view.
+        /// </summary>
+        public List<SeatMapRowViewModel> SeatRows { get; set; } = new();
+
         // --- PROPRIEDADES CALCULADAS E MÉTODOS AUXILIARES PARA A VIEW ---
 
         /// <summary>

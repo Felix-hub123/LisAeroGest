@@ -97,26 +97,77 @@ namespace LisAeroGest.Controllers
         /// não autenticados.
         /// </summary>
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Index(
-            string? origin,
-            string? destination,
-            DateTime? date)
+                 string? origin,
+                 string? destination,
+                 DateTime? date,
+                 DateTime? returnDate,
+                 int? passengers,
+                 string? tripType,
+                 string? cabinClass,
+                 bool? directOnly)
         {
+            var destinationCode = ExtractIataOrText(destination);
+
             var flights = await _flightRepository.GetAvailableFlightsAsync(
                 origin,
-                destination,
+                destinationCode,
                 date);
 
             var airports = await _airportRepository.GetAllAsync();
 
-            ViewBag.Airports =
-                _converterHelper.ToAirportSelectList(airports);
+            var model = new ShopIndexViewModel
+            {
+                Origin = origin,
+                Destination = destination,
+                Date = date?.ToString("yyyy-MM-dd"),
+                ReturnDate = returnDate?.ToString("yyyy-MM-dd"),
+                Passengers = passengers ?? 1,
+                TripType = string.IsNullOrWhiteSpace(tripType) ? "oneway" : tripType,
+                CabinClass = string.IsNullOrWhiteSpace(cabinClass) ? "Economy" : cabinClass,
+                DirectOnly = directOnly == true,
+                Airports = _converterHelper.ToAirportSelectList(airports),
+                Flights = flights.Select(MapFlightSearchItem).ToList()
+            };
 
-            ViewBag.Origin = origin;
-            ViewBag.Destination = destination;
-            ViewBag.Date = date?.ToString("yyyy-MM-dd");
+            return View(model);
+        }
 
-            return View(flights);
+        private static FlightSearchItemViewModel MapFlightSearchItem(Flight flight)
+        {
+            var duration = flight.ArrivalTime - flight.DepartureTime;
+
+            return new FlightSearchItemViewModel
+            {
+                Id = flight.Id,
+                FlightNumber = flight.FlightNumber ?? "",
+                AirlineName = flight.Airline?.Name ?? "—",
+                AircraftModel = flight.Aircraft?.Model,
+                OriginCode = flight.OriginAirport?.IATACode ?? "—",
+                OriginCity = flight.OriginAirport?.City ?? "",
+                DestinationCode = flight.DestinationAirport?.IATACode ?? "—",
+                DestinationCity = flight.DestinationAirport?.City ?? "",
+                DepartureTime = flight.DepartureTime,
+                ArrivalTime = flight.ArrivalTime,
+                BasePrice = flight.BasePrice,
+                Status = flight.Status,
+                DurationMinutes = (int)duration.TotalMinutes,
+                DurationLabel = $"{(int)duration.TotalHours}h {duration.Minutes:00}m"
+            };
+        }
+
+        private static string? ExtractIataOrText(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return value;
+
+            var start = value.LastIndexOf('(');
+            var end = value.LastIndexOf(')');
+            if (start >= 0 && end > start)
+                return value.Substring(start + 1, end - start - 1).Trim().ToUpperInvariant();
+
+            return value.Trim();
         }
 
         // ============================================================
@@ -130,42 +181,9 @@ namespace LisAeroGest.Controllers
         /// Este método NÃO exige autenticação.
         /// O visitante pode pesquisar e escolher um lugar normalmente.
         /// </summary>
-       
 
-        /// <summary>
-        /// Mostra o mapa de lugares de um voo.
-        /// NÃO exige autenticação — visitante pode escolher lugar.
-        /// </summary>
-        [HttpGet]
-        [AllowAnonymous]
-        public async Task<IActionResult> SelectSeat(int flightId)
-        {
-            var flight = await _flightRepository.GetWithDetailsAsync(flightId);
-            if (flight == null)
-            {
-                TempData["Error"] = "Voo não encontrado.";
-                return RedirectToAction(nameof(Index));
-            }
 
-            // Verifica se o voo está disponível
-            if (flight.Status == "Cancelled" || flight.Status == "Departed")
-            {
-                TempData["Error"] = "Este voo já não está disponível para reserva.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            var seats = await _seatRepository.GetSeatsByFlightAsync(flightId);
-
-            var viewModel = new SelectSeatViewModel
-            {
-                Flight = flight,
-                Seats = seats.ToList(),
-                ExtraLuggagePrice = 30m,
-                MealIncludedPrice = 15m
-            };
-
-            return View(viewModel);
-        }
+      
 
         // ============================================================
         // ADICIONAR AO CARRINHO
@@ -236,13 +254,21 @@ namespace LisAeroGest.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.Flight = await _flightRepository.GetWithDetailsAsync(model.FlightId);
-                ViewBag.Seat = await _seatRepository.GetByIdAsync(model.SeatId);
-                ViewBag.TotalPrice = CalculateTotalPrice(
-                    ViewBag.Flight?.BasePrice ?? 0,
-                    ViewBag.Seat?.BasePrice ?? 0,
+                var flight = await _flightRepository.GetWithDetailsAsync(model.FlightId);
+                var seat = await _seatRepository.GetByIdAsync(model.SeatId);
+
+                model.FlightNumber = flight?.FlightNumber ?? "";
+                model.OriginCode = flight?.OriginAirport?.IATACode ?? "";
+                model.DestinationCode = flight?.DestinationAirport?.IATACode ?? "";
+                model.SeatCode = seat?.Code ?? "";
+                model.FlightPrice = flight?.BasePrice ?? 0;
+                model.SeatPrice = seat?.BasePrice ?? 0;
+                model.TotalPrice = CalculateTotalPrice(
+                    model.FlightPrice,
+                    model.SeatPrice,
                     model.ExtraLuggage,
                     model.MealIncluded);
+
                 return View("GuestCheckout", model);
             }
 
@@ -712,32 +738,75 @@ namespace LisAeroGest.Controllers
         }
 
 
+        /// <summary>
+        /// Autocomplete de aeroportos para o campo destino.
+        /// </summary>
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> SearchAirports(string? term)
+        {
+            var airports = await _airportRepository.SearchAsync(term ?? "", 8);
 
+            var result = airports.Select(a => new AirportSuggestionViewModel
+            {
+                Iata = a.IATACode ?? "",
+                City = a.City ?? "",
+                Country = a.Country ?? "",
+                Name = a.Name ?? "",
+                Label = $"{a.City} ({a.IATACode})"
+            });
+
+            return Json(result);
+        }
 
         /// <summary>
         /// Ecrã para recolher os dados do convidado (nome, email, documento).
         /// </summary>
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult GuestCheckout(int flightId, int seatId, bool extraLuggage, bool mealIncluded)
+        public async Task<IActionResult> GuestCheckout(
+     int flightId,
+     int seatId,
+     bool extraLuggage,
+     bool mealIncluded)
         {
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var passenger = await GetCurrentPassengerAsync();
+                if (passenger != null)
+                {
+                    return await AddTicketToCartAsync(
+                        passenger, flightId, seatId, extraLuggage, mealIncluded);
+                }
+            }
+
+            var flight = await _flightRepository.GetWithDetailsAsync(flightId);
+            var seat = await _seatRepository.GetByIdAsync(seatId);
+
+            if (flight == null || seat == null)
+            {
+                TempData["Error"] = "Voo ou lugar não encontrado.";
+                return RedirectToAction(nameof(Index));
+            }
+
             var model = new GuestCheckoutViewModel
             {
                 FlightId = flightId,
                 SeatId = seatId,
                 ExtraLuggage = extraLuggage,
-                MealIncluded = mealIncluded
+                MealIncluded = mealIncluded,
+                FlightNumber = flight.FlightNumber ?? "",
+                OriginCode = flight.OriginAirport?.IATACode ?? "",
+                DestinationCode = flight.DestinationAirport?.IATACode ?? "",
+                SeatCode = seat.Code ?? "",
+                FlightPrice = flight.BasePrice,
+                SeatPrice = seat.BasePrice,
+                TotalPrice = CalculateTotalPrice(
+                    flight.BasePrice,
+                    seat.BasePrice,
+                    extraLuggage,
+                    mealIncluded)
             };
-
-            // Se o utilizador já está autenticado, redireciona para o fluxo normal
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                return RedirectToAction("AddToCart", new { flightId, seatId, extraLuggage, mealIncluded });
-            }
-
-            // Carregar dados do voo e lugar para a View
-            ViewBag.Flight = _flightRepository.GetByIdAsync(flightId).Result;
-            ViewBag.Seat = _seatRepository.GetByIdAsync(seatId).Result;
 
             return View(model);
         }
@@ -982,11 +1051,126 @@ namespace LisAeroGest.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            ViewBag.TicketId = ticket.Id;
-            ViewBag.TotalPrice = ticket.TotalPrice;
-            ViewBag.FlightNumber = ticket.Flight?.FlightNumber;
+            var model = new GuestPaymentViewModel
+            {
+                TicketId = ticket.Id,
+                FlightNumber = ticket.Flight?.FlightNumber ?? "",
+                OriginCode = ticket.Flight?.OriginAirport?.IATACode ?? "",
+                DestinationCode = ticket.Flight?.DestinationAirport?.IATACode ?? "",
+                SeatCode = ticket.Seat?.Code ?? "",
+                PassengerName = $"{ticket.Passenger?.FirstName} {ticket.Passenger?.LastName}".Trim(),
+                ExtraLuggage = ticket.ExtraLuggage,
+                MealIncluded = ticket.MealIncluded,
+                TotalPrice = ticket.TotalPrice,
+                ExpiresAt = ticket.ReservationExpiresAt
+            };
 
-            return View(ticket);
+            return View(model);
+        }
+
+
+
+
+        private static List<SeatMapRowViewModel> BuildSeatRows(IEnumerable<Seat> seats, int flightId)
+        {
+            var leftLetters = new[] { "A", "B", "C" };
+            var rightLetters = new[] { "D", "E", "F" };
+
+            var active = seats
+                .Where(s => !s.WasDeleted && s.FlightId == flightId)
+                .Select(s =>
+                {
+                    var code = s.Code ?? "";
+                    var rowPart = new string(code.TakeWhile(char.IsDigit).ToArray());
+                    var letter = new string(code.SkipWhile(char.IsDigit).ToArray()).ToUpperInvariant();
+                    int.TryParse(rowPart, out var row);
+                    return new { Seat = s, Row = row, Letter = letter };
+                })
+                .ToList();
+
+            return active
+                .GroupBy(x => x.Row)
+                .OrderBy(g => g.Key)
+                .Select(g =>
+                {
+                    var rowSeats = g.ToList();
+                    bool isBusiness = rowSeats.Any(x =>
+                        string.Equals(x.Seat.SeatClass, "Business", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(x.Seat.SeatClass, "Executiva", StringComparison.OrdinalIgnoreCase));
+
+                    return new SeatMapRowViewModel
+                    {
+                        RowNumber = g.Key,
+                        IsBusinessRow = isBusiness,
+                        LeftSeats = leftLetters.Select(letter => MapCell(rowSeats.FirstOrDefault(x => x.Letter == letter)?.Seat, letter)).ToList(),
+                        RightSeats = rightLetters.Select(letter => MapCell(rowSeats.FirstOrDefault(x => x.Letter == letter)?.Seat, letter)).ToList()
+                    };
+                })
+                .ToList();
+        }
+
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> SelectSeat(int flightId)
+        {
+            var flight = await _flightRepository.GetWithDetailsAsync(flightId);
+            if (flight == null)
+            {
+                TempData["Error"] = "Voo não encontrado.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (flight.Status == "Cancelled" || flight.Status == "Departed")
+            {
+                TempData["Error"] = "Este voo já não está disponível para reserva.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var seats = (await _seatRepository.GetSeatsByFlightAsync(flightId)).ToList();
+
+            var viewModel = new SelectSeatViewModel
+            {
+                Flight = flight,
+                Seats = seats,
+                ExtraLuggagePrice = ExtraLuggageFee,
+                MealIncludedPrice = MealFee,
+                SeatRows = BuildSeatRows(seats, flight.Id)
+            };
+
+            return View(viewModel);
+        }
+
+        private static SeatMapCellViewModel MapCell(Seat? seat, string letter)
+        {
+            if (seat == null)
+            {
+                return new SeatMapCellViewModel
+                {
+                    Letter = letter,
+                    Exists = false,
+                    CssClass = "seat-empty"
+                };
+            }
+
+            bool occupied = !seat.IsAvailable;
+            bool business =
+                string.Equals(seat.SeatClass, "Business", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(seat.SeatClass, "Executiva", StringComparison.OrdinalIgnoreCase);
+
+            string css = occupied ? "seat-occupied" : (business ? "seat-business" : "seat-available");
+
+            return new SeatMapCellViewModel
+            {
+                SeatId = seat.Id,
+                Code = seat.Code ?? "",
+                Letter = letter,
+                SeatClass = seat.SeatClass ?? "Economy",
+                Price = seat.BasePrice,
+                IsOccupied = occupied,
+                Exists = true,
+                CssClass = css
+            };
         }
     }
 }

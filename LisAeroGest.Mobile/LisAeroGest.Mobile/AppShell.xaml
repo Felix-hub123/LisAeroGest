@@ -1,0 +1,21 @@
+<Shell
+    x:Class="LisAeroGest.Mobile.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:LisAeroGest.Mobile.Views"
+    Title="LisAeroGest Mobile">
+
+    <!-- Área autenticada — só é atingida depois do login, nunca antes -->
+    <TabBar>
+        <ShellContent
+            Title="Partidas"
+            ContentTemplate="{DataTemplate views:FlightBoardPage}"
+            Route="FlightBoardPage" />
+
+        <ShellContent
+            Title="Bilhetes"
+            ContentTemplate="{DataTemplate views:TicketsPage}"
+            Route="TicketsPage" />
+    </TabBar>
+
+</Shell>

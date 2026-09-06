@@ -1,0 +1,192 @@
+.cabin-viewport {
+    display: flex;
+    justify-content: center;
+    padding: 8px 0 20px;
+    overflow-x: auto;
+}
+
+.airplane-topdown {
+    width: min(420px, 100%);
+    filter: drop-shadow(0 18px 30px rgba(15, 40, 80, .28));
+}
+
+.plane-nose {
+    height: 90px;
+    background: linear-gradient(180deg, #d7e4f5 0%, #9bb6d6 55%, #6f8fb8 100%);
+    border-radius: 50% 50% 8px 8px / 90% 90% 8px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    color: #123;
+    font-size: .75rem;
+    font-weight: 600;
+    padding-bottom: 10px;
+    position: relative;
+}
+
+.cockpit-glass {
+    width: 54%;
+    height: 28px;
+    background: linear-gradient(180deg, #8ec8ff, #3b6ea5);
+    border-radius: 40px 40px 8px 8px;
+    margin-bottom: 8px;
+    box-shadow: inset 0 2px 6px rgba(255,255,255,.4);
+}
+
+.plane-body {
+    position: relative;
+    background: linear-gradient(90deg, #c5d3e6 0%, #eef3f9 18%, #ffffff 50%, #eef3f9 82%, #c5d3e6 100%);
+    border-left: 3px solid #8aa0bc;
+    border-right: 3px solid #8aa0bc;
+    padding: 16px 18px 24px;
+}
+
+.wing {
+    position: absolute;
+    top: 28%;
+    width: 70px;
+    height: 120px;
+    background: linear-gradient(180deg, #b7c7dc, #7f96b3);
+    z-index: 0;
+    opacity: .85;
+}
+
+.wing-left {
+    left: -68px;
+    border-radius: 8px 0 40px 12px;
+    transform: perspective(200px) rotateY(18deg);
+}
+
+.wing-right {
+    right: -68px;
+    border-radius: 0 8px 12px 40px;
+    transform: perspective(200px) rotateY(-18deg);
+}
+
+.plane-tail {
+    height: 70px;
+    background: linear-gradient(180deg, #6f8fb8, #4d6a8c);
+    border-radius: 8px 8px 45% 45%;
+    color: #fff;
+    font-size: .75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.column-labels,
+.seat-row {
+    display: grid;
+    grid-template-columns: 28px 1fr 22px 1fr;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    position: relative;
+    z-index: 1;
+}
+
+.column-labels {
+    grid-template-columns: 28px repeat(3, 34px) 22px repeat(3, 34px);
+    justify-content: center;
+    color: #6c7a8d;
+    font-size: .7rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.seat-side {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+}
+
+.aisle {
+    height: 34px;
+    background: repeating-linear-gradient( 180deg, rgba(180, 190, 205, .25) 0 2px, transparent 2px 8px );
+    border-radius: 4px;
+}
+
+.row-number {
+    font-size: .7rem;
+    color: #5b6b80;
+    font-weight: 700;
+    text-align: center;
+}
+
+.seat-button {
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 8px 8px 6px 6px;
+    font-size: .7rem;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 2px 0 rgba(0,0,0,.15), inset 0 1px 0 rgba(255,255,255,.35);
+    transform: perspective(80px) rotateX(12deg);
+    transition: transform .12s ease, box-shadow .12s ease;
+}
+
+    .seat-button:hover:not(:disabled) {
+        transform: perspective(80px) rotateX(12deg) translateY(-2px) scale(1.06);
+    }
+
+.seat-available {
+    background: linear-gradient(#3d9cf0, #1f6fb8);
+}
+
+.seat-business {
+    background: linear-gradient(#c9a227, #8a6d12);
+    color: #1a1404;
+}
+
+.seat-selected {
+    background: linear-gradient(#2ecc71, #1e8a4a);
+}
+
+.seat-occupied {
+    background: linear-gradient(#c5c9d1, #9aa1ab);
+    cursor: not-allowed;
+    opacity: .7;
+}
+
+.seat-empty {
+    width: 34px;
+    height: 34px;
+}
+
+.row-business {
+    background: rgba(201, 162, 39, .08);
+    border-radius: 8px;
+    padding: 4px 0;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend-box {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.legend-available {
+    background: #1f6fb8;
+}
+
+.legend-selected {
+    background: #1e8a4a;
+}
+
+.legend-occupied {
+    background: #9aa1ab;
+}
+
+.legend-business {
+    background: #c9a227;
+}

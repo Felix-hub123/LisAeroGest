@@ -1,41 +1,53 @@
 ﻿@model LisAeroGest.Models.SelectSeatViewModel
-
+@using System.Globalization
 @{
     ViewData["Title"] = "Escolha o seu lugar";
+    var culture = new CultureInfo("pt-PT");
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/css/select-seat.css" asp-append-version="true" />
 }
 
-<div class="container py-5">
+<div class="container py-4 mb-5">
 
-    <!-- CABEÇALHO -->
-    <div class="mb-4">
-        <a asp-action="Index" class="btn btn-outline-secondary mb-3">
-            <i class="bi bi-arrow-left me-1"></i> Voltar aos voos
-        </a>
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+                <a asp-controller="Home" asp-action="Index">Início</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-action="Index">Pesquisar voos</a>
+            </li>
+            <li class="breadcrumb-item active">Escolher lugar</li>
+        </ol>
+    </nav>
 
-        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
-            <div>
-                <span class="badge bg-primary mb-2">
-                    <i class="bi bi-airplane me-1"></i> @Model.Flight.FlightNumber
-                </span>
-                <h1 class="fw-bold mb-1">Escolha o seu lugar</h1>
-                <p class="text-muted mb-0">Escolha o lugar onde pretende viajar e personalize a sua viagem.</p>
-            </div>
-            <div class="text-end">
-                <small class="text-muted d-block">Preço base</small>
-                <strong class="fs-4 text-success">@Model.Flight.BasePrice.ToString("C2")</strong>
-            </div>
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm mb-3">
+        <i class="bi bi-arrow-left me-1"></i>Voltar aos resultados
+    </a>
+
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+        <div>
+            <span class="badge bg-primary mb-2">
+                <i class="bi bi-airplane me-1"></i>@Model.Flight.FlightNumber
+            </span>
+            <h1 class="fw-bold mb-1">Escolha o seu lugar</h1>
+            <p class="text-muted mb-0">
+                Selecione um lugar livre e, se quiser, adicione bagagem ou refeição.
+            </p>
+        </div>
+        <div class="text-end">
+            <small class="text-muted d-block">Preço base</small>
+            <strong class="fs-4 text-success">@Model.Flight.BasePrice.ToString("C2", culture)</strong>
+            <small class="text-muted d-block">por adulto</small>
         </div>
     </div>
 
-    <!-- MENSAGENS FEEDBACK -->
     @if (TempData["Error"] != null)
     {
         <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
@@ -43,91 +55,144 @@
     @if (TempData["Info"] != null)
     {
         <div class="alert alert-info alert-dismissible fade show rounded-3" role="alert">
-            <i class="bi bi-info-circle-fill me-2"></i> @TempData["Info"]
+            <i class="bi bi-info-circle-fill me-2"></i>@TempData["Info"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
-    <!-- INFORMAÇÃO DO VOO -->
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-body p-4">
-            <div class="row g-4 align-items-center">
-                <div class="col-md-5">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-3">
+                    <small class="text-muted d-block">Companhia</small>
+                    <strong>@(Model.Flight.Airline?.Name ?? "—")</strong>
+                    <div class="small text-muted">@(Model.Flight.Aircraft?.Model ?? "")</div>
+                </div>
+                <div class="col-md-3">
                     <small class="text-muted d-block">Partida</small>
-                    <div class="fs-4 fw-bold">@(Model.Flight.OriginAirport?.IATACode ?? "N/D")</div>
-                    <div class="text-muted">@(Model.Flight.OriginAirport?.City ?? "Origem")</div>
-                    <div class="fw-semibold mt-1">@Model.Flight.DepartureTime.ToString("dd/MM/yyyy HH:mm")</div>
+                    <div class="fs-4 fw-bold">@(Model.Flight.OriginAirport?.IATACode ?? "—")</div>
+                    <div class="text-muted small">@(Model.Flight.OriginAirport?.City ?? "")</div>
+                    <div class="fw-semibold">@Model.Flight.DepartureTime.ToString("dd/MM/yyyy HH:mm")</div>
                 </div>
-                <div class="col-md-2 text-center">
-                    <i class="bi bi-arrow-right fs-2 text-primary"></i>
+                <div class="col-md-3 text-md-center">
+                    <small class="text-muted d-block">Duração</small>
+                    <div class="fw-semibold">
+                        @((int)(Model.Flight.ArrivalTime - Model.Flight.DepartureTime).TotalHours)h
+                        @((Model.Flight.ArrivalTime - Model.Flight.DepartureTime).Minutes.ToString("00"))m
+                    </div>
+                    <i class="bi bi-arrow-right"></i>
                 </div>
-                <div class="col-md-5">
+                <div class="col-md-3">
                     <small class="text-muted d-block">Chegada</small>
-                    <div class="fs-4 fw-bold">@(Model.Flight.DestinationAirport?.IATACode ?? "N/D")</div>
-                    <div class="text-muted">@(Model.Flight.DestinationAirport?.City ?? "Destino")</div>
-                    <div class="fw-semibold mt-1">@Model.Flight.ArrivalTime.ToString("dd/MM/yyyy HH:mm")</div>
+                    <div class="fs-4 fw-bold">@(Model.Flight.DestinationAirport?.IATACode ?? "—")</div>
+                    <div class="text-muted small">@(Model.Flight.DestinationAirport?.City ?? "")</div>
+                    <div class="fw-semibold">@Model.Flight.ArrivalTime.ToString("dd/MM/yyyy HH:mm")</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- FORMULÁRIO DE SELEÇÃO -->
-    <form asp-action="AddToCart" method="post" id="seatForm">
+    <form asp-action="AddToCart" method="post">
         @Html.AntiForgeryToken()
-
         <input type="hidden" name="flightId" value="@Model.Flight.Id" />
         <input type="hidden" id="selectedSeatId" name="seatId" value="" />
 
         <div class="row g-4">
 
-            <!-- MAPA DA CABINE -->
+            <!-- MAPA -->
             <div class="col-lg-7">
                 <div class="card border-0 shadow-sm rounded-4">
                     <div class="card-body p-4">
-                        <h5 class="fw-bold mb-4">
-                            <i class="bi bi-grid-3x3-gap me-2"></i> Mapa da cabine
+                        <h5 class="fw-bold mb-3">
+                            <i class="bi bi-grid-3x3-gap me-2"></i>Mapa da cabine
                         </h5>
 
-                        <!-- LEGENDA -->
-                        <div class="d-flex justify-content-center gap-3 flex-wrap mb-4">
-                            <div class="legend-item"><span class="legend-box legend-available"></span><small>Livre</small></div>
-                            <div class="legend-item"><span class="legend-box legend-selected"></span><small>Selecionado</small></div>
-                            <div class="legend-item"><span class="legend-box legend-occupied"></span><small>Ocupado</small></div>
-                            <div class="legend-item"><span class="legend-box legend-business"></span><small>Business</small></div>
-                        </div>
-
-                        @if (!Model.ActiveSeats.Any())
+                        @if (!Model.SeatRows.Any())
                         {
-                            <div class="alert alert-warning text-center">
-                                <i class="bi bi-exclamation-circle me-2"></i> Não existem lugares disponíveis para este voo.
+                            <div class="alert alert-warning text-center mb-0">
+                                <i class="bi bi-exclamation-circle me-2"></i>
+                                Não existem lugares disponíveis para este voo.
                             </div>
                         }
                         else
                         {
-                            <div class="airplane-fuselage">
-                                <div class="cockpit"><i class="bi bi-airplane-fill me-2"></i> FRENTE DA AERONAVE</div>
-                                <div class="cabin-title">CABINE</div>
+                            <div class="cabin-viewport">
+                                <div class="airplane-topdown">
+                                    <div class="plane-nose">
+                                        <div class="cockpit-glass"></div>
+                                        <span>Frente</span>
+                                    </div>
 
-                                <div class="seat-grid">
-                                    @foreach (var seat in Model.ActiveSeats)
-                                    {
-                                        var isOccupied = Model.IsSeatOccupied(seat);
+                                    <div class="plane-body">
+                                        <div class="wing wing-left"></div>
+                                        <div class="wing wing-right"></div>
 
-                                        <button type="button"
-                                                class="seat-button @Model.GetSeatCssClass(seat)"
-                                                data-seat-id="@seat.Id"
-                                                data-seat-code="@seat.Code"
-                                                data-seat-class="@seat.SeatClass"
-                                                data-seat-price="@seat.BasePrice.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                                @(isOccupied ? "disabled" : "")
-                                                onclick="selectSeat(this)">
-                                            <span>@seat.Code</span>
-                                            @if (!isOccupied)
-                                            {
-                                                <small>@seat.BasePrice.ToString("C0")</small>
-                                            }
-                                        </button>
-                                    }
+                                        <div class="cabin-legend d-flex justify-content-center gap-3 flex-wrap mb-3">
+                                            <div class="legend-item"><span class="legend-box legend-available"></span><small>Livre</small></div>
+                                            <div class="legend-item"><span class="legend-box legend-selected"></span><small>Selecionado</small></div>
+                                            <div class="legend-item"><span class="legend-box legend-occupied"></span><small>Ocupado</small></div>
+                                            <div class="legend-item"><span class="legend-box legend-business"></span><small>Executiva</small></div>
+                                        </div>
+
+                                        @foreach (var row in Model.SeatRows)
+                                        {
+                                            <div class="seat-row @(row.IsBusinessRow ? "row-business" : "")">
+                                                <span class="row-number">@row.RowNumber</span>
+
+                                                <div class="seat-side">
+                                                    @foreach (var cell in row.LeftSeats)
+                                                    {
+                                                        if (!cell.Exists)
+                                                        {
+                                                            <span class="seat-empty"></span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <button type="button"
+                                                                    class="seat-button @cell.CssClass"
+                                                                    data-seat-id="@cell.SeatId"
+                                                                    data-seat-code="@cell.Code"
+                                                                    data-seat-class="@cell.SeatClass"
+                                                                    data-seat-price="@cell.Price.ToString(CultureInfo.InvariantCulture)"
+                                                                    disabled="@(cell.IsOccupied ? "disabled" : null)"
+                                                                    onclick="selectSeat(this)">
+                                                                @cell.Letter
+                                                            </button>
+                                                        }
+                                                    }
+                                                </div>
+
+                                                <div class="aisle"></div>
+
+                                                <div class="seat-side">
+                                                    @foreach (var cell in row.RightSeats)
+                                                    {
+                                                        if (!cell.Exists)
+                                                        {
+                                                            <span class="seat-empty"></span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <button type="button"
+                                                                    class="seat-button @cell.CssClass"
+                                                                    data-seat-id="@cell.SeatId"
+                                                                    data-seat-code="@cell.Code"
+                                                                    data-seat-class="@cell.SeatClass"
+                                                                    data-seat-price="@cell.Price.ToString(CultureInfo.InvariantCulture)"
+                                                                    disabled="@(cell.IsOccupied ? "disabled" : null)"
+                                                                    onclick="selectSeat(this)">
+                                                                @cell.Letter
+                                                            </button>
+                                                        }
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <div class="plane-tail">
+                                        <span>Cauda</span>
+                                    </div>
                                 </div>
                             </div>
                         }
@@ -135,13 +200,12 @@
                 </div>
             </div>
 
-            <!-- RESUMO DA RESERVA -->
+            <!-- RESUMO -->
             <div class="col-lg-5">
                 <div class="card border-0 shadow-sm rounded-4 sticky-lg-top" style="top: 20px;">
                     <div class="card-header bg-dark text-white border-0 rounded-top-4 p-4">
-                        <h5 class="mb-0 fw-bold"><i class="bi bi-cart-check me-2"></i> Resumo da viagem</h5>
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-cart-check me-2"></i>Resumo da viagem</h5>
                     </div>
-
                     <div class="card-body p-4">
                         <div class="selection-box mb-4">
                             <small class="text-muted d-block">Lugar escolhido</small>
@@ -151,49 +215,50 @@
 
                         <div class="price-line">
                             <span>Voo</span>
-                            <strong id="flightPrice">@Model.Flight.BasePrice.ToString("C2")</strong>
+                            <strong id="flightPrice">@Model.Flight.BasePrice.ToString("C2", culture)</strong>
                         </div>
-
                         <div class="price-line">
                             <span>Lugar</span>
                             <strong id="seatPrice">0,00 €</strong>
                         </div>
 
                         <hr />
-
-                        <h6 class="fw-bold mb-3"><i class="bi bi-plus-circle me-1"></i> Serviços adicionais</h6>
+                        <h6 class="fw-bold mb-3"><i class="bi bi-plus-circle me-1"></i>Serviços adicionais</h6>
 
                         <div class="extra-option mb-3">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="extraLuggage" name="extraLuggage" value="true" onchange="updateTotal()" />
+                                <input class="form-check-input" type="checkbox" id="extraLuggage"
+                                       name="extraLuggage" value="true" onchange="updateTotal()" />
                                 <label class="form-check-label" for="extraLuggage">
                                     <strong>Bagagem extra</strong>
                                     <small class="d-block text-muted">Bagagem de porão adicional</small>
                                 </label>
                             </div>
-                            <strong class="text-success">+@Model.ExtraLuggagePrice.ToString("C2")</strong>
+                            <strong class="text-success">+@Model.ExtraLuggagePrice.ToString("C2", culture)</strong>
                         </div>
 
                         <div class="extra-option mb-4">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="mealIncluded" name="mealIncluded" value="true" onchange="updateTotal()" />
+                                <input class="form-check-input" type="checkbox" id="mealIncluded"
+                                       name="mealIncluded" value="true" onchange="updateTotal()" />
                                 <label class="form-check-label" for="mealIncluded">
                                     <strong>Refeição a bordo</strong>
                                     <small class="d-block text-muted">Refeição quente</small>
                                 </label>
                             </div>
-                            <strong class="text-success">+@Model.MealIncludedPrice.ToString("C2")</strong>
+                            <strong class="text-success">+@Model.MealIncludedPrice.ToString("C2", culture)</strong>
                         </div>
 
                         <hr />
-
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <span class="fs-5 fw-bold">Total</span>
-                            <span id="totalPriceDisplay" class="fs-3 fw-bold text-success">@Model.Flight.BasePrice.ToString("C2")</span>
+                            <span id="totalPriceDisplay" class="fs-3 fw-bold text-success">
+                                @Model.Flight.BasePrice.ToString("C2", culture)
+                            </span>
                         </div>
 
                         <button type="submit" id="btnSubmit" class="btn btn-primary btn-lg w-100 fw-bold" disabled>
-                            <i class="bi bi-cart-plus me-2"></i> Continuar para reserva
+                            <i class="bi bi-cart-plus me-2"></i>Continuar para reserva
                         </button>
                     </div>
                 </div>
@@ -207,9 +272,9 @@
     <script src="~/js/select-seat.js" asp-append-version="true"></script>
     <script>
         initSeatSelection(
-            @Model.Flight.BasePrice.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            @Model.ExtraLuggagePrice.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            @Model.MealIncludedPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            @Model.Flight.BasePrice.ToString(CultureInfo.InvariantCulture),
+            @Model.ExtraLuggagePrice.ToString(CultureInfo.InvariantCulture),
+            @Model.MealIncludedPrice.ToString(CultureInfo.InvariantCulture)
         );
     </script>
 }

@@ -1,15 +1,15 @@
-﻿using System.Text.Json;
-using LisAeroGest.Data.Entities;
+﻿using LisAeroGest.Data.Entities;
 using LisAeroGest.Data.Interfaces;
 using LisAeroGest.Helpers;
+using LisAeroGest.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LisAeroGest.Controllers
 {
     /// <summary>
-    /// Controller responsável pelo dashboard de estatísticas.
-    /// Apresenta conteúdo diferente consoante a role do utilizador autenticado.
+    /// Controller do Dashboard.
+    /// Cada role recebe uma view e um ViewModel específicos.
     /// </summary>
     public class DashboardController : Controller
     {
@@ -20,13 +20,8 @@ namespace LisAeroGest.Controllers
         private readonly INotificationRepository _notificationRepository;
 
         /// <summary>
-        /// Inicializa o DashboardController com as dependências necessárias.
+        /// Inicializa o controller com as dependências necessárias.
         /// </summary>
-        /// <param name="flightRepository">Repositório de voos para estatísticas de voos.</param>
-        /// <param name="ticketRepository">Repositório de bilhetes para estatísticas de vendas.</param>
-        /// <param name="passengerRepository">Repositório de passageiros para dados do passageiro.</param>
-        /// <param name="userHelper">Helper de utilizadores para obter o utilizador autenticado.</param>
-        /// <param name="notificationRepository">Repositório de notificações do utilizador.</param>
         public DashboardController(
             IFlightRepository flightRepository,
             ITicketRepository ticketRepository,
@@ -42,9 +37,8 @@ namespace LisAeroGest.Controllers
         }
 
         /// <summary>
-        /// Apresenta o dashboard consoante a role do utilizador autenticado.
+        /// Entrada única: redireciona para o dashboard da role autenticada.
         /// </summary>
-        /// <returns>View apropriada para a role do utilizador.</returns>
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> Index()
@@ -61,177 +55,350 @@ namespace LisAeroGest.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        // =========================================================
+        //  ADMIN
+        // =========================================================
+
         /// <summary>
-        /// Dashboard completo para Administradores com estatísticas globais e KPIs do aeroporto.
+        /// Dashboard de supervisão e gestão.
+        /// Não inclui ações operacionais de balcão.
         /// </summary>
-        /// <returns>View com gráficos e indicadores globais.</returns>
-        private async Task<IActionResult> AdminDashboard()
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AdminDashboard()
         {
             var flights = (await _flightRepository.GetAllWithDetailsAsync()).ToList();
-            var tickets = await _ticketRepository.GetAllAsync();
+            var tickets = _ticketRepository.GetAllQueryable()
+                .Where(t => !t.WasDeleted)
+                .ToList();
 
-            // ---- KPIs básicos ----
-            ViewBag.TotalFlights = flights.Count();
-            ViewBag.TotalTickets = tickets.Count(t => !t.WasDeleted);
-            ViewBag.ActiveFlights = flights.Count(f => !f.WasDeleted &&
-                (f.Status == "Scheduled" || f.Status == "CheckIn" || f.Status == "Boarding"));
+            var activeStatuses = new[] { "Scheduled", "CheckIn", "Boarding" };
 
-            ViewBag.TotalRevenue = tickets
-                .Where(t => !t.WasDeleted && (t.Status == "Paid" || t.Status == "CheckedIn"))
-                .Sum(t => t.TotalPrice);
+            var model = new AdminDashboardViewModel
+            {
+                TotalFlights = flights.Count(f => !f.WasDeleted),
+                ActiveFlights = flights.Count(f => !f.WasDeleted && activeStatuses.Contains(f.Status)),
+                DelayedFlights = flights.Count(f => !f.WasDeleted && f.Status == "Delayed"),
+                CancelledFlights = flights.Count(f => !f.WasDeleted && f.Status == "Cancelled"),
+                TotalTickets = tickets.Count,
+                TotalRevenue = tickets
+                    .Where(t => t.Status == "Paid" || t.Status == "CheckedIn")
+                    .Sum(t => t.TotalPrice),
+                LastUpdated = DateTime.Now
+            };
 
-            ViewBag.DelayedFlights = flights.Count(f => !f.WasDeleted && f.Status == "Delayed");
-            ViewBag.CancelledFlights = flights.Count(f => !f.WasDeleted && f.Status == "Cancelled");
-
-            // ---- Taxa de ocupação média ----
+            // Taxa de ocupação
             int totalSeats = 0;
             int occupiedSeats = 0;
-
             foreach (var f in flights.Where(f => !f.WasDeleted))
             {
                 int seats = f.Seats?.Count ?? 0;
                 totalSeats += seats;
-                occupiedSeats += tickets.Count(t => !t.WasDeleted && t.FlightId == f.Id
+                occupiedSeats += tickets.Count(t => t.FlightId == f.Id
                     && (t.Status == "Paid" || t.Status == "CheckedIn"));
             }
-
-            ViewBag.OccupancyRate = totalSeats > 0
+            model.TotalSeats = totalSeats;
+            model.OccupiedSeats = occupiedSeats;
+            model.OccupancyRate = totalSeats > 0
                 ? Math.Round((double)occupiedSeats * 100.0 / totalSeats, 1)
                 : 0;
-            ViewBag.OccupiedSeats = occupiedSeats;
-            ViewBag.TotalSeats = totalSeats;
 
-            // ---- Gráfico 1: Voos por companhia ----
-            var flightsByAirline = flights
+            // Gráfico: Voos por companhia
+            model.FlightsByAirline = flights
                 .Where(f => !f.WasDeleted)
                 .GroupBy(f => f.Airline?.Name ?? "Sem companhia")
-                .Select(g => new { label = g.Key, count = g.Count() })
-                .OrderByDescending(x => x.count)
+                .Select(g => new ChartItemViewModel
+                {
+                    Label = g.Key,
+                    Count = g.Count()
+                })
+                .OrderByDescending(x => x.Count)
                 .ToList();
 
-            // ---- Gráfico 2: Voos por estado ----
-            var flightsByStatus = flights
+            // Gráfico: Voos por estado (labels em português)
+            model.FlightsByStatus = flights
                 .Where(f => !f.WasDeleted)
                 .GroupBy(f => f.Status)
-                .Select(g => new { label = g.Key, count = g.Count() })
+                .Select(g => new ChartItemViewModel
+                {
+                    Label = FlightStatusHelper.GetStatusText(g.Key),
+                    Count = g.Count()
+                })
                 .ToList();
 
-            // ---- Gráfico 3: Receita por mês (últimos 12 meses) ----
-            var revenueByMonth = tickets
-                .Where(t => !t.WasDeleted && t.PurchaseDate >= DateTime.UtcNow.AddMonths(-12)
+            // Gráfico: Receita por mês (últimos 12 meses)
+            model.RevenueByMonth = tickets
+                .Where(t => t.PurchaseDate >= DateTime.UtcNow.AddMonths(-12)
                     && (t.Status == "Paid" || t.Status == "CheckedIn"))
                 .GroupBy(t => new { t.PurchaseDate.Year, t.PurchaseDate.Month })
-                .Select(g => new
+                .Select(g => new RevenueMonthViewModel
                 {
-                    label = $"{g.Key.Year}-{g.Key.Month:D2}",
-                    total = g.Sum(t => t.TotalPrice)
+                    Label = $"{g.Key.Year}-{g.Key.Month:D2}",
+                    Total = g.Sum(t => t.TotalPrice)
                 })
-                .OrderBy(x => x.label)
+                .OrderBy(x => x.Label)
                 .ToList();
 
-            // ---- Tabela: Top 5 rotas mais populares ----
-            var topRoutes = flights
+            // Top 5 rotas
+            model.TopRoutes = flights
                 .Where(f => !f.WasDeleted && f.OriginAirport != null && f.DestinationAirport != null)
                 .GroupBy(f => $"{f.OriginAirport!.IATACode}-{f.DestinationAirport!.IATACode}")
-                .Select(g => new
+                .Select(g => new RouteStatViewModel
                 {
-                    rota = $"{g.First().OriginAirport!.IATACode} → {g.First().DestinationAirport!.IATACode}",
-                    origem = g.First().OriginAirport!.City,
-                    destino = g.First().DestinationAirport!.City,
-                    voos = g.Count()
+                    Route = $"{g.First().OriginAirport!.IATACode} → {g.First().DestinationAirport!.IATACode}",
+                    Origin = g.First().OriginAirport!.City ?? "",
+                    Destination = g.First().DestinationAirport!.City ?? "",
+                    FlightCount = g.Count()
                 })
-                .OrderByDescending(x => x.voos)
+                .OrderByDescending(x => x.FlightCount)
                 .Take(5)
                 .ToList();
 
-            // ---- Tabela: Receita por companhia ----
-            var revenueByAirline = tickets
-                .Where(t => !t.WasDeleted && t.Flight?.Airline != null
-                    && (t.Status == "Paid" || t.Status == "CheckedIn"))
-                .GroupBy(t => t.Flight!.Airline!.Name)
-                .Select(g => new
+            // Receita por companhia (mapa a partir dos voos já carregados)
+            var flightAirlineMap = flights
+                .Where(f => !f.WasDeleted && f.Airline != null)
+                .ToDictionary(f => f.Id, f => f.Airline!.Name ?? "Sem companhia");
+
+            model.RevenueByAirline = tickets
+                .Where(t => (t.Status == "Paid" || t.Status == "CheckedIn")
+                    && flightAirlineMap.ContainsKey(t.FlightId))
+                .GroupBy(t => flightAirlineMap[t.FlightId])
+                .Select(g => new AirlineRevenueViewModel
                 {
-                    companhia = g.Key,
-                    bilhetes = g.Count(),
-                    receita = g.Sum(t => t.TotalPrice)
+                    Airline = g.Key,
+                    Tickets = g.Count(),
+                    Revenue = g.Sum(t => t.TotalPrice)
                 })
-                .OrderByDescending(x => x.receita)
+                .OrderByDescending(x => x.Revenue)
                 .ToList();
 
-            // Serializar para JS
-            ViewBag.FlightsByAirline = JsonSerializer.Serialize(flightsByAirline);
-            ViewBag.FlightsByStatus = JsonSerializer.Serialize(flightsByStatus);
-            ViewBag.RevenueByMonth = JsonSerializer.Serialize(revenueByMonth);
-            ViewBag.TopRoutes = JsonSerializer.Serialize(topRoutes);
-            ViewBag.RevenueByAirline = JsonSerializer.Serialize(revenueByAirline);
+            // Alertas administrativos
+            if (model.DelayedFlights > 0)
+            {
+                model.Alerts.Add(new DashboardAlertViewModel
+                {
+                    Title = $"{model.DelayedFlights} voo(s) atrasado(s)",
+                    Message = "Verifique os horários previstos e as notificações enviadas.",
+                    Severity = "warning",
+                    Icon = "bi-clock-history",
+                    Link = Url.Action("Index", "Flights")
+                });
+            }
 
-            return View("AdminDashboard");
+            if (model.CancelledFlights > 0)
+            {
+                model.Alerts.Add(new DashboardAlertViewModel
+                {
+                    Title = $"{model.CancelledFlights} voo(s) cancelado(s)",
+                    Message = "Confirme o impacto nos passageiros e nos restantes voos.",
+                    Severity = "danger",
+                    Icon = "bi-x-circle",
+                    Link = Url.Action("Index", "Flights")
+                });
+            }
+
+            var user = await GetAuthenticatedUserAsync();
+            model.AdminName = user != null
+                ? $"{user.FirstName} {user.LastName}".Trim()
+                : User.Identity?.Name ?? "Administrador";
+
+            return View("AdminDashboard", model);
         }
 
+        // =========================================================
+        //  EMPLOYEE
+        // =========================================================
+
         /// <summary>
-        /// Dashboard operacional para Funcionários com foco na operação diária de voos.
+        /// Dashboard operacional do dia.
+        /// Focado em voos de hoje, check-ins e alertas práticos.
         /// </summary>
-        /// <returns>View com indicadores operacionais.</returns>
-        private async Task<IActionResult> EmployeeDashboard()
+        [HttpGet]
+        [Authorize(Roles = "Employee,Admin")]
+        public async Task<IActionResult> EmployeeDashboard()
         {
-            var flights = await _flightRepository.GetAllAsync();
-            var tickets = await _ticketRepository.GetAllAsync();
+            var flights = (await _flightRepository.GetAllWithDetailsAsync()).ToList();
+            var tickets = _ticketRepository.GetAllQueryable()
+                .Where(t => !t.WasDeleted)
+                .ToList();
 
-            ViewBag.TotalFlights = flights.Count(f => !f.WasDeleted);
-            ViewBag.TotalTickets = tickets.Count(t => !t.WasDeleted);
-            ViewBag.ActiveFlights = flights.Count(f => !f.WasDeleted &&
-                (f.Status == "Scheduled" || f.Status == "CheckIn" || f.Status == "Boarding"));
+            var today = DateTime.UtcNow.Date;
+            var nextHour = DateTime.UtcNow.AddHours(1);
 
-            var flightsByStatus = flights
+            var todayFlights = flights
+                .Where(f => !f.WasDeleted && f.DepartureTime.Date == today)
+                .OrderBy(f => f.DepartureTime)
+                .ToList();
+
+            var activeStatuses = new[] { "Scheduled", "CheckIn", "Boarding" };
+            var todayFlightIds = todayFlights.Select(f => f.Id).ToHashSet();
+
+            var pendingCheckIns = tickets.Count(t =>
+                todayFlightIds.Contains(t.FlightId)
+                && t.Status == "Paid");
+
+            var model = new EmployeeDashboardViewModel
+            {
+                TodayFlights = todayFlights.Count,
+                UpcomingFlights = todayFlights.Count(f =>
+                    f.DepartureTime <= nextHour
+                    && f.DepartureTime >= DateTime.UtcNow
+                    && f.Status != "Cancelled"
+                    && f.Status != "Departed"),
+                DelayedToday = todayFlights.Count(f => f.Status == "Delayed"),
+                CancelledToday = todayFlights.Count(f => f.Status == "Cancelled"),
+                PendingCheckIns = pendingCheckIns,
+                BoardingNow = todayFlights.Count(f => f.Status == "Boarding"),
+                ActiveFlights = flights.Count(f => !f.WasDeleted && activeStatuses.Contains(f.Status)),
+                LastUpdated = DateTime.Now
+            };
+
+            // Gráfico de estados
+            model.FlightsByStatus = flights
                 .Where(f => !f.WasDeleted)
                 .GroupBy(f => f.Status)
-                .Select(g => new { label = g.Key, count = g.Count() });
+                .Select(g => new ChartItemViewModel
+                {
+                    Label = FlightStatusHelper.GetStatusText(g.Key),
+                    Count = g.Count()
+                })
+                .ToList();
 
-            ViewBag.FlightsByStatus = JsonSerializer.Serialize(flightsByStatus);
+            // Lista de voos de hoje
+            model.TodayFlightList = todayFlights.Select(f =>
+            {
+                var flightTickets = tickets.Where(t => t.FlightId == f.Id).ToList();
+                return new TodayFlightItemViewModel
+                {
+                    Id = f.Id,
+                    FlightNumber = f.FlightNumber ?? "",
+                    AirlineName = f.Airline?.Name ?? "—",
+                    OriginCode = f.OriginAirport?.IATACode ?? "—",
+                    DestinationCode = f.DestinationAirport?.IATACode ?? "—",
+                    DepartureTime = f.DepartureTime,
+                    DelayedDepartureTime = f.DelayedDepartureTime,
+                    GateNumber = f.Gate?.GateNumber,
+                    Status = f.Status,
+                    PassengerCount = flightTickets.Count(t => t.Status == "Paid" || t.Status == "CheckedIn"),
+                    PendingCheckInCount = flightTickets.Count(t => t.Status == "Paid")
+                };
+            }).ToList();
 
-            // ---- Notificações recentes ----
+            // Notificações
             var user = await GetAuthenticatedUserAsync();
             if (user != null)
             {
-                var notifications = await _notificationRepository.GetByUserAsync(user.Id);
-                ViewBag.RecentNotifications = notifications.Take(5).ToList();
-                ViewBag.UnreadCount = notifications.Count(n => !n.IsRead);
+                var notifications = (await _notificationRepository.GetByUserAsync(user.Id)).ToList();
+                model.RecentNotifications = notifications.Take(5).ToList();
+                model.UnreadCount = notifications.Count(n => !n.IsRead);
+                model.EmployeeName = $"{user.FirstName} {user.LastName}".Trim();
+            }
+            else
+            {
+                model.EmployeeName = User.Identity?.Name ?? "Funcionário";
             }
 
-            return View("EmployeeDashboard");
+            return View("EmployeeDashboard", model);
         }
 
+        // =========================================================
+        //  PASSENGER
+        // =========================================================
+
         /// <summary>
-        /// Dashboard pessoal para Passageiros com a gestão dos seus bilhetes e histórico de voos.
+        /// Dashboard pessoal do passageiro.
+        /// Mostra apenas as suas viagens e ações relacionadas.
         /// </summary>
-        /// <returns>View com os dados do passageiro.</returns>
-        private async Task<IActionResult> PassengerDashboard()
+        [HttpGet]
+        [Authorize(Roles = "Passenger")]
+        public async Task<IActionResult> PassengerDashboard()
         {
             var user = await GetAuthenticatedUserAsync();
-            if (user == null) return RedirectToAction("Index", "Home");
+            if (user == null)
+                return RedirectToAction("Index", "Home");
 
             var passenger = await _passengerRepository.GetByUserIdAsync(user.Id);
-            if (passenger == null) return RedirectToAction("Index", "Home");
+            if (passenger == null)
+                return RedirectToAction("Index", "Home");
 
-            var tickets = await _ticketRepository.GetByPassengerAsync(passenger.Id);
+            var tickets = (await _ticketRepository.GetByPassengerAsync(passenger.Id)).ToList();
 
-            var upcomingTickets = tickets.Where(t => t.Flight!.DepartureTime > DateTime.UtcNow && t.Status != "Cancelled");
-            var pastTickets = tickets.Where(t => t.Flight!.DepartureTime <= DateTime.UtcNow || t.Status == "Cancelled");
+            var upcoming = tickets
+                .Where(t => t.Flight != null
+                    && t.Flight.DepartureTime > DateTime.UtcNow
+                    && t.Status != "Cancelled"
+                    && t.Status != "Expired")
+                .OrderBy(t => t.Flight!.DepartureTime)
+                .ToList();
 
-            ViewBag.Passenger = passenger;
-            ViewBag.UpcomingTickets = upcomingTickets;
-            ViewBag.PastTickets = pastTickets;
+            var past = tickets
+                .Where(t => t.Flight != null
+                    && (t.Flight.DepartureTime <= DateTime.UtcNow
+                        || t.Status == "Cancelled"
+                        || t.Status == "Expired"))
+                .OrderByDescending(t => t.Flight!.DepartureTime)
+                .ToList();
 
-            return View("PassengerDashboard");
+            PassengerTicketItemViewModel MapTicket(Ticket t)
+            {
+                var flight = t.Flight!;
+                var departure = flight.DelayedDepartureTime ?? flight.DepartureTime;
+                var hoursUntil = (departure - DateTime.UtcNow).TotalHours;
+
+                // Check-in online disponível entre 48h e 1h antes do voo
+                bool canCheckIn = t.Status == "Paid"
+                    && hoursUntil <= 48
+                    && hoursUntil >= 1
+                    && flight.Status != "Cancelled"
+                    && flight.Status != "Departed";
+
+                return new PassengerTicketItemViewModel
+                {
+                    TicketId = t.Id,
+                    FlightNumber = flight.FlightNumber ?? "",
+                    AirlineName = flight.Airline?.Name ?? "—",
+                    OriginCode = flight.OriginAirport?.IATACode ?? "—",
+                    DestinationCode = flight.DestinationAirport?.IATACode ?? "—",
+                    OriginCity = flight.OriginAirport?.City ?? "",
+                    DestinationCity = flight.DestinationAirport?.City ?? "",
+                    DepartureTime = flight.DepartureTime,
+                    DelayedDepartureTime = flight.DelayedDepartureTime,
+                    GateNumber = flight.Gate?.GateNumber,
+                    FlightStatus = flight.Status,
+                    TicketStatus = t.Status,
+                    SeatNumber = t.Seat?.Code,
+                    CanCheckIn = canCheckIn,
+                    HasBoardingPass = t.Status == "CheckedIn"
+                };
+            }
+
+            var model = new PassengerDashboardViewModel
+            {
+                Passenger = passenger,
+                FullName = $"{passenger.FirstName} {passenger.LastName}".Trim(),
+                UpcomingTickets = upcoming.Select(MapTicket).ToList(),
+                PastTickets = past.Select(MapTicket).ToList(),
+                UpcomingCount = upcoming.Count,
+                PastCount = past.Count
+            };
+
+            model.NextFlight = model.UpcomingTickets.FirstOrDefault();
+
+            return View("PassengerDashboard", model);
         }
 
+        // =========================================================
+        //  Helpers
+        // =========================================================
+
         /// <summary>
-        /// Método auxiliar para obter a entidade do utilizador atualmente autenticado.
+        /// Obtém o utilizador autenticado a partir do email da identidade.
         /// </summary>
-        /// <returns>Utilizador autenticado ou null caso não exista.</returns>
         private async Task<User?> GetAuthenticatedUserAsync()
         {
-            if (User.Identity?.Name == null) return null;
+            if (User.Identity?.Name == null)
+                return null;
+
             return await _userHelper.GetUserByEmailAsync(User.Identity.Name);
         }
     }

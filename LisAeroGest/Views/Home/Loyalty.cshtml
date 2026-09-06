@@ -1,0 +1,53 @@
+﻿@{
+    ViewData["Title"] = "Programa LisAeroPoints";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="bg-light p-4 p-md-5 rounded-4 shadow-sm text-center">
+        <h1 class="display-5 fw-bold">LisAeroPoints</h1>
+        <p class="lead mt-3">
+            Programa de fidelidade da LisAeroGest. Acumule pontos nas viagens
+            e utilize-os em reservas futuras.
+        </p>
+
+        <hr class="my-4" />
+
+        <h3 class="h5 text-primary fw-bold">Como funciona</h3>
+        <ul class="list-unstyled lead text-start mx-auto" style="max-width: 640px;">
+            <li class="mb-2">
+                <i class="bi bi-plus-circle me-2 text-primary"></i>
+                Acumule pontos em cada reserva paga na plataforma.
+            </li>
+            <li class="mb-2">
+                <i class="bi bi-arrow-left-right me-2 text-primary"></i>
+                Troque pontos por desconto em novas viagens (quando o programa estiver ativo na conta).
+            </li>
+            <li class="mb-2">
+                <i class="bi bi-star me-2 text-primary"></i>
+                Níveis Silver, Gold e Platinum com benefícios adicionais.
+            </li>
+            <li>
+                <i class="bi bi-person-plus me-2 text-primary"></i>
+                A adesão faz-se com a criação de conta de passageiro.
+            </li>
+        </ul>
+
+        <hr class="my-4" />
+
+        @if (User.Identity?.IsAuthenticated != true)
+        {
+            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-lg mt-2">
+                <i class="bi bi-person-plus me-1"></i>Criar conta
+            </a>
+        }
+        else
+        {
+            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-primary btn-lg mt-2">
+                <i class="bi bi-person me-1"></i>Ir para o dashboard
+            </a>
+        }
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-lg mt-2 ms-md-2">
+            <i class="bi bi-arrow-left me-1"></i>Voltar ao início
+        </a>
+    </div>
+</div>

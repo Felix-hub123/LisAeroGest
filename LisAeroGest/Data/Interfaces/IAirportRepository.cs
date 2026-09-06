@@ -8,5 +8,7 @@ namespace LisAeroGest.Data.Interfaces
         Task<bool> IsUsedInFlightsAsync(int airportId);
         IQueryable<Airport> GetAllQueryable();
 
+        Task<IEnumerable<Airport>> SearchAsync(string term, int take = 8);
+
     }
 }

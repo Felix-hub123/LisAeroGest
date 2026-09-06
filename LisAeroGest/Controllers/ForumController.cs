@@ -173,81 +173,49 @@ namespace LisAeroGest.Controllers
         /// Submete um novo comentário a um tópico existente.
         /// Admins têm aprovação automática; Employees entram no fluxo de moderação.
         /// </summary>
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddComment(int topicId, string content)
-        {
-            if (string.IsNullOrWhiteSpace(content))
-                return RedirectToAction("Details", new { id = topicId });
 
-            var topic = await _topicRepository.GetByIdAsync(topicId);
-            if (topic == null || topic.IsClosed) return NotFound();
 
-            var user = await _userHelper.GetUserByEmailAsync(User.Identity!.Name!);
-            if (user == null) return Unauthorized();
 
-            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
-
-            var comment = new ForumComment
-            {
-                ForumTopicId = topicId,
-                Content = content,
-                CreatedByUserId = user.Id,
-                CreatedAt = DateTime.UtcNow,
-                IsApproved = isAdmin // Admins são aprovados na hora; Employees ficam pendentes
-            };
-
-            await _commentRepository.AddAsync(comment);
-            await _commentRepository.SaveAsync();
-
-            if (isAdmin)
-            {
-                await NotifyUsersAsync(
-                    title: "Novo comentário no fórum",
-                    message: $"{user.FullName} comentou no tópico: {topic.Title}",
-                    link: $"/Forum/Details/{topicId}",
-                    icon: "bi-chat-left-text",
-                    color: "text-info",
-                    type: "ForumComment"
-                );
-                TempData["Success"] = "Comentário adicionado!";
-            }
-            else
-            {
-                TempData["Info"] = "O seu comentário foi submetido com sucesso e aguarda aprovação de um Administrador.";
-            }
-
-            return RedirectToAction("Details", new { id = topicId });
-        }
 
         /// <summary>
-        /// Aprova um comentário pendente. Apenas para Administradores.
-        /// </summary>
-        [HttpPost]
-        [Authorize(Roles = "Admin")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ApproveComment(int commentId, int topicId)
-        {
-            var comment = await _commentRepository.GetByIdAsync(commentId);
-            if (comment == null) return NotFound();
-
-            comment.IsApproved = true;
-            await _commentRepository.UpdateAsync(comment);
-            await _commentRepository.SaveAsync();
-
-            TempData["Success"] = "Comentário aprovado com sucesso!";
-            return RedirectToAction("Details", new { id = topicId });
-        }
-
-        /// <summary>
-        /// Apresenta a fila de comentários pendentes de aprovação. Apenas para Administradores.
+        /// Fila de comentários pendentes de aprovação. Apenas Administradores.
         /// </summary>
         [HttpGet]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PendingComments()
         {
             var pendingComments = await _commentRepository.GetPendingCommentsAsync();
-            return View(pendingComments);
+
+            var model = pendingComments.Select(c =>
+            {
+                var firstName = c.CreatedBy?.FirstName?.Trim() ?? string.Empty;
+                var lastName = c.CreatedBy?.LastName?.Trim() ?? string.Empty;
+                var fullName = c.CreatedBy?.FullName?.Trim();
+
+                var authorName = !string.IsNullOrWhiteSpace(fullName)
+                    ? fullName
+                    : $"{firstName} {lastName}".Trim();
+
+                if (string.IsNullOrWhiteSpace(authorName))
+                    authorName = "Utilizador desconhecido";
+
+                var initial = !string.IsNullOrEmpty(firstName)
+                    ? firstName.Substring(0, 1).ToUpper()
+                    : "?";
+
+                return new ForumPendingCommentViewModel
+                {
+                    Id = c.Id,
+                    ForumTopicId = c.ForumTopicId,
+                    TopicTitle = c.ForumTopic?.Title ?? $"Tópico #{c.ForumTopicId}",
+                    AuthorName = authorName,
+                    AuthorInitial = initial,
+                    Content = c.Content ?? string.Empty,
+                    CreatedAt = c.CreatedAt
+                };
+            }).ToList();
+
+            return View(model);
         }
 
         #endregion
@@ -295,6 +263,174 @@ namespace LisAeroGest.Controllers
             }
 
             await _notificationRepository.SaveAsync();
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddComment(int topicId, string content)
+        {
+            if (string.IsNullOrWhiteSpace(content))
+                return RedirectToAction("Details", new { id = topicId });
+
+            var topic = await _topicRepository.GetByIdAsync(topicId);
+            if (topic == null || topic.IsClosed)
+                return NotFound();
+
+            var user = await _userHelper.GetUserByEmailAsync(User.Identity!.Name!);
+            if (user == null)
+                return Unauthorized();
+
+            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+
+            var comment = new ForumComment
+            {
+                ForumTopicId = topicId,
+                Content = content,
+                CreatedByUserId = user.Id,
+                CreatedAt = DateTime.UtcNow,
+                IsApproved = isAdmin // Admin: imediato | Employee: pendente
+            };
+
+            await _commentRepository.AddAsync(comment);
+            await _commentRepository.SaveAsync();
+
+            if (isAdmin)
+            {
+                // Comentário já visível → avisa a equipa (Admin + Employee)
+                await NotifyUsersAsync(
+                    title: "Novo comentário no fórum",
+                    message: $"{user.FullName} comentou no tópico: {topic.Title}",
+                    link: $"/Forum/Details/{topicId}",
+                    icon: "bi-chat-left-text",
+                    color: "text-info",
+                    type: "ForumComment"
+                );
+                TempData["Success"] = "Comentário adicionado!";
+            }
+            else
+            {
+                // Comentário pendente → avisa só os Administradores
+                await NotifyAdminsAsync(
+                    title: "Comentário aguarda aprovação",
+                    message: $"{user.FullName} comentou no tópico \"{topic.Title}\" e aguarda moderação.",
+                    link: "/Forum/PendingComments",
+                    icon: "bi-hourglass-split",
+                    color: "text-warning",
+                    type: "ForumModeration"
+                );
+                TempData["Info"] = "O seu comentário foi submetido e aguarda aprovação de um Administrador.";
+            }
+
+            return RedirectToAction("Details", new { id = topicId });
+        }
+
+
+        /// <summary>
+        /// Notifica apenas os Administradores (exceto o utilizador atual).
+        /// Usado quando um Employee submete comentário pendente.
+        /// </summary>
+        private async Task NotifyAdminsAsync(
+            string title,
+            string message,
+            string link,
+            string icon,
+            string color,
+            string type)
+        {
+            var admins = (await _userManager.GetUsersInRoleAsync("Admin")).ToList();
+
+            var currentUser = await _userHelper.GetUserByEmailAsync(User.Identity!.Name!);
+            if (currentUser != null)
+                admins = admins.Where(u => u.Id != currentUser.Id).ToList();
+
+            if (!admins.Any()) return;
+
+            foreach (var u in admins)
+            {
+                await _notificationRepository.AddAsync(new Notification
+                {
+                    UserId = u.Id,
+                    Title = title,
+                    Message = message,
+                    Link = link,
+                    Icon = icon,
+                    ColorClass = color,
+                    Type = type,
+                    IsRead = false,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            await _notificationRepository.SaveAsync();
+        }
+
+        /// <summary>
+        /// Notifica um único utilizador (ex.: autor do comentário aprovado).
+        /// </summary>
+        private async Task NotifySingleUserAsync(
+            string userId,
+            string title,
+            string message,
+            string link,
+            string icon,
+            string color,
+            string type)
+        {
+            if (string.IsNullOrEmpty(userId)) return;
+
+            await _notificationRepository.AddAsync(new Notification
+            {
+                UserId = userId,
+                Title = title,
+                Message = message,
+                Link = link,
+                Icon = icon,
+                ColorClass = color,
+                Type = type,
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            });
+
+            await _notificationRepository.SaveAsync();
+        }
+
+
+
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveComment(int commentId, int topicId)
+        {
+            var comment = await _commentRepository.GetByIdAsync(commentId);
+            if (comment == null)
+                return NotFound();
+
+            var topic = await _topicRepository.GetByIdAsync(topicId);
+
+            comment.IsApproved = true;
+            await _commentRepository.UpdateAsync(comment);
+            await _commentRepository.SaveAsync();
+
+            // Notifica o autor do comentário
+            if (!string.IsNullOrEmpty(comment.CreatedByUserId))
+            {
+                await NotifySingleUserAsync(
+                    userId: comment.CreatedByUserId,
+                    title: "Comentário aprovado",
+                    message: topic != null
+                        ? $"O seu comentário no tópico \"{topic.Title}\" foi aprovado."
+                        : "O seu comentário no fórum foi aprovado.",
+                    link: $"/Forum/Details/{topicId}",
+                    icon: "bi-check-circle",
+                    color: "text-success",
+                    type: "ForumApproved"
+                );
+            }
+
+            TempData["Success"] = "Comentário aprovado com sucesso!";
+            return RedirectToAction("Details", new { id = topicId });
         }
 
         #endregion

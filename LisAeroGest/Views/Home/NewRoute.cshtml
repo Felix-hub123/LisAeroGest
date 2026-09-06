@@ -1,0 +1,51 @@
+﻿@{
+    ViewData["Title"] = "Nova rota Lisboa – Rio de Janeiro";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="bg-light p-4 p-md-5 rounded-4 shadow-sm text-center">
+        <span class="badge bg-primary rounded-pill mb-3">Novidade</span>
+        <h1 class="display-5 fw-bold">Lisboa – Rio de Janeiro</h1>
+        <p class="lead mt-3">
+            Nova rota a partir do Aeroporto de Lisboa. Voos para o Rio de Janeiro,
+            com pesquisa e reserva através da LisAeroGest.
+        </p>
+        <p class="text-muted">
+            Consulte horários, compare opções e reserve o seu lugar na mesma pesquisa
+            que já utiliza para os restantes destinos.
+        </p>
+
+        <hr class="my-4" />
+
+        <h3 class="h5 text-primary fw-bold">Informações da rota</h3>
+        <ul class="list-unstyled lead mb-0">
+            <li class="mb-2">
+                <i class="bi bi-calendar-event me-2"></i>
+                Início previsto das operações: 1 de outubro de 2026
+            </li>
+            <li class="mb-2">
+                <i class="bi bi-airplane me-2"></i>
+                Frequência: 3 vezes por semana (terça, quinta e sábado)
+            </li>
+            <li>
+                <i class="bi bi-clock me-2"></i>
+                Duração estimada: cerca de 10 horas
+            </li>
+        </ul>
+
+        <hr class="my-4" />
+
+        <p>Pesquise disponibilidade e preços atualizados na plataforma.</p>
+
+        <a asp-controller="Shop" asp-action="Index"
+           asp-route-origin="LIS"
+           asp-route-destination="Rio de Janeiro (GIG)"
+           class="btn btn-primary btn-lg mt-2">
+            <i class="bi bi-search me-1"></i>Pesquisar voos para o Rio
+        </a>
+        <a asp-controller="Home" asp-action="Index"
+           class="btn btn-outline-secondary btn-lg mt-2 ms-md-2">
+            <i class="bi bi-arrow-left me-1"></i>Voltar ao início
+        </a>
+    </div>
+</div>

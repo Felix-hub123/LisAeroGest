@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="LisAeroGest.Mobile.Views.TicketsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
+    xmlns:models="clr-namespace:LisAeroGest.Mobile.Models"
+    x:DataType="vm:TicketsViewModel"
+    Title="Os meus bilhetes">
+
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <Button
+        Grid.Row="0"
+        Text="Terminar sessão"
+        Command="{Binding LogoutCommand}"
+        HorizontalOptions="End"
+        Margin="12,8"
+        BackgroundColor="Transparent"
+        TextColor="Red" />
+
+        <ActivityIndicator
+            Grid.Row="0"
+            IsRunning="{Binding IsBusy}"
+            IsVisible="{Binding IsBusy}"
+            HorizontalOptions="Center"
+            Margin="0,12,0,0" />
+
+        <RefreshView
+            Grid.Row="1"
+            Command="{Binding LoadTicketsCommand}"
+            IsRefreshing="{Binding IsBusy}">
+
+            <CollectionView ItemsSource="{Binding Tickets}">
+                <CollectionView.EmptyView>
+                    <Label Text="Ainda não tens bilhetes." HorizontalOptions="Center" Margin="0,40,0,0" />
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:TicketDto">
+                        <Frame Margin="12,8" Padding="16" CornerRadius="12" HasShadow="False" BorderColor="#DDDDDD">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="{Binding FlightNumber}" FontAttributes="Bold" FontSize="18" />
+                                <Label Text="{Binding Origin, StringFormat='De: {0}'}" />
+                                <Label Text="{Binding Destination, StringFormat='Para: {0}'}" />
+                                <Label Text="{Binding DepartureTime, StringFormat='Partida: {0:dd/MM/yyyy HH:mm}'}" />
+                                <Label Text="{Binding SeatCode, StringFormat='Lugar: {0}'}" />
+                                <Label Text="{Binding Status, StringFormat='Estado: {0}'}" FontAttributes="Bold" />
+
+                                <Button Text="Fazer Check-in"
+                                    Margin="0,8,0,0"
+                                    Clicked="OnCheckInClicked"
+                                    IsVisible="{Binding Status, Converter={StaticResource StatusIsPaidConverter}}" />   
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

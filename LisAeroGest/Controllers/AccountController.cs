@@ -1,6 +1,7 @@
 ﻿using LisAeroGest.Data.Interfaces;
 using LisAeroGest.Helpers;
 using LisAeroGest.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BilheticaAeronauticaWeb.Controllers
@@ -14,17 +15,20 @@ namespace BilheticaAeronauticaWeb.Controllers
         private readonly IMailHelper _mailHelper;
         private readonly IConverterHelper _converterHelper;
         private readonly IPassengerRepository _passengerRepository;
+        private readonly IImageHelper _imageHelper;
 
         public AccountController(
             IUserHelper userHelper,
             IMailHelper mailHelper,
             IConverterHelper converterHelper,
-            IPassengerRepository passengerRepository)
+            IPassengerRepository passengerRepository,
+            IImageHelper imageHelper)
         {
             _userHelper = userHelper;
             _mailHelper = mailHelper;
             _converterHelper = converterHelper;
             _passengerRepository = passengerRepository;
+            _imageHelper = imageHelper;
         }
 
         // ─── Login ───────────────────────────────────────────────────────────
@@ -204,6 +208,87 @@ namespace BilheticaAeronauticaWeb.Controllers
                 await _passengerRepository.SaveAsync();
             }
         }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult ChangePassword() => View(new ChangePasswordViewModel());
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userHelper.GetUserByEmailAsync(User.Identity!.Name!);
+            if (user == null)
+                return RedirectToAction(nameof(Login));
+
+            var result = await _userHelper.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                    ModelState.AddModelError(string.Empty, error.Description);
+                return View(model);
+            }
+
+            return View("ChangePasswordSuccess");
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> EditProfile()
+        {
+            var user = await _userHelper.GetUserByEmailAsync(User.Identity!.Name!);
+            if (user == null)
+                return RedirectToAction(nameof(Login));
+
+            return View(new EditProfileViewModel
+            {
+                FirstName = user.FirstName ?? "",
+                LastName = user.LastName ?? "",
+                PhoneNumber = user.PhoneNumber,
+                Email = user.Email ?? "",
+                ImageId = user.ImageId,
+                ImageUrl = _imageHelper.GetImageUrl(user.ImageId, "users")
+            });
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProfile(EditProfileViewModel model)
+        {
+            var user = await _userHelper.GetUserByEmailAsync(User.Identity!.Name!);
+            if (user == null)
+                return RedirectToAction(nameof(Login));
+
+            if (!ModelState.IsValid)
+            {
+                model.Email = user.Email ?? "";
+                model.ImageId = user.ImageId;
+                model.ImageUrl = _imageHelper.GetImageUrl(user.ImageId, "users");
+                return View(model);
+            }
+
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
+            user.PhoneNumber = model.PhoneNumber;
+
+            if (model.ImageFile != null && model.ImageFile.Length > 0)
+            {
+                if (user.ImageId != Guid.Empty)
+                    await _imageHelper.DeleteImageAsync(user.ImageId, "users");
+
+                user.ImageId = await _imageHelper.UploadImageAsync(model.ImageFile, "users");
+            }
+
+            await _userHelper.UpdateUserAsync(user);
+            TempData["Success"] = "Perfil atualizado.";
+            return RedirectToAction(nameof(EditProfile));
+        }
+
 
         [HttpGet]
         public async Task<IActionResult> ConfirmEmail(string userId, string token)

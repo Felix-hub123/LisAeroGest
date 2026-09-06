@@ -61,18 +61,19 @@ namespace LisAeroGest.Controllers
 
             // 🔧 DESTINOS POPULARES: usar TODOS os voos futuros (não apenas os 8)
             var destinos = allDepartures
-                .Where(f => f.DestinationAirport != null && f.DepartureTime > now)
-                .GroupBy(f => f.DestinationAirport!.IATACode)
-                .Select(g => new PopularDestination
-                {
-                    IATA = g.Key,
-                    Cidade = g.First().DestinationAirport!.City!,
-                    Pais = g.First().DestinationAirport!.Country!,
-                    Voos = g.Count()
-                })
-                .OrderByDescending(x => x.Voos)
-                .Take(6)
-                .ToList();
+              .Where(f => f.DestinationAirport != null && f.DepartureTime > now)
+              .GroupBy(f => f.DestinationAirport!.IATACode)
+              .Select(g => new PopularDestination
+              {
+                  IATA = g.Key ?? "",
+                  Cidade = g.First().DestinationAirport!.City ?? "",
+                  Pais = g.First().DestinationAirport!.Country ?? "",
+                  Voos = g.Count(),
+                  FromPrice = g.Min(f => f.BasePrice)
+              })
+              .OrderByDescending(x => x.Voos)
+              .Take(6)
+              .ToList();
 
             // 🔧 AVISOS ATIVOS: usar TODOS os voos futuros (não apenas os 8)
             var avisos = allDepartures
@@ -193,7 +194,22 @@ namespace LisAeroGest.Controllers
             return View();
         }
 
-      
+
+        [AllowAnonymous]
+        public IActionResult NewRoute()
+        {
+            ViewData["Title"] = "Nova rota Lisboa – Rio de Janeiro";
+            return View();
+        }
+
+        [AllowAnonymous]
+        public IActionResult Loyalty()
+        {
+            ViewData["Title"] = "Programa LisAeroPoints";
+            return View();
+        }
+
+
 
         /// <summary>
         /// Página de Termos e Condições

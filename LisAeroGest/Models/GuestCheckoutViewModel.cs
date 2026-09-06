@@ -29,5 +29,14 @@ namespace LisAeroGest.Models
 
         [Display(Name = "Quero criar uma conta após a compra")]
         public bool WantToCreateAccount { get; set; }
+
+
+        public string FlightNumber { get; set; } = string.Empty;
+        public string OriginCode { get; set; } = string.Empty;
+        public string DestinationCode { get; set; } = string.Empty;
+        public string SeatCode { get; set; } = string.Empty;
+        public decimal FlightPrice { get; set; }
+        public decimal SeatPrice { get; set; }
+        public decimal TotalPrice { get; set; }
     }
 }

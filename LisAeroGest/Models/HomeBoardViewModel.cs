@@ -50,6 +50,12 @@ namespace LisAeroGest.Models
 
         public int Voos { get; set; }
 
+        /// <summary>
+        /// Preço mais baixo entre os voos futuros para este destino.
+        /// Null se não houver preço.
+        /// </summary>
+        public decimal? FromPrice { get; set; }
+
     }
 
 

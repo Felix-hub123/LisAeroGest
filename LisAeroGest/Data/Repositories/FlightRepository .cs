@@ -114,6 +114,8 @@ namespace LisAeroGest.Data.Repositories
             return await _context.Flights
                 .Include(f => f.OriginAirport)
                 .Include(f => f.DestinationAirport)
+                .Include(f => f.Airline)   
+                .Include(f => f.Gate)      
                 .Include(f => f.Aircraft)
                 .Include(f => f.Seats)
                 .OrderBy(f => f.DepartureTime)
@@ -166,6 +168,9 @@ namespace LisAeroGest.Data.Repositories
                 .Take(50)
                 .ToListAsync();
         }
+
+
+
 
 
     }

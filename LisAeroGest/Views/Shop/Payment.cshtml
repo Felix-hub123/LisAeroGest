@@ -1,136 +1,135 @@
-﻿@model LisAeroGest.Models.PaymentViewModel
+﻿@model LisAeroGest.Models.GuestPaymentViewModel
 @inject IConfiguration Configuration
-
+@using System.Globalization
 @{
     ViewData["Title"] = "Finalizar Pagamento";
+    var culture = new CultureInfo("pt-PT");
 
-    
-    var firstTicket = Model.Tickets?.FirstOrDefault();
-    var timeSinceCreation = DateTime.UtcNow - (firstTicket?.PurchaseDate ?? DateTime.UtcNow);
-    var remainingSeconds = Math.Max(0, 1800 - (int)timeSinceCreation.TotalSeconds);
+    var remainingSeconds = 0;
+    if (Model.ExpiresAt.HasValue)
+    {
+        remainingSeconds = Math.Max(0, (int)(Model.ExpiresAt.Value - DateTime.UtcNow).TotalSeconds);
+    }
 }
 
-<div class="container mt-5">
+<div class="container mt-5 mb-5">
     <div class="row justify-content-center">
         <div class="col-lg-7">
-
             <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
                 <div class="card-header bg-primary text-white p-4">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h3 class="fw-bold mb-0"><i class="bi bi-credit-card me-2"></i>Finalizar Pagamento</h3>
-                            <small class="opacity-75">Pagamento processado via PayPal Sandbox — ambiente de testes.</small>
+                            <h3 class="fw-bold mb-0">
+                                <i class="bi bi-credit-card me-2"></i>Finalizar Pagamento
+                            </h3>
+                            <small class="opacity-75">Pagamento via PayPal Sandbox — ambiente de testes.</small>
                         </div>
-                      
-                        <div class="text-end">
-                            <small class="d-block opacity-75">Reserva expira em</small>
-                            <span class="fw-bold text-white" id="countdownTimer">
-                                @TimeSpan.FromSeconds(remainingSeconds).ToString(@"mm\:ss")
-                            </span>
-                        </div>
+                        @if (Model.ExpiresAt.HasValue)
+                        {
+                            <div class="text-end">
+                                <small class="d-block opacity-75">Reserva expira em</small>
+                                <span class="fw-bold text-white" id="countdownTimer">
+                                    @TimeSpan.FromSeconds(remainingSeconds).ToString(@"mm\:ss")
+                                </span>
+                            </div>
+                        }
                     </div>
                 </div>
 
                 <div class="card-body p-4">
-
-                    <!-- ⚠️ ALERTA DE EXPIRAÇÃO -->
                     @if (remainingSeconds < 300 && remainingSeconds > 0)
                     {
                         <div class="alert alert-warning d-flex align-items-center" role="alert">
                             <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
                             <div>
                                 <strong>Atenção!</strong>
-                                <span class="d-block small">
-                                    A reserva expira em menos de 5 minutos. Conclui o pagamento rapidamente.
-                                </span>
+                                <span class="d-block small">A reserva expira em menos de 5 minutos.</span>
                             </div>
                         </div>
                     }
-                    else if (remainingSeconds <= 0)
+                    else if (Model.ExpiresAt.HasValue && remainingSeconds <= 0)
                     {
                         <div class="alert alert-danger d-flex align-items-center" role="alert">
                             <i class="bi bi-x-circle-fill fs-4 me-3"></i>
                             <div>
-                                <strong>Reserva Expirada!</strong>
-                                <span class="d-block small">
-                                    A reserva expirou. Por favor, faça uma nova reserva.
-                                </span>
+                                <strong>Reserva expirada.</strong>
+                                <span class="d-block small">Faça uma nova reserva.</span>
                             </div>
-                            <a asp-controller="Shop" asp-action="Index" class="btn btn-danger ms-auto">
-                                Voltar à Pesquisa
-                            </a>
+                            <a asp-action="Index" class="btn btn-danger ms-auto">Voltar à pesquisa</a>
                         </div>
                     }
 
                     <h5 class="fw-bold mb-3">Resumo da compra</h5>
+                    <p class="mb-2">
+                        <strong>@Model.PassengerName</strong>
+                    </p>
 
                     <table class="table">
                         <thead>
                             <tr>
                                 <th>Voo</th>
+                                <th>Rota</th>
                                 <th>Lugar</th>
                                 <th>Extras</th>
                                 <th class="text-end">Preço</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var ticket in Model.Tickets)
-                            {
-                                <tr>
-                                    <td>@ticket.Flight?.FlightNumber</td>
-                                    <td>@ticket.Seat?.Code</td>
-                                    <td>
-                                        @if (ticket.ExtraLuggage)
-                                        {
-                                            <span class="badge bg-info">Bagagem</span>
-                                        }
-                                        @if (ticket.MealIncluded)
-                                        {
-                                            <span class="badge bg-warning">Refeição</span>
-                                        }
-                                    </td>
-                                    <td class="text-end">@ticket.TotalPrice.ToString("C")</td>
-                                </tr>
-                            }
+                            <tr>
+                                <td>@Model.FlightNumber</td>
+                                <td>@Model.OriginCode → @Model.DestinationCode</td>
+                                <td>@Model.SeatCode</td>
+                                <td>
+                                    @if (Model.ExtraLuggage)
+                                    {
+                                        <span class="badge bg-info">Bagagem</span>
+                                    }
+                                    @if (Model.MealIncluded)
+                                    {
+                                        <span class="badge bg-warning">Refeição</span>
+                                    }
+                                </td>
+                                <td class="text-end">@Model.TotalPrice.ToString("C", culture)</td>
+                            </tr>
                         </tbody>
                         <tfoot>
                             <tr>
-                                <th colspan="3">Total a pagar</th>
-                                <th class="text-end text-success fs-5">@Model.TotalPrice.ToString("C")</th>
+                                <th colspan="4">Total a pagar</th>
+                                <th class="text-end text-success fs-5">@Model.TotalPrice.ToString("C", culture)</th>
                             </tr>
                         </tfoot>
                     </table>
 
                     <div id="paypal-error" class="alert alert-danger d-none mt-3"></div>
 
-                    <div id="paypal-button-container" class="mt-4"></div>
+                    @if (!Model.ExpiresAt.HasValue || remainingSeconds > 0)
+                    {
+                        <div id="paypal-button-container" class="mt-4"></div>
+                    }
 
                     <div class="text-center mt-3">
-                        <a asp-action="Cart" class="text-muted small">
-                            <i class="bi bi-arrow-left me-1"></i>Voltar ao carrinho
+                        <a asp-controller="Home" asp-action="Index" class="text-muted small">
+                            <i class="bi bi-arrow-left me-1"></i>Voltar ao início
                         </a>
                     </div>
-
                 </div>
             </div>
-
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <script src="https://www.paypal.com/sdk/js?client-id=@Configuration["PayPal:ClientId"]&currency=EUR">
-    </script>
+    <script src="https://www.paypal.com/sdk/js?client-id=@Configuration["PayPal:ClientId"]&currency=EUR"></script>
     <script>
         const errorBox = document.getElementById('paypal-error');
+        const ticketId = @Model.TicketId;
 
         function showError(message) {
             errorBox.textContent = message;
             errorBox.classList.remove('d-none');
         }
 
-       
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const timerElement = document.getElementById('countdownTimer');
             if (!timerElement) return;
 
@@ -139,50 +138,44 @@
             function updateTimer() {
                 if (totalSeconds <= 0) {
                     timerElement.textContent = '00:00';
-                    timerElement.classList.add('text-danger');
                     window.location.reload();
                     return;
                 }
-
                 const minutes = Math.floor(totalSeconds / 60);
                 const seconds = totalSeconds % 60;
                 timerElement.textContent =
                     String(minutes).padStart(2, '0') + ':' +
                     String(seconds).padStart(2, '0');
-
-                if (totalSeconds < 300) {
-                    timerElement.classList.add('text-warning');
-                }
-
+                if (totalSeconds < 300) timerElement.classList.add('text-warning');
                 totalSeconds--;
             }
-
             updateTimer();
             setInterval(updateTimer, 1000);
         });
 
-       
         paypal.Buttons({
             style: { layout: 'vertical', color: 'blue', shape: 'rect', label: 'paypal' },
-
             createOrder: function () {
                 errorBox.classList.add('d-none');
-                return fetch('/Shop/CreateCartPayPalOrder', {
+                return fetch('/Shop/CreatePayPalOrder', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticketId: ticketId })
                 })
                 .then(res => res.json().then(data => ({ ok: res.ok, data })))
                 .then(({ ok, data }) => {
-                    if (!ok) { showError(data.message || 'Erro ao iniciar o pagamento.'); throw new Error(data.message); }
+                    if (!ok) {
+                        showError(data.message || 'Erro ao iniciar o pagamento.');
+                        throw new Error(data.message);
+                    }
                     return data.orderId;
                 });
             },
-
             onApprove: function (data) {
-                return fetch('/Shop/CaptureCartPayPalOrder', {
+                return fetch('/Shop/CapturePayPalOrder', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ orderId: data.orderID })
+                    body: JSON.stringify({ ticketId: ticketId, orderId: data.orderID })
                 })
                 .then(res => res.json().then(result => ({ ok: res.ok, result })))
                 .then(({ ok, result }) => {
@@ -193,9 +186,8 @@
                     }
                 });
             },
-
             onError: function (err) {
-                showError('Ocorreu um erro ao comunicar com o PayPal. Tenta novamente.');
+                showError('Ocorreu um erro ao comunicar com o PayPal. Tente novamente.');
                 console.error(err);
             }
         }).render('#paypal-button-container');
