@@ -195,6 +195,20 @@ namespace LisAeroGest.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(FlightViewModel viewModel)
         {
+            if (viewModel.AirlineId > 0)
+            {
+                viewModel.FlightNumber = await _flightRepository.GenerateFlightNumberAsync(viewModel.AirlineId);
+                ModelState.Remove(nameof(viewModel.FlightNumber));
+            }
+            else
+            {
+                ModelState.AddModelError("AirlineId", "Seleccione a companhia.");
+            }
+
+            if (string.IsNullOrWhiteSpace(viewModel.Status))
+                viewModel.Status = "Scheduled";
+            ModelState.Remove(nameof(viewModel.Status));
+
             if (viewModel.DepartureTime <= DateTime.Now)
                 ModelState.AddModelError("DepartureTime", "A hora de partida não pode ser no passado.");
 
@@ -202,20 +216,13 @@ namespace LisAeroGest.Controllers
                 ModelState.AddModelError("ArrivalTime", "A hora de chegada tem de ser posterior à partida.");
 
             if (viewModel.OriginAirportId == viewModel.DestinationAirportId)
-                ModelState.AddModelError("DestinationAirportId", "O aeroporto de destino tem de ser diferente da origem.");
+                ModelState.AddModelError("DestinationAirportId", "O destino tem de ser diferente da origem.");
 
             if (viewModel.GateId.HasValue && viewModel.GateId.Value > 0)
             {
-                if (await _gateRepository.IsGateOccupiedAsync(viewModel.GateId.Value, viewModel.DepartureTime, viewModel.ArrivalTime))
-                    ModelState.AddModelError("GateId", "O Gate selecionado já está ocupado por outro voo neste horário.");
-            }
-
-            if (string.IsNullOrWhiteSpace(viewModel.FlightNumber))
-            {
-                if (viewModel.AirlineId <= 0)
-                    ModelState.AddModelError("AirlineId", "Seleccione a companhia.");
-                else
-                    viewModel.FlightNumber = await _flightRepository.GenerateFlightNumberAsync(viewModel.AirlineId);
+                if (await _gateRepository.IsGateOccupiedAsync(
+                        viewModel.GateId.Value, viewModel.DepartureTime, viewModel.ArrivalTime))
+                    ModelState.AddModelError("GateId", "O gate já está ocupado neste horário.");
             }
 
             if (!ModelState.IsValid)
