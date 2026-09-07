@@ -18,9 +18,18 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-dark bg-primary box-shadow">
             <div class="container-fluid">
-                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-airplane-fill me-1"></i>LisAeroGest
-                </a>
+                @if (User.IsInRole("Admin") || User.IsInRole("Employee"))
+                {
+                    <a class="navbar-brand fw-bold" asp-controller="Dashboard" asp-action="Index">
+                        <i class="bi bi-airplane-fill me-1"></i>LisAeroGest
+                    </a>
+                }
+                else
+                {
+                    <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
+                        <i class="bi bi-airplane-fill me-1"></i>LisAeroGest
+                    </a>
+                }
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
                     <span class="navbar-toggler-icon"></span>
                 </button>

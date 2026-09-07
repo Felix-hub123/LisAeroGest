@@ -73,8 +73,9 @@ namespace BilheticaAeronauticaWeb.Controllers
         public async Task<IActionResult> Logout()
         {
             await _userHelper.LogoutAsync();
-            return RedirectToAction("Login");
+            return RedirectToAction("Index", "Home");
         }
+        
 
         // ─── Registo ─────────────────────────────────────────────────────────
 

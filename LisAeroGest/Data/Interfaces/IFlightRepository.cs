@@ -12,6 +12,8 @@ namespace LisAeroGest.Data.Interfaces
         Task<IEnumerable<Flight>> GetAvailableFlightsAsync(string? origin, string? destination, DateTime? date);
         IQueryable<Flight> GetAllQueryable();
 
+        Task<string> GenerateFlightNumberAsync(int airlineId);
+
         Task<IEnumerable<Flight>> GetAllWithDetailsAsync();
 
 

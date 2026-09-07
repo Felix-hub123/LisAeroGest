@@ -34,6 +34,12 @@ namespace LisAeroGest.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                if (User.IsInRole("Admin") || User.IsInRole("Employee"))
+                    return RedirectToAction("Index", "Dashboard");
+            }
+
             // Buscar TODOS os voos
             var allDepartures = await _flightRepository.GetDepartureBoardAsync();
             var allArrivals = await _flightRepository.GetArrivalBoardAsync();

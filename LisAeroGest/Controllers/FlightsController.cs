@@ -132,7 +132,7 @@ namespace LisAeroGest.Controllers
 
             // Redireciona para o fluxo de checkout (Booking/SelectSeat)
             // NOTA: Assumindo que tens um controller Booking com ação SelectSeat
-            return RedirectToAction("SelectSeat", "Booking", new { flightId = id });
+            return RedirectToAction("SelectSeat", "Shop", new { flightId = id });
         }
 
         // ─── EXPORTAÇÃO (PROTEGIDO) ──────────────────────────────────────────
@@ -180,6 +180,13 @@ namespace LisAeroGest.Controllers
             };
 
             await PopulateDropdownsAsync(vm, "Scheduled");
+
+            var airports = await _airportRepository.GetAllAsync();
+            var lisbon = airports.FirstOrDefault(a => a.IATACode == "LIS");
+
+            if (lisbon != null)
+                vm.OriginAirportId = lisbon.Id;
+
             return View(vm);
         }
 
@@ -203,6 +210,14 @@ namespace LisAeroGest.Controllers
                     ModelState.AddModelError("GateId", "O Gate selecionado já está ocupado por outro voo neste horário.");
             }
 
+            if (string.IsNullOrWhiteSpace(viewModel.FlightNumber))
+            {
+                if (viewModel.AirlineId <= 0)
+                    ModelState.AddModelError("AirlineId", "Seleccione a companhia.");
+                else
+                    viewModel.FlightNumber = await _flightRepository.GenerateFlightNumberAsync(viewModel.AirlineId);
+            }
+
             if (!ModelState.IsValid)
             {
                 await PopulateDropdownsAsync(viewModel, viewModel.Status);
@@ -210,10 +225,10 @@ namespace LisAeroGest.Controllers
             }
 
             var flight = _converterHelper.ToFlight(viewModel, isEdit: false);
-
             await _flightRepository.AddAsync(flight);
             await _flightRepository.SaveAsync();
 
+            await _seatRepository.GenerateTemplateSeatsForAircraftAsync(viewModel.AircraftId);
             await _seatRepository.GenerateSeatsForFlightAsync(flight.Id, viewModel.AircraftId);
 
             TempData["Success"] = $"Voo {flight.FlightNumber} criado com sucesso!";
@@ -404,6 +419,21 @@ namespace LisAeroGest.Controllers
             }
 
             await _notificationRepository.SaveAsync();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GenerateSeats(int id)
+        {
+            var flight = await _flightRepository.GetByIdAsync(id);
+            if (flight == null) return NotFound();
+
+            await _seatRepository.GenerateTemplateSeatsForAircraftAsync(flight.AircraftId);
+            await _seatRepository.GenerateSeatsForFlightAsync(flight.Id, flight.AircraftId);
+
+            TempData["Success"] = $"Lugares gerados para o voo {flight.FlightNumber}.";
+            return RedirectToAction(nameof(Index));
         }
     }
 }

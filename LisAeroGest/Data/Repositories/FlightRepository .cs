@@ -123,6 +123,24 @@ namespace LisAeroGest.Data.Repositories
         }
 
 
+        public async Task<string> GenerateFlightNumberAsync(int airlineId)
+        {
+            var airline = await _context.Airlines.FindAsync(airlineId);
+            var prefix = string.IsNullOrWhiteSpace(airline?.IATACode)
+                ? "LA"
+                : airline.IATACode.Trim().ToUpperInvariant();
+
+            string number;
+            do
+            {
+                number = $"{prefix}{Random.Shared.Next(1000, 9999)}";
+            }
+            while (await _dbSet.AnyAsync(f => f.FlightNumber == number));
+
+            return number;
+        }
+
+
         public async Task<Flight?> GetFlightWithDetailsAsync(int id)
         {
             return await _context.Flights

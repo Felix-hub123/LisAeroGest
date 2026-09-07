@@ -46,6 +46,9 @@ namespace LisAeroGest.Data.Interfaces
 
         IQueryable<Seat> GetAllQueryable();
 
+
+        Task GenerateTemplateSeatsForAircraftAsync(int aircraftId, int rows = 20);
+
         Task<List<int>> GetReservedSeatIdsByFlightAsync(int flightId);
 
 

@@ -120,29 +120,20 @@ namespace LisAeroGest.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, AirportViewModel viewModel)
         {
-            if (id != viewModel.Id) return NotFound();
-                       
-            if (!ModelState.IsValid)
-            {
-                return View(viewModel);
-            }
-
-            var airport = await _airportRepository.GetByIdAsync(viewModel.Id);
+            var airport = await _airportRepository.GetByIdAsync(id);
             if (airport == null) return NotFound();
 
-            // Mantém a imagem atual ou substitui por uma nova no armazenamento
             Guid imageId = airport.ImageId;
             if (viewModel.ImageFile != null && viewModel.ImageFile.Length > 0)
             {
                 if (airport.ImageId != Guid.Empty)
-                {
                     await _imageHelper.DeleteImageAsync(airport.ImageId, "airports");
-                }
+
                 imageId = await _imageHelper.UploadImageAsync(viewModel.ImageFile, "airports");
             }
 
-            // Atualiza apenas os campos operacionais (DefaultFee) e Imagem
-            _converterHelper.UpdateAirportFromViewModel(airport, viewModel, imageId);
+            airport.DefaultFee = viewModel.DefaultFee;
+            airport.ImageId = imageId;
 
             await _airportRepository.UpdateAsync(airport);
             await _airportRepository.SaveAsync();

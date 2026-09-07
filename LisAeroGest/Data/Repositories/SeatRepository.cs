@@ -93,6 +93,35 @@ namespace LisAeroGest.Data.Repositories
         }
 
 
+        public async Task GenerateTemplateSeatsForAircraftAsync(int aircraftId, int rows = 20)
+        {
+            var exists = await _dbSet.AnyAsync(s => s.AircraftId == aircraftId && s.FlightId == null);
+            if (exists)
+                return;
+
+            var letters = new[] { "A", "B", "C", "D", "E", "F" };
+
+            foreach (var row in Enumerable.Range(1, rows))
+            {
+                foreach (var letter in letters)
+                {
+                    bool business = row <= 3;
+                    await _dbSet.AddAsync(new Seat
+                    {
+                        Code = $"{row}{letter}",
+                        SeatClass = business ? "Business" : "Economy",
+                        BasePrice = business ? 80m : 40m,
+                        IsAvailable = true,
+                        AircraftId = aircraftId,
+                        FlightId = null
+                    });
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+
         /// <summary>
 
         /// Devolve todos os lugares como IQueryable.

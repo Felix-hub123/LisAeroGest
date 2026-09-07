@@ -18,9 +18,9 @@
 
             <div class="row g-3">
                 <div class="col-md-4">
-                    <label asp-for="FlightNumber" class="form-label fw-bold">Número do Voo</label>
-                    <input asp-for="FlightNumber" class="form-control" placeholder="Ex: TP1402" />
-                    <span asp-validation-for="FlightNumber" class="text-danger small"></span>
+                    <label class="form-label fw-bold">Número do Voo</label>
+                    <input class="form-control" value="Gerado automaticamente" disabled />
+                    <span class="form-text">O código é criado ao guardar, com o IATA da companhia.</span>
                 </div>
 
                 <div class="col-md-4">
@@ -114,29 +114,39 @@
         const durationAlert = document.getElementById('flightDurationAlert');
         const durationText = document.getElementById('durationText');
 
-        // 1. Impedir Origem igual ao Destino no cliente
+        function isLisbon(select) {
+            const opt = select.options[select.selectedIndex];
+            return opt && (opt.text.includes('(LIS)') || opt.text.toLowerCase().includes('lisboa'));
+        }
+
         function validateAirports() {
+            if (!originSelect || !destSelect) return;
+
             if (originSelect.value && destSelect.value && originSelect.value === destSelect.value) {
                 destError.textContent = "O destino não pode ser igual à origem.";
                 destSelect.classList.add('is-invalid');
-            } else {
-                destError.textContent = "";
-                destSelect.classList.remove('is-invalid');
+                return;
             }
+
+            if (originSelect.value && destSelect.value && !isLisbon(originSelect) && !isLisbon(destSelect)) {
+                destError.textContent = "A origem ou o destino tem de ser Lisboa (LIS).";
+                destSelect.classList.add('is-invalid');
+                return;
+            }
+
+            destError.textContent = "";
+            destSelect.classList.remove('is-invalid');
         }
 
-        // 2. Calcular Duração em tempo real
         function calculateDuration() {
             if (depInput.value && arrInput.value) {
                 const dep = new Date(depInput.value);
                 const arr = new Date(arrInput.value);
                 const diffMs = arr - dep;
-
                 if (diffMs > 0) {
                     const diffMins = Math.floor(diffMs / 60000);
                     const hours = Math.floor(diffMins / 60);
                     const mins = diffMins % 60;
-
                     durationText.textContent = `${hours}h ${mins}m`;
                     durationAlert.classList.remove('d-none');
                 } else {
