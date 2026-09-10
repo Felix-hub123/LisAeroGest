@@ -86,10 +86,13 @@
                     <span asp-validation-for="BasePrice" class="text-danger small"></span>
                 </div>
 
+                <input type="hidden" asp-for="Status" value="Scheduled" />
                 <div class="col-md-6">
-                    <label asp-for="Status" class="form-label fw-bold">Estado Inicial</label>
-                    <select asp-for="Status" asp-items="Model.Statuses" class="form-select"></select>
-                    <span asp-validation-for="Status" class="text-danger small"></span>
+                    <label class="form-label fw-bold">Estado Operacional</label>
+                    <div class="form-control bg-light d-flex align-items-center" style="cursor: not-allowed;">
+                        <span class="badge bg-primary me-2">Previsto</span>
+                        <small class="text-muted">(gerido automaticamente)</small>
+                    </div>
                 </div>
             </div>
 

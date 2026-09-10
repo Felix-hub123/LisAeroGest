@@ -1,4 +1,6 @@
 ﻿@model LisAeroGest.Models.FlightViewModel
+@using LisAeroGest.Helpers
+@inject IConverterHelper ConverterHelper
 
 @{
     ViewData["Title"] = "Editar Voo";
@@ -79,9 +81,19 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label asp-for="Status" class="form-label fw-bold">Estado Operacional</label>
-                    <select asp-for="Status" asp-items="Model.Statuses" class="form-select"></select>
-                    <span asp-validation-for="Status" class="text-danger small"></span>
+                    <label class="form-label fw-bold">Estado Operacional</label>
+                    <div class="form-control bg-light d-flex align-items-center" style="cursor: not-allowed;">
+                        <span class="badge @ConverterHelper.GetFlightBadgeClass(Model.Status) me-2">
+                            @ConverterHelper.GetFlightStatusText(Model.Status)
+                        </span>
+                        <small class="text-muted">(gerido automaticamente)</small>
+                    </div>
+                    <input type="hidden" asp-for="Status" />
+                    <small class="text-muted d-block mt-1">
+                        <i class="bi bi-info-circle me-1"></i>
+                        O estado é atualizado automaticamente com base na hora do voo.
+                        Para marcar <strong>Atraso</strong> ou <strong>Cancelamento</strong>, use a lista de voos.
+                    </small>
                 </div>
             </div>
 

@@ -281,10 +281,12 @@ namespace LisAeroGest.Controllers
             }
 
             var flight = await _flightRepository.GetByIdAsync(viewModel.Id);
-            if (flight == null) return NotFound();
+            if (flight == null)
+                return NotFound();
 
             var updatedFlight = _converterHelper.ToFlight(viewModel, isEdit: true);
 
+            // ✅ Atualizar apenas os campos editáveis
             flight.FlightNumber = updatedFlight.FlightNumber;
             flight.AirlineId = updatedFlight.AirlineId;
             flight.OriginAirportId = updatedFlight.OriginAirportId;
@@ -294,7 +296,7 @@ namespace LisAeroGest.Controllers
             flight.DepartureTime = updatedFlight.DepartureTime;
             flight.ArrivalTime = updatedFlight.ArrivalTime;
             flight.BasePrice = updatedFlight.BasePrice;
-            flight.Status = updatedFlight.Status;
+            // ❌ flight.Status NÃO é atualizado aqui!
 
             await _flightRepository.UpdateAsync(flight);
             await _flightRepository.SaveAsync();
@@ -313,10 +315,10 @@ namespace LisAeroGest.Controllers
             var flight = await _flightRepository.GetByIdAsync(id);
             if (flight == null) return NotFound();
 
-            var validStatuses = new[] { "Scheduled", "CheckIn", "Boarding", "Departed", "Arrived", "Delayed", "Cancelled" };
-            if (!validStatuses.Contains(newStatus))
+            var validManualStatuses = new[] { "Delayed", "Cancelled" };
+            if (!validManualStatuses.Contains(newStatus))
             {
-                TempData["Error"] = "Estado operacional inválido.";
+                TempData["Error"] = "Apenas é possível marcar o voo como Atrasado ou Cancelado.";
                 return RedirectToAction(nameof(Index));
             }
 
