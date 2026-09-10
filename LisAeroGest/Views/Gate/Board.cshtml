@@ -1,0 +1,109 @@
+﻿@model IEnumerable<LisAeroGest.Data.Entities.Gate>
+@{
+    ViewData["Title"] = "Painel de Gates";
+    var terminals = Model.Select(g => g.Terminal).Distinct().OrderBy(t => t).ToList();
+}
+
+<div class="container-fluid mt-4">
+
+    <!-- Cabeçalho -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>Painel de Gates
+            </h2>
+            <span class="text-muted small">Estado operacional em tempo real</span>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-list-ul me-1"></i>Lista
+            </a>
+            <a asp-action="Create" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i>Novo Gate
+            </a>
+        </div>
+    </div>
+
+    <!-- Legenda -->
+    <div class="d-flex flex-wrap gap-3 mb-4">
+        <span class="badge bg-success px-3 py-2">Disponível</span>
+        <span class="badge bg-danger px-3 py-2">Ocupado</span>
+        <span class="badge bg-info text-dark px-3 py-2">Em Limpeza</span>
+        <span class="badge bg-warning text-dark px-3 py-2">Em Manutenção</span>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+            Nenhum gate registado.
+        </div>
+    }
+    else
+    {
+        @foreach (var terminal in terminals)
+        {
+            <div class="mb-5">
+                <h5 class="fw-semibold text-secondary mb-3">
+                    <i class="bi bi-building me-2"></i>@terminal
+                </h5>
+
+                <div class="row g-3">
+                    @foreach (var gate in Model.Where(g => g.Terminal == terminal))
+                    {
+                        var cardClass = gate.Status switch
+                        {
+                            "Available" => "border-success",
+                            "Occupied" => "border-danger",
+                            "Cleaning" => "border-info",
+                            "Maintenance" => "border-warning",
+                            _ => "border-secondary"
+                        };
+
+                        var bgClass = gate.Status switch
+                        {
+                            "Available" => "bg-success-subtle",
+                            "Occupied" => "bg-danger-subtle",
+                            "Cleaning" => "bg-info-subtle",
+                            "Maintenance" => "bg-warning-subtle",
+                            _ => "bg-light"
+                        };
+
+                        var statusText = gate.Status switch
+                        {
+                            "Available" => "Disponível",
+                            "Occupied" => "Ocupado",
+                            "Cleaning" => "Em Limpeza",
+                            "Maintenance" => "Em Manutenção",
+                            _ => gate.Status
+                        };
+
+                        var statusBadge = gate.Status switch
+                        {
+                            "Available" => "bg-success",
+                            "Occupied" => "bg-danger",
+                            "Cleaning" => "bg-info text-dark",
+                            "Maintenance" => "bg-warning text-dark",
+                            _ => "bg-secondary"
+                        };
+
+                        <div class="col-6 col-md-4 col-lg-3 col-xl-2">
+                            <div class="card h-100 shadow-sm @cardClass @bgClass border-2">
+                                <div class="card-body text-center py-4">
+                                    <div class="display-6 fw-bold mb-2">@gate.GateNumber</div>
+                                    <span class="badge @statusBadge px-3 py-2">@statusText</span>
+                                </div>
+                                <div class="card-footer bg-transparent border-0 text-center pb-3">
+                                    <a asp-action="Edit" asp-route-id="@gate.Id"
+                                       class="btn btn-sm btn-outline-dark">
+                                        <i class="bi bi-pencil"></i> Alterar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>

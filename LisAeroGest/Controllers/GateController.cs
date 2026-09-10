@@ -172,5 +172,23 @@ namespace LisAeroGest.Controllers
             var model = _converterHelper.ToGateViewModel(gate);
             return View(model);
         }
+
+        /// <summary>
+        /// Painel visual de gates em tempo real.
+        /// Mostra os gates agrupados por terminal com estado visual.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> Board()
+        {
+            var gates = await _gateRepository.GetAllAsync();
+
+            // Agrupa por terminal e ordena
+            var model = gates
+                .OrderBy(g => g.Terminal)
+                .ThenBy(g => g.GateNumber)
+                .ToList();
+
+            return View(model);
+        }
     }
 }

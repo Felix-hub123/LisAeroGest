@@ -12,9 +12,14 @@
             </h2>
             <span class="text-muted small">@Model.Count() gates registados</span>
         </div>
-        <a asp-action="Create" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-2"></i>Novo Gate
-        </a>
+        <div class="d-flex gap-2">
+            <a asp-action="Board" class="btn btn-outline-primary">
+                <i class="bi bi-grid-3x3-gap-fill me-1"></i>Painel Visual
+            </a>
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-2"></i>Novo Gate
+            </a>
+        </div>
     </div>
 
     <!-- Alertas -->
@@ -62,6 +67,7 @@
                                 {
                                     "Available" => "bg-success",
                                     "Occupied" => "bg-danger",
+                                    "Cleaning" => "bg-info text-dark",
                                     "Maintenance" => "bg-warning text-dark",
                                     _ => "bg-secondary"
                                 };
@@ -69,6 +75,7 @@
                                 {
                                     "Available" => "Disponível",
                                     "Occupied" => "Ocupado",
+                                    "Cleaning" => "Em Limpeza",
                                     "Maintenance" => "Em Manutenção",
                                     _ => gate.Status
                                 };

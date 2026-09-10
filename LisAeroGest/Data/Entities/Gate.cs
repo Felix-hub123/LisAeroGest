@@ -23,6 +23,9 @@ namespace LisAeroGest.Data.Entities
         [MaxLength(50, ErrorMessage = "O terminal não pode exceder 50 caracteres.")]
         public string? Terminal { get; set; }
 
+
+
+
         /// <summary>
         /// Estado atual do gate: Disponível, Ocupado, Em Manutenção.
         /// </summary>

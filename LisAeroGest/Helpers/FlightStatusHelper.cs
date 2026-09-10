@@ -11,6 +11,7 @@
             "CheckIn" => "Check-in",
             "Boarding" => "A Embarcar",
             "Departed" => "Partiu",
+            "Arrived" => "Chegou",
             "Delayed" => "Atrasado",
             "Cancelled" => "Cancelado",
             _ => status
@@ -25,6 +26,7 @@
             "CheckIn" => "bg-info text-dark",
             "Boarding" => "bg-success",
             "Departed" => "bg-secondary",
+            "Arrived" => "bg-dark",
             "Delayed" => "bg-warning text-dark",
             "Cancelled" => "bg-danger",
             _ => "bg-secondary"
@@ -39,6 +41,7 @@
             "Cancelled" => "table-danger",
             "Delayed" => "table-warning",
             "Boarding" => "table-success",
+            "Arrived" => "table-secondary",
             _ => ""
         };
     }

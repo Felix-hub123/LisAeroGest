@@ -313,7 +313,7 @@ namespace LisAeroGest.Controllers
             var flight = await _flightRepository.GetByIdAsync(id);
             if (flight == null) return NotFound();
 
-            var validStatuses = new[] { "Scheduled", "CheckIn", "Boarding", "Departed", "Delayed", "Cancelled" };
+            var validStatuses = new[] { "Scheduled", "CheckIn", "Boarding", "Departed", "Arrived", "Delayed", "Cancelled" };
             if (!validStatuses.Contains(newStatus))
             {
                 TempData["Error"] = "Estado operacional inválido.";
@@ -325,6 +325,30 @@ namespace LisAeroGest.Controllers
 
             await _flightRepository.UpdateAsync(flight);
             await _flightRepository.SaveAsync();
+
+            // ── Atualização automática do estado do Gate ──────────────────────────
+            if (flight.GateId.HasValue)
+            {
+                var gate = await _gateRepository.GetByIdAsync(flight.GateId.Value);
+                if (gate != null)
+                {
+                    string? newGateStatus = newStatus switch
+                    {
+                        "Boarding" => "Occupied",
+                        "Departed" => "Cleaning",
+                        "Arrived" => "Available",
+                        "Cancelled" => "Available",
+                        _ => null
+                    };
+
+                    if (newGateStatus != null && gate.Status != newGateStatus)
+                    {
+                        gate.Status = newGateStatus;
+                        await _gateRepository.UpdateAsync(gate);
+                        await _gateRepository.SaveAsync();
+                    }
+                }
+            }
 
             if ((newStatus == "Delayed" || newStatus == "Cancelled") && previousStatus != newStatus)
             {

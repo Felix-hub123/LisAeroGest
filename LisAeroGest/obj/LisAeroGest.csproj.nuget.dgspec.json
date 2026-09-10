@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Felix\\Desktop\\LisAeroGest\\LisAeroGest\\LisAeroGest.csproj": {}
+    "C:\\LisAeroGest\\LisAeroGest\\LisAeroGest.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Felix\\Desktop\\LisAeroGest\\LisAeroGest\\LisAeroGest.csproj": {
+    "C:\\LisAeroGest\\LisAeroGest\\LisAeroGest.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Felix\\Desktop\\LisAeroGest\\LisAeroGest\\LisAeroGest.csproj",
+        "projectUniqueName": "C:\\LisAeroGest\\LisAeroGest\\LisAeroGest.csproj",
         "projectName": "LisAeroGest",
-        "projectPath": "C:\\Users\\Felix\\Desktop\\LisAeroGest\\LisAeroGest\\LisAeroGest.csproj",
-        "packagesPath": "C:\\Users\\Felix\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Felix\\Desktop\\LisAeroGest\\LisAeroGest\\obj\\",
+        "projectPath": "C:\\LisAeroGest\\LisAeroGest\\LisAeroGest.csproj",
+        "packagesPath": "C:\\Users\\jeneg\\.nuget\\packages\\",
+        "outputPath": "C:\\LisAeroGest\\LisAeroGest\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Felix\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\jeneg\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -135,7 +135,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.315/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

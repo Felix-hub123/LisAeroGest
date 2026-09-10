@@ -223,6 +223,7 @@ namespace LisAeroGest.Helpers
                 ("CheckIn", "Check-in"),
                 ("Boarding", "A Embarcar"),
                 ("Departed", "Partiu"),
+                ("Arrived", "Chegou"),
                 ("Delayed", "Atrasado"),
                 ("Cancelled", "Cancelado")
             };
@@ -1039,35 +1040,57 @@ namespace LisAeroGest.Helpers
         /// </summary>
         /// <param name="status">Estado do voo em inglês.</param>
         /// <returns>Texto traduzido para português.</returns>
-        public string GetFlightStatusText(string status) => status switch
+        public string GetFlightStatusText(string status)
         {
-            "Scheduled" => "Previsto",
-            "CheckIn" => "Check-in",
-            "Boarding" => "A Embarcar",
-            "Departed" => "Partiu",
-            "Delayed" => "Atrasado",
-            "Cancelled" => "Cancelado",
-            _ => status
-        };
+            return status switch
+            {
+                "Scheduled" => "Previsto",
+                "CheckIn" => "Em check-in",
+                "Boarding" => "Embarcando",
+                "Departed" => "Partido",
+                "Arrived" => "Chegado",
+                "Delayed" => "Atrasado",
+                "Cancelled" => "Cancelado",
+                "Canceled" => "Cancelado",
+                _ => status ?? "Desconhecido"
+            };
+        }
 
-        public string GetFlightBadgeClass(string status) => status switch
-        {
-            "Scheduled" => "bg-primary",
-            "CheckIn" => "bg-info text-dark",
-            "Boarding" => "bg-success",
-            "Departed" => "bg-secondary",
-            "Delayed" => "bg-warning text-dark",
-            "Cancelled" => "bg-danger",
-            _ => "bg-secondary"
-        };
 
-        public string GetFlightRowClass(string status) => status switch
+
+        public string GetFlightRowClass(string status)
         {
-            "Cancelled" => "table-danger",
-            "Delayed" => "table-warning",
-            "Boarding" => "table-success",
-            _ => ""
-        };
+            return status switch
+            {
+                "Delayed" => "table-warning",
+                "Cancelled" => "table-danger",
+                "Departed" => "table-success",
+                "Arrived" => "table-success",
+                _ => string.Empty
+            };
+        }
+
+
+
+
+
+        public string GetFlightBadgeClass(string status)
+        {
+            return status switch
+            {
+                "Scheduled" => "bg-secondary",
+                "CheckIn" => "bg-info text-dark",
+                "Boarding" => "bg-primary",
+                "Departed" => "bg-success",
+                "Arrived" => "bg-success",
+                "Delayed" => "bg-warning text-dark",
+                "Cancelled" => "bg-danger",
+                "Canceled" => "bg-danger",
+                _ => "bg-secondary"
+            };
+        }
+
+
 
 
         /// <summary>
