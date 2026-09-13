@@ -27,6 +27,9 @@ namespace LisAeroGest.Controllers.Api
                 .Include(f => f.OriginAirport)
                 .Include(f => f.DestinationAirport)
                 .Include(f => f.Gate)
+                .Where(f => !f.WasDeleted)                       
+                .Where(f => f.Status != "Cancelled")             
+                .Where(f => f.Status != "Arrived")              
                 .OrderBy(f => f.DepartureTime)
                 .Select(f => new
                 {
@@ -58,6 +61,8 @@ namespace LisAeroGest.Controllers.Api
                 .Include(f => f.OriginAirport)
                 .Include(f => f.DestinationAirport)
                 .Include(f => f.Gate)
+                .Where(f => !f.WasDeleted)                       
+                .Where(f => f.Status != "Cancelled")             
                 .OrderBy(f => f.ArrivalTime)
                 .Select(f => new
                 {
