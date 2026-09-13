@@ -79,6 +79,10 @@ namespace LisAeroGest.Data.Entities
         /// </summary>
         public User? User { get; set; }
 
+        [MaxLength(20)]
+        [Display(Name = "Telemóvel")]
+        public string? PhoneNumber { get; set; }
+
 
         [Required(ErrorMessage = "O e-mail é obrigatório.")]
         [EmailAddress(ErrorMessage = "Insira um e-mail válido.")]

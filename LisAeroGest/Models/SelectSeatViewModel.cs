@@ -16,6 +16,11 @@ namespace LisAeroGest.Models
         // Preços de Serviços Adicionais
         public decimal ExtraLuggagePrice { get; set; }
 
+        public int PassengerCount { get; set; } = 1;
+
+        public List<int> SelectedSeatIds { get; set; } = new();
+
+
         public decimal MealIncludedPrice { get; set; }
 
         /// <summary>

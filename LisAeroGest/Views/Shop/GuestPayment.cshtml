@@ -2,14 +2,12 @@
 @inject IConfiguration Configuration
 @{
     ViewData["Title"] = "Finalizar Pagamento";
-
     var remainingSeconds = 0;
     if (Model.ExpiresAt.HasValue)
     {
         remainingSeconds = Math.Max(0, (int)(Model.ExpiresAt.Value - DateTime.UtcNow).TotalSeconds);
     }
 }
-
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-lg-7">
@@ -30,7 +28,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="card-body p-4">
                     @if (remainingSeconds < 300 && remainingSeconds > 0)
                     {
@@ -90,13 +87,31 @@
                         </li>
                     </ul>
 
-                    <div id="paypal-error" class="alert alert-danger d-none"></div>
+                    @if (!string.IsNullOrEmpty(Model.DownloadToken))
+                    {
+                        var pdfUrl = Url.Action("GuestTicketPdf", "Shop", new { ticketId = Model.TicketId, token = Model.DownloadToken });
+                        var payUrl = Url.Action("GuestPayment", "Shop", new { ticketId = Model.TicketId }, Context.Request.Scheme);
+                        var wa = Uri.EscapeDataString(
+                        $"LisAeroGest reserva #{Model.TicketId}\nVoo {Model.FlightNumber} {Model.OriginCode}-{Model.DestinationCode}\nLugar {Model.SeatCode}\nPagar: {payUrl}\nDocumento: {Context.Request.Scheme}://{Context.Request.Host}{pdfUrl}");
 
+                        <div class="alert alert-warning">
+                            Isto é uma <strong>reserva</strong>, não um bilhete. Pague para confirmar.
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 mb-4">
+                            <a class="btn btn-outline-primary" href="@pdfUrl">
+                                <i class="bi bi-file-earmark-pdf me-1"></i>Descarregar reserva (PDF)
+                            </a>
+                            <a class="btn btn-success" href="https://wa.me/?text=@wa" target="_blank">
+                                <i class="bi bi-whatsapp me-1"></i>Enviar no WhatsApp
+                            </a>
+                        </div>
+                    }
+
+                    <div id="paypal-error" class="alert alert-danger d-none"></div>
                     @if (!Model.ExpiresAt.HasValue || remainingSeconds > 0)
                     {
                         <div id="paypal-button-container"></div>
                     }
-
                     <div class="text-center mt-3">
                         <a asp-controller="Home" asp-action="Index" class="text-muted small">
                             <i class="bi bi-arrow-left me-1"></i>Voltar
@@ -107,24 +122,19 @@
         </div>
     </div>
 </div>
-
 @section Scripts {
     <script src="https://www.paypal.com/sdk/js?client-id=@Configuration["PayPal:ClientId"]&currency=EUR"></script>
     <script>
         const ticketId = @Model.TicketId;
         const errorBox = document.getElementById('paypal-error');
-
         function showError(message) {
             errorBox.textContent = message;
             errorBox.classList.remove('d-none');
         }
-
         document.addEventListener('DOMContentLoaded', function () {
             const timerElement = document.getElementById('countdownTimer');
             if (!timerElement) return;
-
             let totalSeconds = @remainingSeconds;
-
             function updateTimer() {
                 if (totalSeconds <= 0) {
                     timerElement.textContent = '00:00';
@@ -145,7 +155,6 @@
             updateTimer();
             setInterval(updateTimer, 1000);
         });
-
         paypal.Buttons({
             style: { layout: 'vertical', color: 'blue', shape: 'rect', label: 'paypal' },
             createOrder: function () {

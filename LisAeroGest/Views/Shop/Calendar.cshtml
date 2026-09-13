@@ -1,0 +1,124 @@
+﻿@model LisAeroGest.Models.FlightCalendarViewModel
+@{
+    ViewData["Title"] = "Voos a partir de Lisboa";
+    var prev = new DateTime(Model.Year, Model.Month, 1).AddMonths(-1);
+    var next = new DateTime(Model.Year, Model.Month, 1).AddMonths(1);
+}
+<style>
+    .cal-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: .35rem;
+    }
+
+    .cal-day {
+        min-height: 64px;
+        border-radius: .75rem;
+        text-decoration: none;
+        color: inherit;
+    }
+
+        .cal-day.has-flights {
+            background: #e8f1fb;
+            border: 1px solid #1F5C99;
+        }
+
+            .cal-day.has-flights:hover {
+                background: #1F5C99;
+                color: #fff;
+            }
+
+        .cal-day.today {
+            outline: 2px solid #fd7e14;
+        }
+
+        .cal-day.selected {
+            background: #1F5C99;
+            color: #fff;
+        }
+
+        .cal-day.muted {
+            opacity: .35;
+        }
+</style>
+<div class="container py-4">
+    <p class="text-muted mb-1">A partir de Lisboa (LIS)</p>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a class="btn btn-outline-secondary"
+           asp-action="Calendar" asp-route-year="@prev.Year" asp-route-month="@prev.Month">‹</a>
+        <h1 class="h4 mb-0 text-capitalize">@Model.MonthName @Model.Year</h1>
+        <a class="btn btn-outline-secondary"
+           asp-action="Calendar" asp-route-year="@next.Year" asp-route-month="@next.Month">›</a>
+    </div>
+    <div class="cal-grid small fw-semibold text-center text-muted mb-1">
+        <div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div><div>Dom</div>
+    </div>
+    <div class="cal-grid mb-4">
+        @foreach (var d in Model.Days)
+        {
+            var extra = d.IsCurrentMonth ? "" : "muted";
+            if (d.IsToday)
+                extra += " today";
+            if (Model.SelectedDate == d.Date)
+                extra += " selected";
+            if (d.FlightCount > 0 && d.IsCurrentMonth)
+            {
+                <a class="cal-day has-flights d-flex flex-column align-items-center justify-content-center p-2 @extra"
+                   asp-action="Calendar"
+                   asp-route-year="@Model.Year"
+                   asp-route-month="@Model.Month"
+                   asp-route-day="@d.Date.ToString("yyyy-MM-dd")">
+                    <span class="fw-bold">@d.Date.Day</span>
+                    <span class="badge bg-success">@d.FlightCount</span>
+                </a>
+            }
+            else
+            {
+                <div class="cal-day d-flex align-items-center justify-content-center text-muted @extra">@d.Date.Day</div>
+            }
+        }
+    </div>
+    @if (Model.SelectedDate != null)
+    {
+        <h2 class="h5">@Model.SelectedDate.Value.ToString("dddd, dd MMMM", new System.Globalization.CultureInfo("pt-PT"))</h2>
+        @if (!Model.FlightsOfDay.Any())
+        {
+            <p class="text-muted">Não há voos neste dia.</p>
+        }
+        else
+        {
+            <div class="list-group shadow-sm rounded-4 overflow-hidden">
+                @foreach (var f in Model.FlightsOfDay)
+                {
+                    <div class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                        <div>
+                            <strong>@f.FlightNumber</strong> · @f.AirlineName
+                            <div class="small text-muted">
+                                Lisboa → @f.DestinationCity (@f.DestinationCode)
+                                · @f.DepartureTime.ToString("HH:mm")
+                                · @f.DurationLabel
+                                @if (f.Temperature.HasValue)
+                                {
+                                    <span> · @Math.Round(f.Temperature.Value)°C @f.WeatherDescription</span>
+                                }
+                                @if (f.IsAdverseWeather)
+                                {
+                                    <span class="badge bg-warning text-dark">Tempo adverso</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="text-md-end">
+                            <div class="fw-bold text-success">@f.BasePrice.ToString("C")</div>
+                            <a class="btn btn-primary btn-sm"
+                               asp-action="SelectSeat" asp-route-flightId="@f.Id">Escolher lugar</a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <p class="text-muted">Clique num dia com badge verde para ver os voos.</p>
+    }
+</div>

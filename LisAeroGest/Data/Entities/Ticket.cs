@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LisAeroGest.Data.Entities
 {
@@ -11,6 +12,9 @@ namespace LisAeroGest.Data.Entities
 
         public int FlightId { get; set; }
         public Flight? Flight { get; set; }
+
+        [MaxLength(64)]
+        public string? DownloadToken { get; set; }
 
         public int SeatId { get; set; }
         public Seat? Seat { get; set; }

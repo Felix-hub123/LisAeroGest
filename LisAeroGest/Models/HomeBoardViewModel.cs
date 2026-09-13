@@ -11,6 +11,7 @@ namespace LisAeroGest.Models
         public IEnumerable<FlightDetailViewModel> DepartureDetails { get; set; } = new List<FlightDetailViewModel>();
         public IEnumerable<FlightDetailViewModel> ArrivalDetails { get; set; } = new List<FlightDetailViewModel>();
 
+        public List<MapMarkerViewModel> MapMarkers { get; set; } = new();
 
         public int TotalPartidas => Departures.Count();
 
@@ -19,11 +20,12 @@ namespace LisAeroGest.Models
         public int ActiveFlightsCount { get; set; }
 
         public int DisruptedFlightsCount { get; set; }
-
-
+        public bool IsAdverseWeather { get; set; }
         // Novas propriedades
 
         public List<PopularDestination> PopularDestinations { get; set; } = new();
+
+
 
         public List<FlightWarning> ActiveWarnings { get; set; } = new();
 
@@ -48,6 +50,9 @@ namespace LisAeroGest.Models
 
         public string Pais { get; set; } = "";
 
+        public WeatherData? Weather { get; set; }
+        public bool IsAdverseWeather { get; set; }
+        public List<MapMarkerViewModel> MapMarkers { get; set; } = new();
         public int Voos { get; set; }
 
         /// <summary>

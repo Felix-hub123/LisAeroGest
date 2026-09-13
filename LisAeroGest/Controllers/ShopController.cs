@@ -5,6 +5,7 @@ using LisAeroGest.Models;
 using LisAeroGest.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 namespace LisAeroGest.Controllers
@@ -24,6 +25,8 @@ namespace LisAeroGest.Controllers
         private readonly IConverterHelper _converterHelper;
         private readonly PdfService _pdfService;
         private readonly IPayPalService _payPalService;
+        private readonly WeatherService _weatherService;
+        private readonly IWhatsAppService _whatsAppService;
 
         // Valores dos serviços adicionais.
         private const decimal ExtraLuggageFee = 30m;
@@ -38,7 +41,9 @@ namespace LisAeroGest.Controllers
             IUserHelper userHelper,
             IConverterHelper converterHelper,
             PdfService pdfService,
-            IPayPalService payPalService)
+            IPayPalService payPalService,
+            WeatherService weatherService,
+            IWhatsAppService whatsAppService)
         {
             _flightRepository = flightRepository;
             _airportRepository = airportRepository;
@@ -49,6 +54,8 @@ namespace LisAeroGest.Controllers
             _converterHelper = converterHelper;
             _pdfService = pdfService;
             _payPalService = payPalService;
+            _weatherService = weatherService;
+            _whatsAppService = whatsAppService;
         }
 
         // ============================================================
@@ -183,7 +190,7 @@ namespace LisAeroGest.Controllers
         /// </summary>
 
 
-      
+
 
         // ============================================================
         // ADICIONAR AO CARRINHO
@@ -210,21 +217,27 @@ namespace LisAeroGest.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddToCart(
-         int flightId,
-         int seatId,
-         bool extraLuggage,
-         bool mealIncluded)
+             int flightId,
+             List<int> seatIds,
+             bool extraLuggage,
+             bool mealIncluded)
         {
-            if (flightId <= 0 || seatId <= 0)
+            if (flightId <= 0 || seatIds == null || !seatIds.Any())
             {
-                TempData["Error"] = "Selecione um voo e um lugar válidos.";
+                TempData["Error"] = "Selecione pelo menos um lugar.";
                 return RedirectToAction(nameof(Index));
             }
 
             // 1. SE FOR VISITANTE (NÃO AUTENTICADO): Redireciona para o formulário de Convidado
             if (!(User.Identity?.IsAuthenticated ?? false))
             {
-                return RedirectToAction("GuestCheckout", new { flightId, seatId, extraLuggage, mealIncluded });
+                return RedirectToAction("GuestCheckout", new
+                {
+                    flightId,
+                    seatIds = string.Join(",", seatIds), // Serializa a lista
+                    extraLuggage,
+                    mealIncluded
+                });
             }
 
             // 2. SE ESTIVER AUTENTICADO: Processa diretamente
@@ -235,12 +248,23 @@ namespace LisAeroGest.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            return await AddTicketToCartAsync(
-                passenger,
-                flightId,
-                seatId,
-                extraLuggage,
-                mealIncluded);
+            // 3. Criar um ticket por cada lugar selecionado
+            foreach (var seatId in seatIds)
+            {
+                var result = await AddTicketToCartAsync(
+                    passenger,
+                    flightId,
+                    seatId,
+                    extraLuggage,
+                    mealIncluded);
+
+                // Se houver erro, parar e devolver
+                if (result is RedirectToActionResult redirect && redirect.ActionName != "Cart")
+                    return result;
+            }
+
+            TempData["Success"] = $"{seatIds.Count} lugar(es) reservado(s) com sucesso!";
+            return RedirectToAction(nameof(Cart));
         }
 
         // ============================================================
@@ -252,30 +276,31 @@ namespace LisAeroGest.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ProcessGuestCheckout(GuestCheckoutViewModel model)
         {
+            var seatIds = (model.SeatIds ?? new List<int>())
+                .Concat(model.SeatId > 0 ? new[] { model.SeatId } : Array.Empty<int>())
+                .Where(id => id > 0)
+                .Distinct()
+                .ToList();
+
+            if (!seatIds.Any())
+            {
+                TempData["Error"] = "Não foi seleccionado nenhum lugar.";
+                return RedirectToAction(nameof(SelectSeat), new { flightId = model.FlightId });
+            }
+
+            model.SeatIds = seatIds;
+            model.SeatId = seatIds.First();
+
             if (!ModelState.IsValid)
             {
-                var flight = await _flightRepository.GetWithDetailsAsync(model.FlightId);
-                var seat = await _seatRepository.GetByIdAsync(model.SeatId);
-
-                model.FlightNumber = flight?.FlightNumber ?? "";
-                model.OriginCode = flight?.OriginAirport?.IATACode ?? "";
-                model.DestinationCode = flight?.DestinationAirport?.IATACode ?? "";
-                model.SeatCode = seat?.Code ?? "";
-                model.FlightPrice = flight?.BasePrice ?? 0;
-                model.SeatPrice = seat?.BasePrice ?? 0;
-                model.TotalPrice = CalculateTotalPrice(
-                    model.FlightPrice,
-                    model.SeatPrice,
-                    model.ExtraLuggage,
-                    model.MealIncluded);
-
+                var flightInvalid = await _flightRepository.GetWithDetailsAsync(model.FlightId);
+                model.FlightNumber = flightInvalid?.FlightNumber ?? "";
+                model.OriginCode = flightInvalid?.OriginAirport?.IATACode ?? "";
+                model.DestinationCode = flightInvalid?.DestinationAirport?.IATACode ?? "";
                 return View("GuestCheckout", model);
             }
 
-            // 1. Verificar se já existe um passageiro com este Email
             var passenger = await _passengerRepository.GetByEmailAsync(model.Email);
-
-            // 2. Se não existir, criar novo passageiro (convidado)
             if (passenger == null)
             {
                 passenger = new Passenger
@@ -284,46 +309,63 @@ namespace LisAeroGest.Controllers
                     LastName = model.LastName,
                     Email = model.Email,
                     DocumentNumber = model.DocumentNumber,
-                    DocumentType = "CC", // Valor padrão
-                    UserId = null, // ← NULL = convidado
+                    DocumentType = "CC",
+                    PhoneNumber = model.PhoneNumber,
+                    UserId = null,
                     RegistrationDate = DateTime.UtcNow
                 };
-
                 await _passengerRepository.AddAsync(passenger);
                 await _passengerRepository.SaveAsync();
             }
             else
             {
-                // Atualiza dados se necessário
                 passenger.FirstName = model.FirstName;
                 passenger.LastName = model.LastName;
                 passenger.DocumentNumber = model.DocumentNumber;
+                passenger.PhoneNumber = model.PhoneNumber;
                 await _passengerRepository.UpdateAsync(passenger);
                 await _passengerRepository.SaveAsync();
             }
 
-            // 3. Criar a reserva e obter o ticket criado
-            var ticket = await CreateTicketAsync(
-                passenger,
-                model.FlightId,
-                model.SeatId,
-                model.ExtraLuggage,
-                model.MealIncluded);
-
-            if (ticket == null)
+            Ticket? lastTicket = null;
+            foreach (var seatId in seatIds)
             {
-                TempData["Error"] = "Não foi possível criar a reserva. Tente novamente.";
-                return RedirectToAction("SelectSeat", new { flightId = model.FlightId });
+                lastTicket = await CreateTicketAsync(
+                    passenger, model.FlightId, seatId, model.ExtraLuggage, model.MealIncluded);
+                if (lastTicket == null)
+                    return RedirectToAction(nameof(SelectSeat), new { flightId = model.FlightId });
             }
 
-            // 4. Guardar na sessão que o utilizador quer criar conta (se selecionado)
             if (model.WantToCreateAccount)
             {
                 HttpContext.Session.SetString("PendingRegistration", model.Email);
-                HttpContext.Session.SetString("PendingTicketId", ticket.Id.ToString());
+                HttpContext.Session.SetString("PendingTicketId", lastTicket!.Id.ToString());
             }
 
-            return RedirectToAction("GuestPayment", new { ticketId = ticket.Id });
+            return RedirectToAction("GuestPayment", new { ticketId = lastTicket!.Id });
+        }
+
+
+        /// <summary>
+        /// PDF da reserva ou do bilhete, sem login. Exige token.
+        /// </summary>
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GuestTicketPdf(int ticketId, string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+                return NotFound();
+
+            var ticket = await _ticketRepository.GetTicketWithDetailsAsync(ticketId);
+            if (ticket == null || ticket.DownloadToken != token)
+                return NotFound();
+
+            // Só reserva. Bilhete pago exige conta.
+            if (ticket.Status != "Reserved")
+                return NotFound();
+
+            var bytes = _pdfService.GenerateTicketPdf(ticket);
+            return File(bytes, "application/pdf", $"Reserva_{ticket.Id}.pdf");
         }
 
         // ============================================================
@@ -347,7 +389,7 @@ namespace LisAeroGest.Controllers
             var pendingBooking = JsonSerializer.Deserialize<PendingBookingDto>(sessionData);
 
             // Processa e valida tudo para o utilizador autenticado
-            return await ProcessBookingAsync(pendingBooking);
+            return await ProcessBookingAsync(pendingBooking!);
         }
 
         // ============================================================
@@ -448,13 +490,15 @@ namespace LisAeroGest.Controllers
             // --------------------------------------------------------
 
             var ticket = _converterHelper.ToTicket(
-                flightId,
-                seatId,
-                passenger,
-                extraLuggage,
-                mealIncluded,
-                totalPrice);
+               flightId,
+               seatId,
+               passenger,
+               extraLuggage,
+               mealIncluded,
+               totalPrice);
 
+            ticket.DownloadToken = Guid.NewGuid().ToString("N");
+                       
             await _ticketRepository.AddAsync(ticket);
 
             await _ticketRepository.SaveAsync();
@@ -501,7 +545,9 @@ namespace LisAeroGest.Controllers
             var isGuest = string.IsNullOrEmpty(passenger?.UserId);
             ViewBag.IsGuest = isGuest;
             ViewBag.PendingRegistration = HttpContext.Session.GetString("PendingRegistration");
-            ViewBag.TicketDisplayId = ticket.Id.ToString("D6"); // Formata com 6 dígitos (ex: 000123)
+            ViewBag.TicketDisplayId = ticket.Id.ToString("D6");
+            ViewBag.DownloadToken = ticket.DownloadToken;
+            ViewBag.TicketId = ticket.Id;
 
             return View(model);
         }
@@ -765,47 +811,76 @@ namespace LisAeroGest.Controllers
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> GuestCheckout(
-     int flightId,
-     int seatId,
-     bool extraLuggage,
-     bool mealIncluded)
+              int flightId,
+              string seatIds,
+              bool extraLuggage,
+              bool mealIncluded)
         {
+            // Converter a string "1,2,3" numa lista de inteiros
+            var seatIdList = string.IsNullOrWhiteSpace(seatIds)
+                ? new List<int>()
+                : seatIds.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                         .Select(int.Parse)
+                         .ToList();
+
+            if (!seatIdList.Any())
+            {
+                TempData["Error"] = "Selecione pelo menos um lugar.";
+                return RedirectToAction(nameof(SelectSeat), new { flightId });
+            }
+
+            // Se o utilizador está autenticado, processa diretamente
             if (User.Identity?.IsAuthenticated == true)
             {
                 var passenger = await GetCurrentPassengerAsync();
                 if (passenger != null)
                 {
-                    return await AddTicketToCartAsync(
-                        passenger, flightId, seatId, extraLuggage, mealIncluded);
+                    foreach (var seatId in seatIdList)
+                    {
+                        var result = await AddTicketToCartAsync(
+                            passenger, flightId, seatId, extraLuggage, mealIncluded);
+
+                        if (result is RedirectToActionResult redirect && redirect.ActionName != "Cart")
+                            return result;
+                    }
+                    return RedirectToAction(nameof(Cart));
                 }
             }
 
+            // Visitante: mostrar formulário de checkout convidado
             var flight = await _flightRepository.GetWithDetailsAsync(flightId);
-            var seat = await _seatRepository.GetByIdAsync(seatId);
-
-            if (flight == null || seat == null)
+            if (flight == null)
             {
-                TempData["Error"] = "Voo ou lugar não encontrado.";
+                TempData["Error"] = "Voo não encontrado.";
                 return RedirectToAction(nameof(Index));
+            }
+
+            // Obter os lugares selecionados
+            var seats = new List<Seat>();
+            foreach (var seatId in seatIdList)
+            {
+                var seat = await _seatRepository.GetByIdAsync(seatId);
+                if (seat != null)
+                    seats.Add(seat);
             }
 
             var model = new GuestCheckoutViewModel
             {
                 FlightId = flightId,
-                SeatId = seatId,
+                SeatIds = seatIdList,
+                SeatId = seatIdList.First(),
                 ExtraLuggage = extraLuggage,
                 MealIncluded = mealIncluded,
                 FlightNumber = flight.FlightNumber ?? "",
                 OriginCode = flight.OriginAirport?.IATACode ?? "",
                 DestinationCode = flight.DestinationAirport?.IATACode ?? "",
-                SeatCode = seat.Code ?? "",
-                FlightPrice = flight.BasePrice,
-                SeatPrice = seat.BasePrice,
-                TotalPrice = CalculateTotalPrice(
-                    flight.BasePrice,
-                    seat.BasePrice,
-                    extraLuggage,
-                    mealIncluded)
+                SeatCode = string.Join(", ", seats.Select(s => s.Code)),
+                FlightPrice = flight.BasePrice * seatIdList.Count,
+                SeatPrice = seats.Sum(s => s.BasePrice),
+                TotalPrice = (flight.BasePrice * seatIdList.Count)
+                             + seats.Sum(s => s.BasePrice)
+                             + (extraLuggage ? ExtraLuggageFee : 0m)
+                             + (mealIncluded ? MealFee : 0m)
             };
 
             return View(model);
@@ -860,7 +935,8 @@ namespace LisAeroGest.Controllers
                 ExtraLuggage = extraLuggage,
                 MealIncluded = mealIncluded,
                 ReservationExpiresAt = DateTime.UtcNow.AddMinutes(30),
-                PurchaseDate = DateTime.UtcNow
+                PurchaseDate = DateTime.UtcNow,
+                DownloadToken = Guid.NewGuid().ToString("N")
             };
 
             await _ticketRepository.AddAsync(ticket);
@@ -947,7 +1023,12 @@ namespace LisAeroGest.Controllers
 
                 await _ticketRepository.UpdateAsync(ticket);
                 await _ticketRepository.SaveAsync();
-
+                var phone = ticket.Passenger?.PhoneNumber
+             ?? ticket.Passenger?.User?.PhoneNumber
+             ?? "";
+                await _whatsAppService.SendTicketMessageAsync(
+                    phone,
+                    $"LisAeroGest — Pagamento confirmado. Voo {ticket.Flight?.FlightNumber}, lugar {ticket.Seat?.Code}, bilhete #{ticket.Id}.");
                 // 4. Retornar URL de redirecionamento
                 return Ok(new
                 {
@@ -1036,6 +1117,16 @@ namespace LisAeroGest.Controllers
             }
             await _ticketRepository.SaveAsync();
 
+            var phone = passenger.PhoneNumber
+            ?? passenger.User?.PhoneNumber
+            ?? "";
+            if (!string.IsNullOrWhiteSpace(phone))
+            {
+                await _whatsAppService.SendTicketMessageAsync(
+                    phone,
+                    "LisAeroGest — Pagamento do carrinho confirmado.");
+            }
+
             return Ok(new { success = true, redirectUrl = Url.Action(nameof(MyTickets)) });
         }
 
@@ -1062,7 +1153,8 @@ namespace LisAeroGest.Controllers
                 ExtraLuggage = ticket.ExtraLuggage,
                 MealIncluded = ticket.MealIncluded,
                 TotalPrice = ticket.TotalPrice,
-                ExpiresAt = ticket.ReservationExpiresAt
+                ExpiresAt = ticket.ReservationExpiresAt,
+                DownloadToken = ticket.DownloadToken
             };
 
             return View(model);
@@ -1109,10 +1201,85 @@ namespace LisAeroGest.Controllers
                 .ToList();
         }
 
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> Calendar(int? year, int? month, DateTime? day)
+        {
+            var today = DateTime.Today;
+            year ??= today.Year;
+            month ??= today.Month;
+
+            var start = new DateTime(year.Value, month.Value, 1);
+            var end = start.AddMonths(1);
+
+            var monthFlights = await _flightRepository.GetAllQueryable()
+                .Include(f => f.Airline)
+                .Include(f => f.Aircraft)
+                .Include(f => f.OriginAirport)
+                .Include(f => f.DestinationAirport)
+                .Where(f => !f.WasDeleted
+                    && f.OriginAirport!.IATACode == "LIS"
+                    && f.DepartureTime >= start
+                    && f.DepartureTime < end
+                    && f.Status != "Cancelled"
+                    && f.Status != "Departed")
+                .ToListAsync();
+
+            var counts = monthFlights
+                .GroupBy(f => f.DepartureTime.Date)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            var offset = ((int)start.DayOfWeek + 6) % 7;
+            var gridStart = start.AddDays(-offset);
+
+            var days = new List<FlightCalendarDayViewModel>();
+            for (var d = gridStart; d < gridStart.AddDays(42); d = d.AddDays(1))
+            {
+                days.Add(new FlightCalendarDayViewModel
+                {
+                    Date = d,
+                    IsCurrentMonth = d.Month == month,
+                    IsToday = d.Date == today,
+                    FlightCount = counts.TryGetValue(d.Date, out var n) ? n : 0
+                });
+            }
+
+            var selected = day?.Date;
+            var ofDay = selected == null
+                ? new List<FlightSearchItemViewModel>()
+                : monthFlights
+                    .Where(f => f.DepartureTime.Date == selected)
+                    .OrderBy(f => f.DepartureTime)
+                    .Select(MapFlightSearchItem)
+                    .ToList();
+
+            foreach (var item in ofDay)
+            {
+                var weather = await _weatherService.GetWeatherAsync(item.DestinationCity);
+                if (weather?.Main == null)
+                    continue;
+                item.Temperature = weather.Main.Temp;
+                item.WeatherDescription = weather.Weather?.FirstOrDefault()?.Description;
+                var windKmh = (weather.Wind?.Speed ?? 0) * 3.6;
+                item.IsAdverseWeather = windKmh >= 50;
+            }
+
+            var culture = new System.Globalization.CultureInfo("pt-PT");
+            return View(new FlightCalendarViewModel
+            {
+                Year = year.Value,
+                Month = month.Value,
+                MonthName = culture.DateTimeFormat.GetMonthName(month.Value),
+                Days = days,
+                SelectedDate = selected,
+                FlightsOfDay = ofDay
+            });
+        }
+
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> SelectSeat(int flightId)
+        public async Task<IActionResult> SelectSeat(int flightId, int passengers = 1)
         {
             var flight = await _flightRepository.GetWithDetailsAsync(flightId);
             if (flight == null)
@@ -1135,10 +1302,21 @@ namespace LisAeroGest.Controllers
                 Seats = seats,
                 ExtraLuggagePrice = ExtraLuggageFee,
                 MealIncludedPrice = MealFee,
-                SeatRows = BuildSeatRows(seats, flight.Id)
+                SeatRows = BuildSeatRows(seats, flight.Id),
+                PassengerCount = Math.Max(1, passengers) 
             };
 
             return View(viewModel);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> TestWhatsApp(string phone = "937262437")
+        {
+            var ok = await _whatsAppService.SendTicketMessageAsync(
+                phone,
+                "LisAeroGest teste WhatsApp");
+            return Content(ok ? "Enviado" : "Falhou — vê o Output");
         }
 
         private static SeatMapCellViewModel MapCell(Seat? seat, string letter)

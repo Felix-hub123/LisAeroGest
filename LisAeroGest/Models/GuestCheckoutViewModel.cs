@@ -30,7 +30,11 @@ namespace LisAeroGest.Models
         [Display(Name = "Quero criar uma conta após a compra")]
         public bool WantToCreateAccount { get; set; }
 
+        [Required(ErrorMessage = "O telemóvel é obrigatório.")]
+        [Display(Name = "Telemóvel WhatsApp")]
+        public string PhoneNumber { get; set; } = string.Empty;
 
+        public List<int> SeatIds { get; set; } = new();
         public string FlightNumber { get; set; } = string.Empty;
         public string OriginCode { get; set; } = string.Empty;
         public string DestinationCode { get; set; } = string.Empty;

@@ -36,7 +36,10 @@
                     <form asp-action="ProcessGuestCheckout" method="post">
                         @Html.AntiForgeryToken()
                         <input type="hidden" asp-for="FlightId" />
-                        <input type="hidden" asp-for="SeatId" />
+                        @foreach (var id in Model.SeatIds)
+                        {
+                            <input type="hidden" name="SeatIds" value="@id" />
+                        }
                         <input type="hidden" asp-for="ExtraLuggage" />
                         <input type="hidden" asp-for="MealIncluded" />
 
@@ -60,6 +63,12 @@
                                 <label asp-for="DocumentNumber" class="form-label fw-semibold">N.º de documento</label>
                                 <input asp-for="DocumentNumber" class="form-control" />
                                 <span asp-validation-for="DocumentNumber" class="text-danger small"></span>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="PhoneNumber" class="form-label fw-semibold">Telemóvel (WhatsApp)</label>
+                                <input asp-for="PhoneNumber" class="form-control" placeholder="937262437" autocomplete="tel" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                                <div class="form-text">Usamos este número para enviar a confirmação no WhatsApp.</div>
                             </div>
                             <div class="col-12">
                                 <div class="form-check">

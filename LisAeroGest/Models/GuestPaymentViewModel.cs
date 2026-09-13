@@ -35,5 +35,7 @@ namespace LisAeroGest.Models
 
         [Display(Name = "Expira em")]
         public DateTime? ExpiresAt { get; set; }
+
+        public string? DownloadToken { get; set; }
     }
 }

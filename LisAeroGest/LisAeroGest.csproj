@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>6c4306a0-cb20-4fa5-bf15-f486c06a4113</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,6 +29,7 @@
     <PackageReference Include="QuestPDF" Version="2026.7.2" />
     <PackageReference Include="Rotativa.AspNetCore" Version="1.4.0" />
     <PackageReference Include="supabase-storage-csharp" Version="1.4.0" />
+    <PackageReference Include="Twilio" Version="8.0.1" />
   </ItemGroup>
 
   <ItemGroup>

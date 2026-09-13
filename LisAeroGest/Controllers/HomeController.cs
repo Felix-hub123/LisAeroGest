@@ -80,6 +80,29 @@ namespace LisAeroGest.Controllers
               .OrderByDescending(x => x.Voos)
               .Take(6)
               .ToList();
+            foreach (var dest in destinos)
+            {
+                dest.Weather = await _weatherService.GetWeatherAsync(dest.Cidade);
+                var windKmh = (dest.Weather?.Wind?.Speed ?? 0) * 3.6;
+                dest.IsAdverseWeather = windKmh >= 50;
+            }
+
+            var markers = new List<MapMarkerViewModel>
+            {
+                new() { Label = "Lisboa", Iata = "LIS", Lat = 38.7742, Lng = -9.1342 }
+            };
+            foreach (var dest in destinos)
+            {
+                if (AirportCoordinates.TryGet(dest.IATA, out var lat, out var lng))
+                    markers.Add(new MapMarkerViewModel
+                    {
+                        Label = dest.Cidade,
+                        Iata = dest.IATA,
+                        Lat = lat,
+                        Lng = lng
+                    });
+            }
+
 
             // 🔧 AVISOS ATIVOS: usar TODOS os voos futuros (não apenas os 8)
             var avisos = allDepartures
@@ -104,6 +127,7 @@ namespace LisAeroGest.Controllers
                 Arrivals = arrivals,               // ← Apenas 5 voos
                 DepartureDetails = departureDetails,
                 ArrivalDetails = arrivalDetails,
+                MapMarkers = markers,
                 // ⚠️ TotalPartidas e TotalChegadas são calculadas automaticamente!
                 ActiveFlightsCount = activeFlightsCount,
                 DisruptedFlightsCount = disruptedFlightsCount,
@@ -199,6 +223,8 @@ namespace LisAeroGest.Controllers
             ViewData["Title"] = "Contactos - LisAeroGest";
             return View();
         }
+
+
 
 
         [AllowAnonymous]

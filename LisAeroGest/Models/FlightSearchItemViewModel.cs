@@ -52,5 +52,9 @@ namespace LisAeroGest.Models
         /// </summary>
         [Display(Name = "Duração")]
         public string DurationLabel { get; set; } = string.Empty;
+
+        public double? Temperature { get; set; }
+        public string? WeatherDescription { get; set; }
+        public bool IsAdverseWeather { get; set; }
     }
 }
