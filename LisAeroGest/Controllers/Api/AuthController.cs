@@ -1,4 +1,5 @@
 ﻿using LisAeroGest.Data.Entities;
+using LisAeroGest.Data.Interfaces;
 using LisAeroGest.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -19,15 +20,18 @@ namespace LisAeroGest.Controllers.Api
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IConfiguration _configuration;
+        private readonly IPassengerRepository _passengerRepository;
 
         public AuthController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
-            IConfiguration configuration)
+            IConfiguration configuration,
+             IPassengerRepository passengerRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
+            _passengerRepository = passengerRepository;
         }
 
         /// <summary>
@@ -76,19 +80,19 @@ namespace LisAeroGest.Controllers.Api
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Verificar se o email já existe
+            // 1. Verificar se o email já existe
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser != null)
                 return BadRequest(new { message = "Este email já está registado." });
 
-            // Criar o utilizador
+            // 2. Criar o utilizador
             var user = new User
             {
                 UserName = request.Email,
                 Email = request.Email,
                 FirstName = request.FirstName,
                 LastName = request.LastName,
-                EmailConfirmed = true  // Para mobile, confirmamos automaticamente
+                EmailConfirmed = true
             };
 
             var result = await _userManager.CreateAsync(user, request.Password);
@@ -99,13 +103,39 @@ namespace LisAeroGest.Controllers.Api
                 return BadRequest(ModelState);
             }
 
-            // Atribuir a role "Passenger"
+            // 3. Atribuir a role "Passenger"
             await _userManager.AddToRoleAsync(user, "Passenger");
 
-            // Nota: O Passenger será criado pelo fluxo normal (ou pelo Admin)
-            // Para simplificar, o passageiro é criado no primeiro login
+            // 🔥 4. CRIAR O PASSENGER ASSOCIADO
+            var existingPassenger = await _passengerRepository.GetByEmailAsync(request.Email);
+            if (existingPassenger == null)
+            {
+                var passenger = new Passenger
+                {
+                    FirstName = request.FirstName,
+                    LastName = request.LastName,
+                    Email = request.Email,
+                    DocumentNumber = request.DocumentNumber,
+                    DocumentType = request.DocumentType ?? "CC",
+                    UserId = user.Id,
+                    RegistrationDate = DateTime.UtcNow
+                };
 
-            // Gerar JWT
+                await _passengerRepository.AddAsync(passenger);
+                await _passengerRepository.SaveAsync();
+            }
+            else if (string.IsNullOrEmpty(existingPassenger.UserId))
+            {
+                // Se já existia como convidado, associar ao novo utilizador
+                existingPassenger.UserId = user.Id;
+                existingPassenger.FirstName = request.FirstName;
+                existingPassenger.LastName = request.LastName;
+                existingPassenger.DocumentNumber = request.DocumentNumber;
+                await _passengerRepository.UpdateAsync(existingPassenger);
+                await _passengerRepository.SaveAsync();
+            }
+
+            // 5. Gerar JWT
             var roles = await _userManager.GetRolesAsync(user);
             var expiration = DateTime.UtcNow.AddDays(7);
             var token = GenerateJwtToken(user, roles, expiration);

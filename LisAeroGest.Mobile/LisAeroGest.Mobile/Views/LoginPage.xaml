@@ -45,6 +45,13 @@
 
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="#1F5C99" HorizontalOptions="Center" />
 
+            <Button Text="Ainda não tem conta? Criar conta"
+            Clicked="OnRegisterClicked"
+            BackgroundColor="Transparent"
+            TextColor="#1F5C99"
+            FontSize="14"
+            Margin="0,20,0,0" />
+            
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

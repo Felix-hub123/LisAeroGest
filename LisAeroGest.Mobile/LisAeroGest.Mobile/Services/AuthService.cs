@@ -89,6 +89,49 @@ namespace LisAeroGest.Mobile.Services
         }
 
         /// <summary>
+        /// Regista um novo utilizador na API e guarda o token JWT.
+        /// </summary>
+        public async Task<(bool Success, string? ErrorMessage)> RegisterAsync(
+            string firstName, string lastName, string email, string password, string documentNumber)
+        {
+            try
+            {
+                var registerDto = new RegisterRequestDto
+                {
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Email = email,
+                    Password = password,
+                    DocumentNumber = documentNumber,
+                    DocumentType = "CC"
+                };
+
+                var response = await _httpClient.PostAsJsonAsync("api/Auth/register", registerDto);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<LoginResponseDto>();
+                    if (result != null && !string.IsNullOrEmpty(result.Token))
+                    {
+                        await SecureStorage.SetAsync(TokenKey, result.Token);
+                        _httpClient.DefaultRequestHeaders.Authorization =
+                            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", result.Token);
+                        return (true, null);
+                    }
+                }
+
+                // Ler mensagem de erro da API
+                var error = await response.Content.ReadFromJsonAsync<ErrorResponseDto>();
+                return (false, error?.Message ?? "Não foi possível criar a conta.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[AuthService] Erro registo: {ex.Message}");
+                return (false, "Erro de ligação. Verifique a internet.");
+            }
+        }
+
+        /// <summary>
         /// Termina a sessão do utilizador removendo o token do dispositivo.
         /// </summary>
         public void Logout()

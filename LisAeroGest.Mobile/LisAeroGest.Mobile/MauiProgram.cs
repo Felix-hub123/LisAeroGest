@@ -75,6 +75,8 @@ namespace LisAeroGest.Mobile
             builder.Services.AddTransient<TicketsPage>();
             builder.Services.AddTransient<CheckInViewModel>();
             builder.Services.AddTransient<CheckInPage>();
+            builder.Services.AddTransient<RegisterViewModel>();
+            builder.Services.AddTransient<RegisterPage>();
 
             return builder.Build();
         }

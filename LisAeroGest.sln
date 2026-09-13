@@ -10,7 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Dockerfile.txt = Dockerfile.txt
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LisAeroGest.Mobile", "..\LisAeroGest.Mobile\LisAeroGest.Mobile\LisAeroGest.Mobile.csproj", "{F6FE31E1-E2F7-484E-E0AB-DD416818E599}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LisAeroGest.Mobile", "LisAeroGest.Mobile\LisAeroGest.Mobile\LisAeroGest.Mobile.csproj", "{1454F465-77E5-3786-6740-B5AECDD2765E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,10 +22,12 @@ Global
 		{41C8F49C-919B-4099-B281-280E6F1DA999}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{41C8F49C-919B-4099-B281-280E6F1DA999}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{41C8F49C-919B-4099-B281-280E6F1DA999}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F6FE31E1-E2F7-484E-E0AB-DD416818E599}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F6FE31E1-E2F7-484E-E0AB-DD416818E599}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F6FE31E1-E2F7-484E-E0AB-DD416818E599}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F6FE31E1-E2F7-484E-E0AB-DD416818E599}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1454F465-77E5-3786-6740-B5AECDD2765E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1454F465-77E5-3786-6740-B5AECDD2765E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1454F465-77E5-3786-6740-B5AECDD2765E}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{1454F465-77E5-3786-6740-B5AECDD2765E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1454F465-77E5-3786-6740-B5AECDD2765E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1454F465-77E5-3786-6740-B5AECDD2765E}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

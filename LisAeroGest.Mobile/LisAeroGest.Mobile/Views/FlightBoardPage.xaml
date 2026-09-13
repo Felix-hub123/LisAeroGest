@@ -7,48 +7,124 @@
              x:DataType="vm:FlightBoardViewModel"
              Title="Painel de Partidas">
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*">
 
-        <!-- Indicador de Carregamento Superior -->
-        <ActivityIndicator Grid.Row="0"
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- SELETOR DE DIA (CALENDÁRIO HORIZONTAL)                  -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <Border Grid.Row="0"
+                Margin="10,10,10,0"
+                Padding="12"
+                StrokeShape="RoundRectangle 12"
+                Stroke="#1F5C99"
+                StrokeThickness="1"
+                BackgroundColor="#F0F6FC">
+
+            <VerticalStackLayout Spacing="10">
+
+                <!-- Label do dia selecionado -->
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Label Grid.Column="0"
+                           Text="📅"
+                           FontSize="20"
+                           VerticalOptions="Center" />
+
+                    <Label Grid.Column="1"
+                           Text="{Binding SelectedDateLabel}"
+                           FontAttributes="Bold"
+                           FontSize="16"
+                           TextColor="#1F5C99"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+
+                    <Label Grid.Column="2"
+                           Text="{Binding SelectedDate, StringFormat='{0:dd/MM/yyyy}'}"
+                           FontSize="12"
+                           TextColor="Gray"
+                           VerticalOptions="Center" />
+                </Grid>
+
+                <!-- Navegação de dias -->
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+
+                    <Button Grid.Column="0"
+                            Text="← Anterior"
+                            Command="{Binding PreviousDayCommand}"
+                            BackgroundColor="White"
+                            TextColor="#1F5C99"
+                            BorderColor="#1F5C99"
+                            BorderWidth="1"
+                            FontSize="12"
+                            CornerRadius="8"
+                            HeightRequest="40"
+                            Padding="10,0" />
+
+                    <Button Grid.Column="1"
+                            Text="Hoje"
+                            Command="{Binding GoToTodayCommand}"
+                            BackgroundColor="#1F5C99"
+                            TextColor="White"
+                            FontSize="12"
+                            CornerRadius="8"
+                            HeightRequest="40"
+                            Padding="10,0" />
+
+                    <Button Grid.Column="2"
+                            Text="Seguinte →"
+                            Command="{Binding NextDayCommand}"
+                            BackgroundColor="White"
+                            TextColor="#1F5C99"
+                            BorderColor="#1F5C99"
+                            BorderWidth="1"
+                            FontSize="12"
+                            CornerRadius="8"
+                            HeightRequest="40"
+                            Padding="10,0" />
+                </Grid>
+
+                <!-- Barra de datas (calendário compacto) -->
+                <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                    <HorizontalStackLayout x:Name="CalendarStrip" Spacing="6" Padding="0,4" />
+                </ScrollView>
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Indicador de Carregamento -->
+        <ActivityIndicator Grid.Row="1"
                            IsRunning="{Binding IsBusy}"
                            IsVisible="{Binding IsBusy}"
                            HorizontalOptions="Center"
                            Margin="10" />
 
-        <!-- Lista de Partidas com Pull-to-Refresh -->
-        <RefreshView Grid.Row="1"
+        <!-- Lista de Voos do dia selecionado -->
+        <RefreshView Grid.Row="2"
                      IsRefreshing="{Binding IsBusy}"
                      Command="{Binding LoadDeparturesCommand}">
 
             <CollectionView ItemsSource="{Binding Departures}"
-                            EmptyView="Nenhuma partida encontrada ou a carregar dados...">
+                            EmptyView="Nenhum voo agendado para este dia.">
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:FlightDto">
                         <Frame Margin="10,5" Padding="15" CornerRadius="8" HasShadow="True">
                             <Grid ColumnDefinitions="*,*,Auto" RowDefinitions="Auto,Auto" RowSpacing="5">
 
-                                <!-- Número do Voo -->
-                                <Label Grid.Row="0" Grid.Column="0" 
-                                       Text="{Binding FlightNumber}" 
-                                       FontAttributes="Bold" 
+                                <Label Grid.Row="0" Grid.Column="0"
+                                       Text="{Binding FlightNumber}"
+                                       FontAttributes="Bold"
                                        FontSize="16" />
 
-                                <!-- Origem ou Destino -->
-                                <Label Grid.Row="0" Grid.Column="1" 
-                                       Text="{Binding Origin}" 
+                                <Label Grid.Row="0" Grid.Column="1"
+                                       Text="{Binding Origin}"
                                        HorizontalOptions="Center" />
 
-                                <!-- Estado do Voo -->
-                                <Label Grid.Row="0" Grid.Column="2" 
-                                       Text="{Binding Status}" 
+                                <Label Grid.Row="0" Grid.Column="2"
+                                       Text="{Binding Status}"
                                        FontAttributes="Bold" />
 
-                                <!-- Data e Hora Prevista -->
                                 <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
                                        Text="{Binding DepartureTime, StringFormat='{0:HH:mm}'}"
-                                       FontSize="12" 
+                                       FontSize="12"
                                        TextColor="Gray" />
                             </Grid>
                         </Frame>

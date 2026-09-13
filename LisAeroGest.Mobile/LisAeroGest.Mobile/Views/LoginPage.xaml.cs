@@ -9,5 +9,11 @@ namespace LisAeroGest.Mobile.Views
             InitializeComponent();
             BindingContext = viewModel;
         }
+
+
+        private async void OnRegisterClicked(object sender, EventArgs e)
+        {
+            await Shell.Current.GoToAsync(nameof(RegisterPage));
+        }
     }
 }

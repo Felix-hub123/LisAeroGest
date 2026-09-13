@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
+             x:Class="LisAeroGest.Mobile.Views.RegisterPage"
+             x:DataType="vm:RegisterViewModel"
+             Title="Criar Conta"
+             Shell.NavBarIsVisible="True">
+    <ScrollView>
+        <VerticalStackLayout Padding="30" Spacing="20" VerticalOptions="Center">
+
+            <VerticalStackLayout Spacing="8" Margin="0,20,0,20">
+                <Label Text="✈️" FontSize="50" HorizontalOptions="Center" />
+                <Label Text="Criar Conta" FontSize="28" FontAttributes="Bold" HorizontalOptions="Center" TextColor="#1F5C99" />
+                <Label Text="Junte-se à LisAeroGest" FontSize="14" HorizontalOptions="Center" TextColor="Gray" />
+            </VerticalStackLayout>
+
+            <Frame IsVisible="{Binding HasError}" BackgroundColor="#FDECEA" BorderColor="#E53935" CornerRadius="8" Padding="12">
+                <Label Text="{Binding ErrorMessage}" TextColor="#E53935" FontSize="14" />
+            </Frame>
+
+            <!-- Nome -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Nome" FontAttributes="Bold" FontSize="14" />
+                <Border Stroke="#CCCCCC" StrokeThickness="1" StrokeShape="RoundRectangle 8">
+                    <Entry Placeholder="João" Text="{Binding FirstName}" Margin="10,0" />
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Apelido -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Apelido" FontAttributes="Bold" FontSize="14" />
+                <Border Stroke="#CCCCCC" StrokeThickness="1" StrokeShape="RoundRectangle 8">
+                    <Entry Placeholder="Silva" Text="{Binding LastName}" Margin="10,0" />
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Email -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Email" FontAttributes="Bold" FontSize="14" />
+                <Border Stroke="#CCCCCC" StrokeThickness="1" StrokeShape="RoundRectangle 8">
+                    <Entry Placeholder="email@exemplo.com" Text="{Binding Email}" Keyboard="Email" Margin="10,0" />
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Documento -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Documento (CC / Passaporte)" FontAttributes="Bold" FontSize="14" />
+                <Border Stroke="#CCCCCC" StrokeThickness="1" StrokeShape="RoundRectangle 8">
+                    <Entry Placeholder="12345678" Text="{Binding DocumentNumber}" Margin="10,0" />
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Password -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Password" FontAttributes="Bold" FontSize="14" />
+                <Border Stroke="#CCCCCC" StrokeThickness="1" StrokeShape="RoundRectangle 8">
+                    <Entry Placeholder="Mínimo 6 caracteres" Text="{Binding Password}" IsPassword="True" Margin="10,0" />
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Confirmar Password -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Confirmar Password" FontAttributes="Bold" FontSize="14" />
+                <Border Stroke="#CCCCCC" StrokeThickness="1" StrokeShape="RoundRectangle 8">
+                    <Entry Placeholder="Repita a password" Text="{Binding ConfirmPassword}" IsPassword="True" Margin="10,0" />
+                </Border>
+            </VerticalStackLayout>
+
+            <Button Text="Criar Conta"
+                    Command="{Binding RegisterCommand}"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                    BackgroundColor="#1F5C99"
+                    TextColor="White"
+                    CornerRadius="8"
+                    HeightRequest="50"
+                    FontAttributes="Bold"
+                    FontSize="16"
+                    Margin="0,10,0,0" />
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="#1F5C99" HorizontalOptions="Center" />
+
+            <Button Text="Já tem conta? Faça login"
+                    Command="{Binding GoToLoginCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="#1F5C99"
+                    FontSize="14" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
