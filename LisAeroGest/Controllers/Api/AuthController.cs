@@ -1,7 +1,6 @@
 ﻿using LisAeroGest.Data.Entities;
-using Microsoft.AspNetCore.Http;
+using LisAeroGest.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -10,7 +9,6 @@ using System.Text;
 
 namespace LisAeroGest.Controllers.Api
 {
-   
     /// <summary>
     /// API REST para autenticação mobile com JWT.
     /// </summary>
@@ -22,9 +20,6 @@ namespace LisAeroGest.Controllers.Api
         private readonly SignInManager<User> _signInManager;
         private readonly IConfiguration _configuration;
 
-        /// <summary>
-        /// Inicializa o AuthController com as dependências necessárias.
-        /// </summary>
         public AuthController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
@@ -37,6 +32,7 @@ namespace LisAeroGest.Controllers.Api
 
         /// <summary>
         /// Autentica um utilizador e devolve um token JWT.
+        /// POST: api/auth/login
         /// </summary>
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
@@ -44,14 +40,14 @@ namespace LisAeroGest.Controllers.Api
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var user = await _userManager.FindByEmailAsync(request.Email!);
+            var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
                 return Unauthorized(new { message = "Email ou password incorretos." });
 
             if (!user.EmailConfirmed)
                 return Unauthorized(new { message = "Email não confirmado." });
 
-            var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password!, false);
+            var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
             if (!result.Succeeded)
                 return Unauthorized(new { message = "Email ou password incorretos." });
 
@@ -71,6 +67,61 @@ namespace LisAeroGest.Controllers.Api
 
 
         /// <summary>
+        /// Regista um novo utilizador (passageiro) e devolve um token JWT.
+        /// POST: api/auth/register
+        /// </summary>
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            // Verificar se o email já existe
+            var existingUser = await _userManager.FindByEmailAsync(request.Email);
+            if (existingUser != null)
+                return BadRequest(new { message = "Este email já está registado." });
+
+            // Criar o utilizador
+            var user = new User
+            {
+                UserName = request.Email,
+                Email = request.Email,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                EmailConfirmed = true  // Para mobile, confirmamos automaticamente
+            };
+
+            var result = await _userManager.CreateAsync(user, request.Password);
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                    ModelState.AddModelError(string.Empty, error.Description);
+                return BadRequest(ModelState);
+            }
+
+            // Atribuir a role "Passenger"
+            await _userManager.AddToRoleAsync(user, "Passenger");
+
+            // Nota: O Passenger será criado pelo fluxo normal (ou pelo Admin)
+            // Para simplificar, o passageiro é criado no primeiro login
+
+            // Gerar JWT
+            var roles = await _userManager.GetRolesAsync(user);
+            var expiration = DateTime.UtcNow.AddDays(7);
+            var token = GenerateJwtToken(user, roles, expiration);
+
+            return Ok(new
+            {
+                token,
+                expiration,
+                user.FullName,
+                user.Email,
+                roles,
+                message = "Registo efetuado com sucesso."
+            });
+        }
+
+        /// <summary>
         /// Gera um token JWT para o utilizador.
         /// </summary>
         private string GenerateJwtToken(User user, IList<string> roles, DateTime expiration)
@@ -86,7 +137,8 @@ namespace LisAeroGest.Controllers.Api
                 claims.Add(new Claim(ClaimTypes.Role, role));
 
             var key = new SymmetricSecurityKey(
-             Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
+                Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
+
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
