@@ -12,11 +12,11 @@
     <!-- Cabeçalho -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-            <h2 class="fw-bold mb-1 text-dark">
+            <h2 class="fw-bold mb-1 text-white">
                 <i class="bi bi-person-badge text-primary me-2"></i>Dashboard Operacional
             </h2>
             <p class="text-muted mb-0">
-                Operador: <strong>@Model.EmployeeName</strong>
+                Operador: <strong class="text-white">@Model.EmployeeName</strong>
                 <span class="badge bg-primary ms-2">Operações</span>
             </p>
         </div>
@@ -134,8 +134,8 @@
         <!-- Lista de voos de hoje -->
         <div class="col-lg-8">
             <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-white py-3">
-                    <h6 class="fw-bold mb-0">
+                <div class="card-header py-3">
+                    <h6 class="fw-bold mb-0 text-white">
                         <i class="bi bi-list-ul me-2 text-primary"></i>Voos de Hoje
                     </h6>
                 </div>
@@ -160,7 +160,7 @@
                                     @foreach (var f in Model.TodayFlightList)
                                     {
                                         <tr class="@FlightStatusHelper.GetRowClass(f.Status)">
-                                            <td><strong>@f.FlightNumber</strong></td>
+                                            <td><strong class="text-white">@f.FlightNumber</strong></td>
                                             <td>@f.AirlineName</td>
                                             <td>
                                                 <span class="badge bg-secondary">@f.OriginCode</span>
@@ -221,7 +221,7 @@
         <div class="col-lg-4">
             <div class="card shadow-sm border-0 mb-3">
                 <div class="card-body">
-                    <h6 class="fw-bold card-title mb-3">Distribuição por Estado</h6>
+                    <h6 class="fw-bold card-title mb-3 text-white">Distribuição por Estado</h6>
                     <div style="max-height: 220px;" class="d-flex justify-content-center">
                         <canvas id="chartStatus"></canvas>
                     </div>
@@ -229,8 +229,8 @@
             </div>
 
             <div class="card shadow-sm border-0">
-                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom-0">
-                    <h6 class="fw-bold mb-0">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center border-bottom-0">
+                    <h6 class="fw-bold mb-0 text-white">
                         <i class="bi bi-bell-fill text-warning me-2"></i>Alertas do Turno
                         @if (Model.UnreadCount > 0)
                         {
@@ -247,16 +247,15 @@
                         <div class="list-group list-group-flush">
                             @foreach (var notification in Model.RecentNotifications)
                             {
-                                <div class="list-group-item d-flex gap-3 py-3 align-items-start @(notification.IsRead ? "bg-light opacity-75" : "")">
+                                <div class="list-group-item d-flex gap-3 py-3 align-items-start @(notification.IsRead ? "opacity-75" : "")">
                                     <div class="flex-shrink-0">
-                                        <div class="rounded-circle d-flex align-items-center justify-content-center mt-1"
-                                             style="width: 36px; height: 36px; background: #f8f9fa;">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center mt-1 notification-icon-circle">
                                             <i class="bi @notification.Icon @notification.ColorClass fs-5"></i>
                                         </div>
                                     </div>
                                     <div class="flex-grow-1">
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <h6 class="mb-1 @(notification.IsRead ? "" : "fw-bold") small">
+                                            <h6 class="mb-1 @(notification.IsRead ? "" : "fw-bold") small text-white">
                                                 @if (!notification.IsRead)
                                                 {
                                                     <span class="badge bg-primary me-1">NOVO</span>
@@ -267,7 +266,7 @@
                                                 @notification.CreatedAt.ToString("HH:mm")
                                             </span>
                                         </div>
-                                        <p class="mb-0 small text-secondary">@notification.Message</p>
+                                        <p class="mb-0 small text-muted">@notification.Message</p>
                                     </div>
                                 </div>
                             }
@@ -289,7 +288,7 @@
 @section Scripts {
     <script>
         var statusData = @Html.Raw(JsonSerializer.Serialize(
-                    Model.FlightsByStatus.Select(x => new { label = x.Label, count = x.Count })
+                            Model.FlightsByStatus.Select(x => new { label = x.Label, count = x.Count })
             ));
 
     new Chart(document.getElementById('chartStatus'), {
@@ -305,7 +304,10 @@
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom' }
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#e2e8f0' }
+                }
             }
         }
     });

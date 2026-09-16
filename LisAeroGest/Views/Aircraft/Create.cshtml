@@ -24,7 +24,7 @@
                 <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3" title="Voltar à lista">
                     <i class="bi bi-arrow-left"></i>
                 </a>
-                <h2 class="fw-bold mb-0">
+                <h2 class="fw-bold mb-0 text-white">
                     <i class="bi bi-airplane-fill text-info me-2"></i>Nova Aeronave
                 </h2>
             </div>
@@ -89,7 +89,8 @@
                                      src="@ImageHelper.GetImageUrl(Guid.Empty, "aircraft")"
                                      alt="Pré-visualização da Imagem"
                                      class="rounded border shadow-sm"
-                                     style="height: 140px; width: 220px; object-fit: cover;" />
+                                     style="height: 140px; width: 220px; object-fit: cover;"
+                                     onerror="this.src='/images/aircraft/noimage.png'" />
                             </div>
                         </div>
 

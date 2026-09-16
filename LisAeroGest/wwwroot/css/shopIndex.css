@@ -1,0 +1,237 @@
+﻿/* ============================================
+   SHOP INDEX — Pesquisar Voos
+   ============================================ */
+
+/* ═══ CABEÇALHO ═══ */
+.shop-title {
+    color: var(--lis-text);
+    font-weight: 800;
+    letter-spacing: -0.3px;
+}
+
+.text-lime {
+    color: var(--lis-lime) !important;
+}
+
+.shop-filters {
+    color: var(--lis-text-muted);
+    font-size: 0.9rem;
+}
+
+    .shop-filters strong {
+        color: var(--lis-text);
+        font-weight: 700;
+    }
+
+.shop-count-badge {
+    background-color: rgba(200, 230, 41, 0.1);
+    color: var(--lis-lime);
+    border: 1px solid rgba(200, 230, 41, 0.3);
+    border-radius: 999px;
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+/* ═══ CARD DE PESQUISA ═══ */
+.shop-search-card {
+    background-color: var(--lis-dark-2);
+    border: 1px solid var(--lis-border) !important;
+}
+
+    .shop-search-card .form-label {
+        color: var(--lis-text);
+        font-size: 0.85rem;
+    }
+
+/* ═══ AUTOCOMPLETE ═══ */
+.shop-autocomplete {
+    background-color: var(--lis-dark-2);
+    border: 1px solid var(--lis-border);
+    border-radius: 0 0 10px 10px;
+    max-height: 280px;
+    overflow-y: auto;
+    margin-top: -1px;
+}
+
+    .shop-autocomplete .list-group-item {
+        background-color: var(--lis-dark-2);
+        border-color: var(--lis-border);
+        color: var(--lis-text);
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+    }
+
+        .shop-autocomplete .list-group-item:hover,
+        .shop-autocomplete .list-group-item:focus {
+            background-color: var(--lis-dark-3);
+            color: var(--lis-lime);
+        }
+
+        .shop-autocomplete .list-group-item strong {
+            color: var(--lis-lime);
+        }
+
+/* ═══ LOADING ═══ */
+.shop-loading {
+    color: var(--lis-text-muted);
+}
+
+/* ═══ ORDENAÇÃO ═══ */
+.shop-sort-group .btn {
+    background-color: var(--lis-dark-2);
+    border: 1px solid var(--lis-border);
+    color: var(--lis-text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+    .shop-sort-group .btn:hover {
+        background-color: var(--lis-dark-3);
+        color: var(--lis-lime);
+        border-color: var(--lis-lime);
+    }
+
+    .shop-sort-group .btn.active {
+        background-color: var(--lis-lime);
+        border-color: var(--lis-lime);
+        color: var(--lis-dark);
+    }
+
+/* ═══ EMPTY STATE ═══ */
+.shop-empty {
+    background-color: var(--lis-dark-2);
+    border: 1px dashed var(--lis-border) !important;
+}
+
+/* ═══ CARD DE VOO ═══ */
+.shop-flight-card {
+    background-color: var(--lis-dark-2);
+    border: 1px solid var(--lis-border) !important;
+    transition: all 0.2s ease;
+}
+
+    .shop-flight-card:hover {
+        border-color: var(--lis-lime) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 32px rgba(200, 230, 41, 0.08) !important;
+    }
+
+.shop-flight-number {
+    background-color: rgba(200, 230, 41, 0.1);
+    color: var(--lis-lime);
+    border: 1px solid rgba(200, 230, 41, 0.3);
+    border-radius: 999px;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Rota */
+.shop-route {
+    padding: 0.25rem 0;
+}
+
+.shop-airport-code {
+    color: var(--lis-text);
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+}
+
+.shop-route-line {
+    border-top: 1px dashed var(--lis-border);
+    margin: 0.4rem 0;
+    position: relative;
+}
+
+    .shop-route-line::after {
+        content: '\F5D2'; /* bi-airplane */
+        font-family: 'bootstrap-icons';
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: var(--lis-dark-2);
+        color: var(--lis-lime);
+        padding: 0 0.4rem;
+        font-size: 0.75rem;
+    }
+
+/* Preço */
+.shop-price {
+    color: var(--lis-lime);
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+/* ═══ BOTÃO LIMA ═══ */
+.btn-lime {
+    background-color: var(--lis-lime);
+    color: var(--lis-dark);
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    padding: 0.6rem 1.25rem;
+    transition: all 0.2s ease;
+}
+
+    .btn-lime:hover,
+    .btn-lime:focus-visible {
+        background-color: var(--lis-lime-dark);
+        color: var(--lis-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(200, 230, 41, 0.3);
+        outline: none;
+    }
+
+/* ═══ SPINNER LIMA ═══ */
+.spinner-border.text-lime {
+    color: var(--lis-lime) !important;
+}
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 768px) {
+    .shop-title {
+        font-size: 1.35rem;
+    }
+
+    .shop-flight-card .card-body {
+        padding: 1.25rem !important;
+    }
+
+    .shop-airport-code {
+        font-size: 1.2rem;
+    }
+
+    .shop-price {
+        font-size: 1.15rem;
+    }
+
+    .shop-flight-card .btn-lime {
+        width: 100%;
+    }
+
+    .shop-count-badge {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .shop-route .col-4 {
+        padding: 0.25rem;
+    }
+
+    .shop-airport-code {
+        font-size: 1rem;
+    }
+}

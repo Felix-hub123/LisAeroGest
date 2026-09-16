@@ -41,8 +41,9 @@
                         <img src="@ImageHelper.GetImageUrl(Model.ImageId, "aircraft")"
                              alt="@Model.Brand @Model.Model"
                              class="rounded border shadow-sm mb-3"
-                             style="height: 140px; width: 220px; object-fit: cover;" />
-                        <h5 class="fw-bold mb-1">@Model.Brand @Model.Model</h5>
+                             style="height: 140px; width: 220px; object-fit: cover;"
+                             onerror="this.src='/images/aircraft/noimage.png'" />
+                        <h5 class="fw-bold mb-1 text-white">@Model.Brand @Model.Model</h5>
                         <p class="text-muted mb-0">
                             <span class="badge bg-secondary me-1">@Model.TotalCapacity lugares</span>
                             @if (Model.IsAvailable)
@@ -56,7 +57,7 @@
                         </p>
                     </div>
 
-                    <p class="text-center text-secondary mb-4">
+                    <p class="text-center text-muted mb-4">
                         Tem a certeza de que deseja eliminar esta aeronave da frota?
                     </p>
 
@@ -82,7 +83,7 @@
                 </div>
 
                 <!-- Ações do Formulário -->
-                <div class="card-footer bg-light d-flex align-items-center p-3">
+                <div class="card-footer d-flex align-items-center p-3">
                     <form asp-action="Delete" method="post" class="m-0">
                         @Html.AntiForgeryToken()
                         <input type="hidden" asp-for="Id" />

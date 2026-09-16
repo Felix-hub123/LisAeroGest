@@ -90,6 +90,39 @@ namespace LisAeroGest.Mobile.ViewModels
             await LoadDeparturesCommand.ExecuteAsync(null);
         }
 
+        [RelayCommand]
+        private async Task SelectFlightAsync(FlightDto? flight)
+        {
+            if (flight == null)
+                return;
+
+            var id = flight.Id;
+            if (id <= 0)
+            {
+                await Shell.Current.DisplayAlert(
+                    "Voo",
+                    "Este voo não tem identificador válido.",
+                    "OK");
+                return;
+            }
+
+            try
+            {
+                await Shell.Current.GoToAsync(
+                    nameof(Views.FlightDetailsPage),
+                    new Dictionary<string, object>
+                    {
+                        ["FlightId"] = id
+                    });
+            }
+            catch (Exception ex)
+            {
+                await Shell.Current.DisplayAlert("Navegação", ex.Message, "OK");
+            }
+        }
+
+
+
         private void UpdateSelectedDateLabel()
         {
             var today = DateTime.Today;

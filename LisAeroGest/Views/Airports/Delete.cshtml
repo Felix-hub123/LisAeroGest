@@ -28,17 +28,18 @@
                         <img src="@ImageHelper.GetImageUrl(Model.ImageId, "airports")"
                              alt="@Model.Name"
                              class="rounded shadow-sm img-fluid"
-                             style="max-height: 220px; width: 100%; object-fit: cover;" />
-                        <h3 class="mt-3 fw-bold">@Model.Name</h3>
+                             style="max-height: 220px; width: 100%; object-fit: cover;"
+                             onerror="this.src='/images/airports/noimage.png'" />
+                        <h3 class="mt-3 fw-bold text-white">@Model.Name</h3>
                         <span class="badge bg-primary fs-5">IATA: @Model.IATACode</span>
                     </div>
 
                     <dl class="row fs-5">
                         <dt class="col-sm-4 text-muted">Cidade</dt>
-                        <dd class="col-sm-8 fw-semibold">@Model.City</dd>
+                        <dd class="col-sm-8 fw-semibold text-white">@Model.City</dd>
 
                         <dt class="col-sm-4 text-muted">País</dt>
-                        <dd class="col-sm-8 fw-semibold">@Model.Country</dd>
+                        <dd class="col-sm-8 fw-semibold text-white">@Model.Country</dd>
 
                         <dt class="col-sm-4 text-muted">Taxa Padrão</dt>
                         <dd class="col-sm-8 text-success fw-bold">@Model.DefaultFee.ToString("C2")</dd>

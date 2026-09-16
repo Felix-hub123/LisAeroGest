@@ -3,60 +3,167 @@
     ViewData["Title"] = "Os Meus Bilhetes";
 }
 
-<h1 class="mb-4"><i class="bi bi-ticket-perforated me-2"></i>Os Meus Bilhetes</h1>
+@section Styles {
+    <link rel="stylesheet" href="~/css/myTickets.css" asp-append-version="true" />
+}
 
-@if (!Model.Any())
-{
-    <div class="alert alert-info">
-        <i class="bi bi-info-circle me-1"></i>Não tem bilhetes comprados.
-        <a asp-action="Index" class="alert-link">Comprar bilhetes</a>
+<div class="container my-4 mb-5">
+
+    <!-- ═══ CABEÇALHO ═══ -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <h1 class="tickets-title mb-0">
+            <i class="bi bi-ticket-perforated-fill text-lime me-2"></i>Os Meus Bilhetes
+        </h1>
+
+        @if (Model.Any())
+        {
+            <span class="tickets-count-badge">
+                <i class="bi bi-airplane me-1"></i>
+                @Model.Count() bilhete(s)
+            </span>
+        }
     </div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead class="table-primary">
-                <tr>
-                    <th>Voo</th>
-                    <th>Rota</th>
-                    <th>Data</th>
-                    <th>Lugar</th>
-                    <th>Total</th>
-                    <th>Estado</th>
-                    <th>Compra</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var ticket in Model)
-                {
+
+    @if (!Model.Any())
+    {
+        <div class="tickets-empty">
+            <i class="bi bi-ticket-detailed display-1 d-block mb-3 text-muted"></i>
+            <h4 class="text-white mb-2">Ainda não tem bilhetes</h4>
+            <p class="text-muted mb-4">Pesquise voos e faça a sua primeira reserva.</p>
+            <a asp-action="Index" class="btn btn-lime">
+                <i class="bi bi-search me-1"></i>Comprar bilhetes
+            </a>
+        </div>
+    }
+    else
+    {
+        <!-- Desktop: tabela -->
+        <div class="tickets-table-wrapper table-responsive d-none d-md-block">
+            <table class="table tickets-table align-middle mb-0">
+                <thead>
                     <tr>
-                        <td>@ticket.Flight?.FlightNumber</td>
-                        <td>@ticket.Flight?.OriginAirport?.IATACode → @ticket.Flight?.DestinationAirport?.IATACode</td>
-                        <td>@ticket.Flight?.DepartureTime.ToString("dd/MM/yyyy HH:mm")</td>
-                        <td>@ticket.Seat?.Code</td>
-                        <td class="fw-bold">€@ticket.TotalPrice.ToString("F2")</td>
-                        <td>
-                            @switch (ticket.Status)
-                            {
-                                case "Paid":
-                                    <span class="badge bg-success">Pago</span>
-                                    break;
-                                case "CheckedIn":
-                                    <span class="badge bg-info">Check-in Feito</span>
-                                    break;
-                                case "Cancelled":
-                                    <span class="badge bg-danger">Cancelado</span>
-                                    break;
-                                default:
-                                    <span class="badge bg-secondary">@ticket.Status</span>
-                                    break;
-                            }
-                        </td>
-                        <td>@ticket.PurchaseDate.ToString("dd/MM/yyyy")</td>
+                        <th>Voo</th>
+                        <th>Rota</th>
+                        <th>Data</th>
+                        <th>Lugar</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Compra</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-}
+                </thead>
+                <tbody>
+                    @foreach (var ticket in Model)
+                    {
+                        <tr>
+                            <td>
+                                <span class="tickets-flight-number">
+                                    <i class="bi bi-airplane-fill me-1"></i>@ticket.Flight?.FlightNumber
+                                </span>
+                            </td>
+                            <td>
+                                <span class="tickets-route">
+                                    <strong>@ticket.Flight?.OriginAirport?.IATACode</strong>
+                                    <i class="bi bi-arrow-right text-lime mx-1"></i>
+                                    <strong>@ticket.Flight?.DestinationAirport?.IATACode</strong>
+                                </span>
+                            </td>
+                            <td class="text-white">
+                                <i class="bi bi-calendar3 text-muted me-1"></i>
+                                @ticket.Flight?.DepartureTime.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                            <td>
+                                <span class="tickets-seat">@ticket.Seat?.Code</span>
+                            </td>
+                            <td class="tickets-price">@ticket.TotalPrice.ToString("C")</td>
+                            <td>
+                                @switch (ticket.Status)
+                                {
+                                    case "Paid":
+                                        <span class="badge-status badge-paid">
+                                            <i class="bi bi-check-circle-fill me-1"></i>Pago
+                                        </span>
+                                        break;
+                                    case "CheckedIn":
+                                        <span class="badge-status badge-checkin">
+                                            <i class="bi bi-clipboard-check-fill me-1"></i>Check-in
+                                        </span>
+                                        break;
+                                    case "Cancelled":
+                                        <span class="badge-status badge-cancelled">
+                                            <i class="bi bi-x-circle-fill me-1"></i>Cancelado
+                                        </span>
+                                        break;
+                                    default:
+                                        <span class="badge-status badge-pending">@ticket.Status</span>
+                                        break;
+                                }
+                            </td>
+                            <td class="text-muted small">@ticket.PurchaseDate.ToString("dd/MM/yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile: cards -->
+        <div class="d-md-none tickets-cards">
+            @foreach (var ticket in Model)
+            {
+                <div class="ticket-mobile-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="tickets-flight-number">
+                            <i class="bi bi-airplane-fill me-1"></i>@ticket.Flight?.FlightNumber
+                        </span>
+                        @switch (ticket.Status)
+                        {
+                            case "Paid":
+                                <span class="badge-status badge-paid">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Pago
+                                </span>
+                                break;
+                            case "CheckedIn":
+                                <span class="badge-status badge-checkin">
+                                    <i class="bi bi-clipboard-check-fill me-1"></i>Check-in
+                                </span>
+                                break;
+                            case "Cancelled":
+                                <span class="badge-status badge-cancelled">
+                                    <i class="bi bi-x-circle-fill me-1"></i>Cancelado
+                                </span>
+                                break;
+                            default:
+                                <span class="badge-status badge-pending">@ticket.Status</span>
+                                break;
+                        }
+                    </div>
+
+                    <div class="tickets-mobile-route">
+                        <strong>@ticket.Flight?.OriginAirport?.IATACode</strong>
+                        <i class="bi bi-arrow-right text-lime mx-2"></i>
+                        <strong>@ticket.Flight?.DestinationAirport?.IATACode</strong>
+                    </div>
+
+                    <div class="tickets-mobile-meta">
+                        <div class="tickets-mobile-item">
+                            <i class="bi bi-calendar3 text-lime"></i>
+                            <span>@ticket.Flight?.DepartureTime.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+                        <div class="tickets-mobile-item">
+                            <i class="bi bi-grid-3x3-gap text-lime"></i>
+                            <span>Lugar @ticket.Seat?.Code</span>
+                        </div>
+                        <div class="tickets-mobile-item">
+                            <i class="bi bi-bag-check text-lime"></i>
+                            <span>Compra @ticket.PurchaseDate.ToString("dd/MM/yyyy")</span>
+                        </div>
+                    </div>
+
+                    <div class="tickets-mobile-total">
+                        <span class="text-muted">Total</span>
+                        <span class="tickets-price">@ticket.TotalPrice.ToString("C")</span>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

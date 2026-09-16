@@ -3,122 +3,165 @@
     ViewData["Title"] = "Voos a partir de Lisboa";
     var prev = new DateTime(Model.Year, Model.Month, 1).AddMonths(-1);
     var next = new DateTime(Model.Year, Model.Month, 1).AddMonths(1);
+    var pt = new System.Globalization.CultureInfo("pt-PT");
 }
-<style>
-    .cal-grid {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: .35rem;
-    }
 
-    .cal-day {
-        min-height: 64px;
-        border-radius: .75rem;
-        text-decoration: none;
-        color: inherit;
-    }
 
-        .cal-day.has-flights {
-            background: #e8f1fb;
-            border: 1px solid #1F5C99;
-        }
 
-            .cal-day.has-flights:hover {
-                background: #1F5C99;
-                color: #fff;
-            }
-
-        .cal-day.today {
-            outline: 2px solid #fd7e14;
-        }
-
-        .cal-day.selected {
-            background: #1F5C99;
-            color: #fff;
-        }
-
-        .cal-day.muted {
-            opacity: .35;
-        }
-</style>
 <div class="container py-4">
-    <p class="text-muted mb-1">A partir de Lisboa (LIS)</p>
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <a class="btn btn-outline-secondary"
-           asp-action="Calendar" asp-route-year="@prev.Year" asp-route-month="@prev.Month">‹</a>
-        <h1 class="h4 mb-0 text-capitalize">@Model.MonthName @Model.Year</h1>
-        <a class="btn btn-outline-secondary"
-           asp-action="Calendar" asp-route-year="@next.Year" asp-route-month="@next.Month">›</a>
+
+    <!-- ═══ HEADER ═══ -->
+    <div class="cal-header mb-4">
+        <div>
+            <div class="lis-section-label">A partir de Lisboa (LIS)</div>
+            <h1 class="cal-title text-capitalize mb-0">@Model.MonthName @Model.Year</h1>
+        </div>
+
+        <div class="cal-nav">
+            <a class="cal-nav-btn"
+               asp-action="Calendar"
+               asp-route-year="@prev.Year"
+               asp-route-month="@prev.Month"
+               aria-label="Mês anterior">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+            <a class="cal-nav-btn"
+               asp-action="Calendar"
+               asp-route-year="@next.Year"
+               asp-route-month="@next.Month"
+               aria-label="Mês seguinte">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </div>
     </div>
-    <div class="cal-grid small fw-semibold text-center text-muted mb-1">
+
+    <!-- ═══ LEGENDA ═══ -->
+    <div class="cal-legend mb-3">
+        <span class="cal-legend-item"><span class="cal-dot cal-dot-flights"></span>Com voos</span>
+        <span class="cal-legend-item"><span class="cal-dot cal-dot-today"></span>Hoje</span>
+        <span class="cal-legend-item"><span class="cal-dot cal-dot-selected"></span>Selecionado</span>
+    </div>
+
+    <!-- ═══ GRELHA DO CALENDÁRIO ═══ -->
+    <div class="cal-grid cal-grid-head">
         <div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div><div>Dom</div>
     </div>
-    <div class="cal-grid mb-4">
+
+    <div class="cal-grid cal-grid-body">
         @foreach (var d in Model.Days)
         {
-            var extra = d.IsCurrentMonth ? "" : "muted";
+            var classes = "cal-day";
+            if (!d.IsCurrentMonth)
+                classes += " muted";
             if (d.IsToday)
-                extra += " today";
+                classes += " today";
             if (Model.SelectedDate == d.Date)
-                extra += " selected";
+                classes += " selected";
+            if (d.FlightCount > 0 && d.IsCurrentMonth)
+                classes += " has-flights";
+
             if (d.FlightCount > 0 && d.IsCurrentMonth)
             {
-                <a class="cal-day has-flights d-flex flex-column align-items-center justify-content-center p-2 @extra"
+                <a class="@classes"
                    asp-action="Calendar"
                    asp-route-year="@Model.Year"
                    asp-route-month="@Model.Month"
-                   asp-route-day="@d.Date.ToString("yyyy-MM-dd")">
-                    <span class="fw-bold">@d.Date.Day</span>
-                    <span class="badge bg-success">@d.FlightCount</span>
+                   asp-route-day="@d.Date.ToString("yyyy-MM-dd")"
+                   aria-label="@d.Date.ToString("dd 'de' MMMM", pt) — @d.FlightCount voos">
+                    <span class="cal-day-num">@d.Date.Day</span>
+                    <span class="cal-day-badge">@d.FlightCount</span>
                 </a>
             }
             else
             {
-                <div class="cal-day d-flex align-items-center justify-content-center text-muted @extra">@d.Date.Day</div>
+                <div class="@classes" aria-label="@d.Date.ToString("dd 'de' MMMM", pt)">
+                    <span class="cal-day-num">@d.Date.Day</span>
+                </div>
             }
         }
     </div>
+
+    <!-- ═══ VOOS DO DIA SELECIONADO ═══ -->
     @if (Model.SelectedDate != null)
     {
-        <h2 class="h5">@Model.SelectedDate.Value.ToString("dddd, dd MMMM", new System.Globalization.CultureInfo("pt-PT"))</h2>
-        @if (!Model.FlightsOfDay.Any())
-        {
-            <p class="text-muted">Não há voos neste dia.</p>
-        }
-        else
-        {
-            <div class="list-group shadow-sm rounded-4 overflow-hidden">
-                @foreach (var f in Model.FlightsOfDay)
-                {
-                    <div class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-                        <div>
-                            <strong>@f.FlightNumber</strong> · @f.AirlineName
-                            <div class="small text-muted">
-                                Lisboa → @f.DestinationCity (@f.DestinationCode)
-                                · @f.DepartureTime.ToString("HH:mm")
-                                · @f.DurationLabel
+        <section class="cal-flights-section mt-5">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                <h2 class="cal-flights-title mb-0">
+                    <i class="bi bi-calendar-check text-lime me-2"></i>
+                    @Model.SelectedDate.Value.ToString("dddd, dd MMMM", pt)
+                </h2>
+                <span class="text-muted small">
+                    @Model.FlightsOfDay.Count() voo(s) disponível(is)
+                </span>
+            </div>
+
+            @if (!Model.FlightsOfDay.Any())
+            {
+                <div class="cal-empty">
+                    <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
+                    <p class="mb-0">Não há voos neste dia.</p>
+                </div>
+            }
+            else
+            {
+                <div class="cal-flights-list">
+                    @foreach (var f in Model.FlightsOfDay)
+                    {
+                        <article class="cal-flight-card">
+                            <div class="cal-flight-main">
+                                <div class="cal-flight-route">
+                                    <span class="cal-flight-code">LIS</span>
+                                    <i class="bi bi-arrow-right cal-flight-arrow"></i>
+                                    <span class="cal-flight-code">@f.DestinationCode</span>
+                                </div>
+                                <div class="cal-flight-dest">
+                                    Lisboa → <strong>@f.DestinationCity</strong>
+                                </div>
+                            </div>
+
+                            <div class="cal-flight-meta">
+                                <div class="cal-flight-meta-item">
+                                    <i class="bi bi-airplane"></i>
+                                    <span>@f.FlightNumber · @f.AirlineName</span>
+                                </div>
+                                <div class="cal-flight-meta-item">
+                                    <i class="bi bi-clock"></i>
+                                    <span>@f.DepartureTime.ToString("HH:mm") · @f.DurationLabel</span>
+                                </div>
                                 @if (f.Temperature.HasValue)
                                 {
-                                    <span> · @Math.Round(f.Temperature.Value)°C @f.WeatherDescription</span>
+                                    <div class="cal-flight-meta-item">
+                                        <i class="bi bi-cloud-sun"></i>
+                                        <span>@Math.Round(f.Temperature.Value)°C @f.WeatherDescription</span>
+                                    </div>
                                 }
                                 @if (f.IsAdverseWeather)
                                 {
-                                    <span class="badge bg-warning text-dark">Tempo adverso</span>
+                                    <span class="cal-flight-warn">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> Tempo adverso
+                                    </span>
                                 }
                             </div>
-                        </div>
-                        <div class="text-md-end">
-                            <div class="fw-bold text-success">@f.BasePrice.ToString("C")</div>
-                            <a class="btn btn-primary btn-sm"
-                               asp-action="SelectSeat" asp-route-flightId="@f.Id">Escolher lugar</a>
-                        </div>
-                    </div>
-                }
-            </div>
-        }
+
+                            <div class="cal-flight-action">
+                                <div class="cal-flight-price">@f.BasePrice.ToString("C")</div>
+                                <a class="cal-flight-btn"
+                                   asp-action="SelectSeat"
+                                   asp-route-flightId="@f.Id">
+                                    <i class="bi bi-check2-circle me-1"></i>Escolher lugar
+                                </a>
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
     }
     else
     {
-        <p class="text-muted">Clique num dia com badge verde para ver os voos.</p>
+        <div class="cal-empty mt-5">
+            <i class="bi bi-hand-index-thumb fs-1 d-block mb-2 opacity-50"></i>
+            <p class="mb-0">Clique num dia com badge verde para ver os voos.</p>
+        </div>
     }
 </div>

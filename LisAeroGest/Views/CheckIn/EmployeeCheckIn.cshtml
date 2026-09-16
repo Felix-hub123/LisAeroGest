@@ -10,7 +10,7 @@
         <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-secondary btn-sm me-3">
             <i class="bi bi-arrow-left"></i>
         </a>
-        <h2 class="fw-bold mb-0">
+        <h2 class="fw-bold mb-0 text-white">
             <i class="bi bi-person-check text-success me-2"></i>Balcão de Check-in Presencial
         </h2>
     </div>
@@ -34,11 +34,11 @@
     <!-- Formulário de Pesquisa -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body p-4">
-            <h5 class="fw-bold card-title mb-3">Pesquisar Passageiro / Bilhete</h5>
+            <h5 class="fw-bold card-title mb-3 text-white">Pesquisar Passageiro / Bilhete</h5>
             <form asp-action="EmployeeCheckIn" method="post" class="row g-3">
                 <div class="col-md-9">
                     <div class="input-group input-group-lg">
-                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
                         <input type="text" name="searchTerm" class="form-control"
                                placeholder="Escreva o ID do Bilhete ou Documento (Passaporte / CC / NIF)..." required autocomplete="off" />
                     </div>
@@ -69,19 +69,19 @@
                     <!-- Dados do Passageiro -->
                     <div class="col-md-6 border-end">
                         <h6 class="text-muted fw-bold text-uppercase small mb-3">Passageiro</h6>
-                        <p class="mb-1"><strong>Nome:</strong> @Model.Passenger?.FirstName @Model.Passenger?.LastName</p>
-                        <p class="mb-1"><strong>Documento:</strong> @(Model.Passenger?.DocumentNumber ?? "—")</p>
-                        <p class="mb-1"><strong>Bagagem Extra:</strong> @(Model.ExtraLuggage ? "Sim" : "Não")</p>
-                        <p class="mb-1"><strong>Refeição:</strong> @(Model.MealIncluded ? "Sim" : "Não")</p>
+                        <p class="mb-1 text-white"><strong>Nome:</strong> @Model.Passenger?.FirstName @Model.Passenger?.LastName</p>
+                        <p class="mb-1 text-white"><strong>Documento:</strong> @(Model.Passenger?.DocumentNumber ?? "—")</p>
+                        <p class="mb-1 text-white"><strong>Bagagem Extra:</strong> @(Model.ExtraLuggage ? "Sim" : "Não")</p>
+                        <p class="mb-1 text-white"><strong>Refeição:</strong> @(Model.MealIncluded ? "Sim" : "Não")</p>
                     </div>
 
                     <!-- Dados do Voo -->
                     <div class="col-md-6">
                         <h6 class="text-muted fw-bold text-uppercase small mb-3">Detalhes do Voo</h6>
-                        <p class="mb-1"><strong>Voo:</strong> @Model.Flight?.FlightNumber (@Model.Flight?.Airline?.Name)</p>
-                        <p class="mb-1"><strong>Rota:</strong> @Model.Flight?.OriginAirport?.IATACode → @Model.Flight?.DestinationAirport?.IATACode</p>
-                        <p class="mb-1"><strong>Partida:</strong> @Model.Flight?.DepartureTime.ToString("dd/MM/yyyy HH:mm")</p>
-                        <p class="mb-1"><strong>Lugar:</strong> <span class="badge bg-secondary">@(Model.Seat?.Code ?? "N/A")</span></p>
+                        <p class="mb-1 text-white"><strong>Voo:</strong> @Model.Flight?.FlightNumber (@Model.Flight?.Airline?.Name)</p>
+                        <p class="mb-1 text-white"><strong>Rota:</strong> @Model.Flight?.OriginAirport?.IATACode → @Model.Flight?.DestinationAirport?.IATACode</p>
+                        <p class="mb-1 text-white"><strong>Partida:</strong> @Model.Flight?.DepartureTime.ToString("dd/MM/yyyy HH:mm")</p>
+                        <p class="mb-1 text-white"><strong>Lugar:</strong> <span class="badge bg-secondary">@(Model.Seat?.Code ?? "N/A")</span></p>
                     </div>
                 </div>
 

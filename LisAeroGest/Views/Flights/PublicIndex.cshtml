@@ -6,9 +6,9 @@
 
 <div class="container mt-4">
     <!-- Cabeçalho -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-            <h1 class="h2 mb-1">
+            <h1 class="h2 mb-1 text-white">
                 <i class="bi bi-airplane me-2 text-primary"></i>Estado dos Voos
             </h1>
             <p class="text-muted small mb-0">
@@ -47,7 +47,7 @@
 
     <!-- Filtros -->
     <div class="card shadow-sm mb-4">
-        <div class="card-header bg-light fw-bold py-3">
+        <div class="card-header fw-bold py-3 text-white">
             <i class="bi bi-funnel me-1"></i> Filtros de Pesquisa
         </div>
         <div class="card-body">
@@ -122,11 +122,11 @@
                                              onerror="this.src='/images/airlines/noimage.png'" />
                                         <span class="ms-2">@(flight.Airline?.Name ?? "-")</span>
                                     </td>
-                                    <td class="fw-bold">@flight.FlightNumber</td>
+                                    <td class="fw-bold text-white">@flight.FlightNumber</td>
                                     <td>
-                                        <span class="badge bg-light text-dark border">@(flight.OriginAirport?.IATACode ?? "N/A")</span>
+                                        <span class="badge route-badge">@(flight.OriginAirport?.IATACode ?? "N/A")</span>
                                         <i class="bi bi-arrow-right mx-1 text-muted"></i>
-                                        <span class="badge bg-light text-dark border">@(flight.DestinationAirport?.IATACode ?? "N/A")</span>
+                                        <span class="badge route-badge">@(flight.DestinationAirport?.IATACode ?? "N/A")</span>
                                         <br />
                                         <small class="text-muted">
                                             @(flight.OriginAirport?.City ?? "N/A") → @(flight.DestinationAirport?.City ?? "N/A")
@@ -202,7 +202,7 @@
     {
         <div class="row mt-4">
             <div class="col-12">
-                <div class="alert alert-primary d-flex align-items-center">
+                <div class="alert alert-primary d-flex align-items-center flex-wrap gap-2">
                     <i class="bi bi-info-circle-fill fs-4 me-3"></i>
                     <div>
                         <strong>Deseja comprar um bilhete?</strong>

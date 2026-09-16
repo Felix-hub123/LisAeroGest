@@ -19,7 +19,7 @@
     <!-- Cabeçalho -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-            <h2 class="fw-bold mb-1">
+            <h2 class="fw-bold mb-1 text-white">
                 <i class="bi bi-buildings-fill text-primary me-2"></i>Companhias Aéreas
             </h2>
             <span class="text-muted small">@Model.Count() companhias registadas</span>
@@ -76,9 +76,10 @@
                                         <img src="@ImageHelper.GetImageUrl(airline.ImageId, "airlines")"
                                              alt="@airline.Name"
                                              class="rounded"
-                                             style="width:48px; height:48px; object-fit:cover;" />
+                                             style="width:48px; height:48px; object-fit:cover;"
+                                             onerror="this.src='/images/airlines/noimage.png'" />
                                     </td>
-                                    <td class="fw-semibold">@airline.Name</td>
+                                    <td class="fw-semibold text-white">@airline.Name</td>
                                     <td>
                                         <span class="badge bg-primary fs-6">@airline.IATACode</span>
                                     </td>

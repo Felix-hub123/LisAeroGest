@@ -27,9 +27,9 @@
 }
 
 <div class="card shadow-sm mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center bg-light">
+    <div class="card-header d-flex justify-content-between align-items-center">
         <div>
-            <h5 class="mb-0">
+            <h5 class="mb-0 text-white">
                 @if (Model.IsClosed)
                 {
                     <span class="badge bg-secondary me-1"><i class="bi bi-lock-fill me-1"></i>Fechado</span>
@@ -37,7 +37,7 @@
                 @Model.Title
             </h5>
             <small class="text-muted">
-                Por <strong>@(Model.CreatedBy?.FullName ?? "N/A")</strong> &middot; @Model.Category &middot; @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                Por <strong class="text-white">@(Model.CreatedBy?.FullName ?? "N/A")</strong> &middot; @Model.Category &middot; @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")
             </small>
         </div>
 
@@ -65,15 +65,15 @@
         }
     </div>
     <div class="card-body">
-        <p class="mb-0" style="white-space: pre-line;">@Model.Content</p>
+        <p class="mb-0 text-white" style="white-space: pre-line;">@Model.Content</p>
     </div>
 </div>
 
-<h5 class="mb-3"><i class="bi bi-chat-left-text me-2"></i>Comentários (@approvedCount)</h5>
+<h5 class="mb-3 text-white"><i class="bi bi-chat-left-text me-2"></i>Comentários (@approvedCount)</h5>
 
 @if (Model.Comments == null || !Model.Comments.Any())
 {
-    <div class="alert alert-light border">Nenhum comentário visível de momento.</div>
+    <div class="alert alert-info">Nenhum comentário visível de momento.</div>
 }
 else
 {
@@ -84,7 +84,7 @@ else
             ? comment.CreatedBy.FirstName.Substring(0, 1).ToUpper()
             : "?";
 
-        <div class="card mb-2 @(!comment.IsApproved ? "border-warning bg-light" : "")">
+        <div class="card mb-2 @(!comment.IsApproved ? "pending-comment" : "")">
             <div class="card-body py-2">
                 <div class="d-flex justify-content-between align-items-center mb-1">
                     <div class="d-flex align-items-center gap-2">
@@ -92,7 +92,7 @@ else
                              style="width:32px; height:32px; font-size:0.8rem;">
                             @initial
                         </div>
-                        <span class="fw-semibold small">@authorName</span>
+                        <span class="fw-semibold small text-white">@authorName</span>
 
                         @if (!comment.IsApproved)
                         {
@@ -106,7 +106,7 @@ else
                     </small>
                 </div>
 
-                <p class="mb-2 ms-5 text-secondary" style="white-space: pre-line;">@comment.Content</p>
+                <p class="mb-2 ms-5 text-muted" style="white-space: pre-line;">@comment.Content</p>
 
                 @if (!comment.IsApproved && User.IsInRole("Admin"))
                 {

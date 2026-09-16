@@ -22,7 +22,7 @@
                 <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3">
                     <i class="bi bi-arrow-left"></i>
                 </a>
-                <h2 class="fw-bold mb-0">
+                <h2 class="fw-bold mb-0 text-white">
                     <i class="bi bi-info-circle-fill text-info me-2"></i>Detalhes da Companhia
                 </h2>
             </div>
@@ -33,13 +33,14 @@
                         <img src="@ImageHelper.GetImageUrl(Model.ImageId, "airlines")"
                              alt="@Model.Name"
                              class="rounded shadow-sm"
-                             style="height:120px; object-fit:cover;" />
+                             style="height:120px; object-fit:cover;"
+                             onerror="this.src='/images/airlines/noimage.png'" />
                     </div>
 
                     <table class="table table-borderless">
                         <tr>
                             <th class="text-muted" style="width:35%">Nome</th>
-                            <td class="fw-semibold">@Model.Name</td>
+                            <td class="fw-semibold text-white">@Model.Name</td>
                         </tr>
                         <tr>
                             <th class="text-muted">Código IATA</th>

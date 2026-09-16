@@ -12,15 +12,16 @@
             <div class="col-12 col-md-9 col-lg-7 col-xl-5">
                 <div class="card auth-card">
                     <div class="auth-header">
-                        <i class="bi bi-airplane-fill floating-plane"></i>
-                        <div class="auth-logo">
-                            <i class="bi bi-airplane-fill"></i>
-                        </div>
+                        <a asp-controller="Home" asp-action="Index" class="auth-back-btn" title="Voltar ao início">
+                            <i class="bi bi-arrow-left"></i>
+                        </a>
+
+                       
                         <h1>LisAeroGest</h1>
                         <p>Plataforma de Gestão Aeroportuária de Lisboa</p>
                         <div class="auth-wave">
                             <svg viewBox="0 0 1440 60" preserveAspectRatio="none">
-                                <path d="M0,32 C360,80 720,0 1080,32 C1260,48 1380,32 1440,32 L1440,60 L0,60 Z" fill="white" />
+                                <path d="M0,32 C360,80 720,0 1080,32 C1260,48 1380,32 1440,32 L1440,60 L0,60 Z" fill="#111827" />
                             </svg>
                         </div>
                     </div>
@@ -74,7 +75,7 @@
                         </form>
                     </div>
 
-                    <div class="card-footer bg-white text-center py-3 border-0">
+                    <div class="card-footer text-center py-3 border-0">
                         <div class="mb-2">
                             <a asp-controller="Home" asp-action="Index" class="text-muted small text-decoration-none">
                                 <i class="bi bi-arrow-left me-1"></i>Voltar ao início

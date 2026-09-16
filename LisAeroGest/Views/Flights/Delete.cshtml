@@ -45,7 +45,7 @@
                         </tr>
                         <tr>
                             <th class="text-muted">Companhia</th>
-                            <td class="fw-semibold">@Model.Airline?.Name</td>
+                            <td class="fw-semibold text-white">@Model.Airline?.Name</td>
                         </tr>
                         <tr>
                             <th class="text-muted">Origem</th>
@@ -83,12 +83,12 @@
                         </tr>
                         <tr>
                             <th class="text-muted">Preço Base</th>
-                            <td class="fw-semibold">@Model.BasePrice.ToString("F2") €</td>
+                            <td class="fw-semibold text-white">@Model.BasePrice.ToString("F2") €</td>
                         </tr>
                     </table>
 
                     <!-- Caixa de confirmação por digitação -->
-                    <div class="mb-4 p-3 bg-light rounded border">
+                    <div class="mb-4 p-3 confirm-delete-box rounded border">
                         <label class="form-label fw-semibold text-danger">
                             <i class="bi bi-keyboard me-1"></i>
                             Para confirmar, escreva o número do voo

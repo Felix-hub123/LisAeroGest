@@ -1336,7 +1336,9 @@ namespace LisAeroGest.Controllers
                 string.Equals(seat.SeatClass, "Business", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(seat.SeatClass, "Executiva", StringComparison.OrdinalIgnoreCase);
 
-            string css = occupied ? "seat-occupied" : (business ? "seat-business" : "seat-available");
+            string css = occupied
+                ? "seat-occupied"
+                : (business ? "seat-business" : "seat-available");
 
             return new SeatMapCellViewModel
             {

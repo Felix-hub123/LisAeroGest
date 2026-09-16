@@ -3,12 +3,26 @@
     ViewData["Title"] = "Reserva Confirmada!";
     var isGuest = ViewBag.IsGuest ?? false;
     var isPaid = Model.Ticket?.Status == "Paid";
+
+    // ✅ Declarado no topo para evitar problemas de scope no Razor
+    var wa = isGuest && isPaid
+        ? Uri.EscapeDataString(
+            $"LisAeroGest — pagamento confirmado. Reserva #{ViewBag.TicketDisplayId}. Crie conta no site com o mesmo email para descarregar o bilhete.")
+        : "";
 }
-<div class="container mt-5">
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/checkoutConfirmation.css" asp-append-version="true" />
+}
+
+<div class="container mt-5 mb-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="card-header bg-success text-white text-center py-4">
+
+            <div class="card checkout-card border-0 shadow-lg rounded-4 overflow-hidden">
+
+                <!-- ═══ HEADER ═══ -->
+                <div class="checkout-header text-white text-center py-4">
                     <div class="display-1">
                         <i class="bi bi-check-circle-fill"></i>
                     </div>
@@ -33,19 +47,24 @@
                         }
                     </p>
                 </div>
+
+                <!-- ═══ BODY ═══ -->
                 <div class="card-body p-4">
+
+                    <!-- Nº Reserva -->
                     <div class="text-center mb-4">
                         <small class="text-muted d-block">Número da reserva</small>
-                        <div class="display-6 fw-bold text-primary">@ViewBag.TicketDisplayId</div>
+                        <div class="checkout-ticket-id">@ViewBag.TicketDisplayId</div>
                         <span class="badge @(isPaid ? "bg-success" : "bg-warning text-dark") mt-1">
                             @Model.Ticket?.Status
                         </span>
+
                         @if (!isPaid)
                         {
                             <br />
                             <small class="text-muted">
                                 A reserva expira em 30 minutos.
-                                <span class="fw-bold" id="countdownTimer">29:59</span>
+                                <span class="fw-bold text-lime" id="countdownTimer">29:59</span>
                             </small>
                         }
                         else if (isGuest)
@@ -58,144 +77,159 @@
                         else
                         {
                             <br />
-                            <small class="text-success">Pagamento confirmado. O bilhete está na sua conta.</small>
+                            <small class="text-lime">
+                                Pagamento confirmado. O bilhete está na sua conta.
+                            </small>
                         }
                     </div>
 
+                    <!-- Voo + Lugar -->
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
-                            <div class="bg-light rounded-3 p-3">
+                            <div class="checkout-info-box">
                                 <small class="text-muted d-block">Voo</small>
-                                <strong>@Model.Flight?.FlightNumber</strong>
+                                <strong class="text-white">@Model.Flight?.FlightNumber</strong>
                                 <br />
-                                <small>@Model.Flight?.OriginAirport?.IATACode → @Model.Flight?.DestinationAirport?.IATACode</small>
+                                <small class="text-white-50">
+                                    @Model.Flight?.OriginAirport?.IATACode → @Model.Flight?.DestinationAirport?.IATACode
+                                </small>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="bg-light rounded-3 p-3">
+                            <div class="checkout-info-box">
                                 <small class="text-muted d-block">Lugar</small>
-                                <strong>@Model.Seat?.Code</strong>
+                                <strong class="text-white">@Model.Seat?.Code</strong>
                                 <br />
-                                <small>@Model.Seat?.SeatClass</small>
+                                <small class="text-white-50">@Model.Seat?.SeatClass</small>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Partida + Chegada -->
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
-                            <div class="bg-light rounded-3 p-3">
+                            <div class="checkout-info-box">
                                 <small class="text-muted d-block">Partida</small>
-                                <strong>@Model.Flight?.DepartureTime.ToString("dd/MM/yyyy HH:mm")</strong>
+                                <strong class="text-white">
+                                    @Model.Flight?.DepartureTime.ToString("dd/MM/yyyy HH:mm")
+                                </strong>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="bg-light rounded-3 p-3">
+                            <div class="checkout-info-box">
                                 <small class="text-muted d-block">Chegada</small>
-                                <strong>@Model.Flight?.ArrivalTime.ToString("dd/MM/yyyy HH:mm")</strong>
+                                <strong class="text-white">
+                                    @Model.Flight?.ArrivalTime.ToString("dd/MM/yyyy HH:mm")
+                                </strong>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-light rounded-3 p-3 mb-4">
+                    <!-- Preços -->
+                    <div class="checkout-info-box mb-4">
                         <div class="d-flex justify-content-between">
-                            <span>Preço Base</span>
-                            <strong>@((Model.TotalPrice - (Model.ExtraLuggage ? 30m : 0m) - (Model.MealIncluded ? 15m : 0m)).ToString("C2"))</strong>
+                            <span class="text-muted">Preço Base</span>
+                            <strong class="text-white">
+                                @((Model.TotalPrice - (Model.ExtraLuggage ? 30m : 0m) - (Model.MealIncluded ? 15m : 0m)).ToString("C2"))
+                            </strong>
                         </div>
                         @if (Model.ExtraLuggage)
                         {
                             <div class="d-flex justify-content-between">
-                                <span>Bagagem Extra</span>
-                                <strong>+30,00 €</strong>
+                                <span class="text-muted">Bagagem Extra</span>
+                                <strong class="text-white">+30,00 €</strong>
                             </div>
                         }
                         @if (Model.MealIncluded)
                         {
                             <div class="d-flex justify-content-between">
-                                <span>Refeição</span>
-                                <strong>+15,00 €</strong>
+                                <span class="text-muted">Refeição</span>
+                                <strong class="text-white">+15,00 €</strong>
                             </div>
                         }
-                        <hr />
+                        <hr class="border-secondary" />
                         <div class="d-flex justify-content-between fw-bold fs-5">
-                            <span>Total</span>
-                            <span class="text-success">@Model.TotalPrice.ToString("C2")</span>
+                            <span class="text-white">Total</span>
+                            <span class="text-lime">@Model.TotalPrice.ToString("C2")</span>
                         </div>
                     </div>
 
-                    <div class="bg-light rounded-3 p-3 mb-4">
-                        <h6 class="fw-bold">Passageiro</h6>
-                        <p class="mb-0"><strong>@Model.Passenger?.FullName</strong></p>
-                        <p class="mb-0"><small>@Model.Passenger?.Email</small></p>
-                        <p class="mb-0"><small>Doc: @Model.Passenger?.DocumentNumber</small></p>
+                    <!-- Passageiro -->
+                    <div class="checkout-info-box mb-4">
+                        <h6 class="fw-bold text-lime">
+                            <i class="bi bi-person-fill me-1"></i>Passageiro
+                        </h6>
+                        <p class="mb-0 text-white"><strong>@Model.Passenger?.FullName</strong></p>
+                        <p class="mb-0"><small class="text-muted">@Model.Passenger?.Email</small></p>
+                        <p class="mb-0"><small class="text-muted">Doc: @Model.Passenger?.DocumentNumber</small></p>
                     </div>
 
+                    <!-- ═══ CTA: Guest + Não Pago ═══ -->
                     @if (isGuest && !isPaid)
                     {
-                        <div class="card border-0 shadow-lg rounded-4 mt-4">
-                            <div class="card-body p-4">
-                                <h5 class="fw-bold mb-1">Crie a sua conta</h5>
-                                <p class="text-muted mb-2">
-                                    Com conta pode gerir reservas, pagar e mais tarde descarregar o bilhete.
-                                </p>
-                                <a asp-controller="Account" asp-action="Register"
-                                   asp-route-email="@Model.Passenger?.Email"
-                                   asp-route-firstName="@Model.Passenger?.FirstName"
-                                   asp-route-lastName="@Model.Passenger?.LastName"
-                                   class="btn btn-primary btn-lg">
-                                    Criar conta
-                                </a>
-                            </div>
+                        <div class="checkout-cta-card">
+                            <h5 class="fw-bold mb-1 text-white">Crie a sua conta</h5>
+                            <p class="text-muted mb-3">
+                                Com conta pode gerir reservas, pagar e mais tarde descarregar o bilhete.
+                            </p>
+                            <a asp-controller="Account" asp-action="Register"
+                               asp-route-email="@Model.Passenger?.Email"
+                               asp-route-firstName="@Model.Passenger?.FirstName"
+                               asp-route-lastName="@Model.Passenger?.LastName"
+                               class="btn btn-lime btn-lg">
+                                <i class="bi bi-person-plus me-1"></i>Criar conta
+                            </a>
                         </div>
                     }
+                    <!-- ═══ CTA: Guest + Pago ═══ -->
                     else if (isGuest && isPaid)
                     {
-                        var wa = Uri.EscapeDataString(
-                        $"LisAeroGest — pagamento confirmado. Reserva #{ViewBag.TicketDisplayId}. Crie conta no site com o mesmo email para descarregar o bilhete.");
-
-                        <div class="card border-0 shadow-lg rounded-4 mt-4">
-                            <div class="card-body p-4">
-                                <h5 class="fw-bold mb-1 text-success">Pagamento Confirmado!</h5>
-                                <p class="text-muted mb-2">
-                                    O PDF do bilhete só fica disponível depois de criar conta com o mesmo email.
-                                </p>
-                                <div class="d-flex flex-wrap gap-3 mt-3">
-                                    <a asp-controller="Account" asp-action="Register"
-                                       asp-route-email="@Model.Passenger?.Email"
-                                       asp-route-firstName="@Model.Passenger?.FirstName"
-                                       asp-route-lastName="@Model.Passenger?.LastName"
-                                       class="btn btn-primary btn-lg">
-                                        Criar conta e ver o bilhete
-                                    </a>
-                                    <a class="btn btn-success btn-lg" href="https://wa.me/?text=@wa" target="_blank">
-                                        WhatsApp
-                                    </a>
-                                </div>
-                            </div>
+                    <div class="checkout-cta-card">
+                        <h5 class="fw-bold mb-1 text-lime">
+                            <i class="bi bi-check-circle-fill me-1"></i>Pagamento Confirmado!
+                        </h5>
+                        <p class="text-muted mb-3">
+                            O PDF do bilhete só fica disponível depois de criar conta com o mesmo email.
+                        </p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a asp-controller="Account" asp-action="Register"
+                               asp-route-email="@Model.Passenger?.Email"
+                               asp-route-firstName="@Model.Passenger?.FirstName"
+                               asp-route-lastName="@Model.Passenger?.LastName"
+                               class="btn btn-lime btn-lg">
+                                <i class="bi bi-person-plus me-1"></i>Criar conta e ver o bilhete
+                            </a>
+                            <a class="btn btn-success btn-lg" href="https://wa.me/?text=@wa" target="_blank">
+                                <i class="bi bi-whatsapp me-1"></i>WhatsApp
+                            </a>
                         </div>
+                    </div>
                     }
+                    <!-- ═══ CTA: Logado + Pago ═══ -->
                     else if (!isGuest && isPaid)
                     {
-                        <div class="card border-0 shadow-sm rounded-4 mt-4">
-                            <div class="card-body p-4 text-center">
-                                <h5 class="fw-bold">Pagamento Confirmado!</h5>
-                                <p class="text-muted">O bilhete está na sua conta.</p>
-                                <div class="d-flex flex-wrap justify-content-center gap-3">
-                                    <a asp-controller="Shop" asp-action="MyTickets" class="btn btn-primary">
-                                        Os meus bilhetes
-                                    </a>
-                                    <a asp-controller="Shop" asp-action="DownloadTicketPdf"
-                                       asp-route-ticketId="@Model.Ticket?.Id"
-                                       class="btn btn-outline-primary">
-                                        Descarregar PDF
-                                    </a>
-                                </div>
-                            </div>
+                    <div class="checkout-cta-card text-center">
+                        <h5 class="fw-bold text-lime">
+                            <i class="bi bi-check-circle-fill me-1"></i>Pagamento Confirmado!
+                        </h5>
+                        <p class="text-muted">O bilhete está na sua conta.</p>
+                        <div class="d-flex flex-wrap justify-content-center gap-2">
+                            <a asp-controller="Shop" asp-action="MyTickets" class="btn btn-lime">
+                                <i class="bi bi-ticket-perforated me-1"></i>Os meus bilhetes
+                            </a>
+                            <a asp-controller="Shop" asp-action="DownloadTicketPdf"
+                               asp-route-ticketId="@Model.Ticket?.Id"
+                               class="btn btn-outline-lime">
+                                <i class="bi bi-download me-1"></i>Descarregar PDF
+                            </a>
                         </div>
+                    </div>
                     }
 
+                    <!-- Voltar -->
                     <div class="text-center mt-4">
                         <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
-                            Voltar à Página Inicial
+                            <i class="bi bi-arrow-left me-1"></i>Voltar à Página Inicial
                         </a>
                     </div>
                 </div>
@@ -203,6 +237,7 @@
         </div>
     </div>
 </div>
+
 @section Scripts {
     @if (!isPaid)
     {

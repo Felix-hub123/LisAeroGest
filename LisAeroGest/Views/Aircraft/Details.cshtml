@@ -24,7 +24,7 @@
                 <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3" title="Voltar à lista">
                     <i class="bi bi-arrow-left"></i>
                 </a>
-                <h2 class="fw-bold mb-0">
+                <h2 class="fw-bold mb-0 text-white">
                     <i class="bi bi-airplane-engines text-info me-2"></i>Detalhes da Aeronave
                 </h2>
             </div>
@@ -36,7 +36,8 @@
                     <img src="@ImageHelper.GetImageUrl(Model.ImageId, "aircraft")"
                          alt="@Model.Brand @Model.Model"
                          class="card-img-top"
-                         style="height: 240px; object-fit: cover;" />
+                         style="height: 240px; object-fit: cover;"
+                         onerror="this.src='/images/aircraft/noimage.png'" />
                 </div>
 
                 <div class="card-body p-4">
@@ -44,7 +45,7 @@
                     <!-- Título & Status Operacional -->
                     <div class="d-flex justify-content-between align-items-start mb-4">
                         <div>
-                            <h3 class="fw-bold mb-1">@Model.Brand @Model.Model</h3>
+                            <h3 class="fw-bold mb-1 text-white">@Model.Brand @Model.Model</h3>
                             <span class="text-muted small">ID do Registo: #@Model.Id</span>
                         </div>
                         <div>
@@ -93,7 +94,7 @@
                 </div>
 
                 <!-- Painel de Ações -->
-                <div class="card-footer bg-light p-3 d-flex gap-2">
+                <div class="card-footer p-3 d-flex gap-2">
                     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
                         <i class="bi bi-pencil-fill me-2"></i>Editar
                     </a>

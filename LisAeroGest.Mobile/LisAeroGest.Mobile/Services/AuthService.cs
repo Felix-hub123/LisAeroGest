@@ -1,11 +1,8 @@
-﻿using LisAeroGest.Mobile.Models;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Json;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.Http.Headers;
+using LisAeroGest.Mobile.Models;
 
 namespace LisAeroGest.Mobile.Services
 {
@@ -18,20 +15,14 @@ namespace LisAeroGest.Mobile.Services
         private readonly HttpClient _httpClient;
         private const string TokenKey = "jwt_token";
 
-        /// <summary>
-        /// Inicializa o AuthService com o HttpClient injectado.
-        /// </summary>
         public AuthService(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
 
         /// <summary>
-        /// Autentica o utilizador na API e guarda o token JWT em SecureStorage.
+        /// Autentica o utilizador na API e guarda o token JWT.
         /// </summary>
-        /// <param name="username">Email do utilizador.</param>
-        /// <param name="password">Password do utilizador.</param>
-        /// <returns>True se o login foi bem sucedido, False caso contrário.</returns>
         public async Task<bool> LoginAsync(string username, string password)
         {
             try
@@ -42,42 +33,78 @@ namespace LisAeroGest.Mobile.Services
                     Password = password
                 };
 
-                var response = await _httpClient.PostAsJsonAsync("api/Auth/login", loginDto);
+                var response = await _httpClient.PostAsJsonAsync(
+                    "api/Auth/login",
+                    loginDto);
 
-                if (response.IsSuccessStatusCode)
+                if (!response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<LoginResponseDto>();
-                    if (result != null && !string.IsNullOrEmpty(result.Token))
-                    {
-                        // Guarda o token de forma segura no dispositivo
-                        await SecureStorage.SetAsync(TokenKey, result.Token);
-
-                        // Adiciona o token ao header do HttpClient para pedidos futuros
-                        _httpClient.DefaultRequestHeaders.Authorization =
-                            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", result.Token);
-
-                        return true;
-                    }
+                    var errorBody = await response.Content.ReadAsStringAsync();
+                    Debug.WriteLine(
+                        $"[AuthService] Login falhou: {(int)response.StatusCode} - {errorBody}");
+                    return false;
                 }
 
-                Debug.WriteLine($"[AuthService] Login falhou: {response.StatusCode}");
-                return false;
+                var result = await response.Content
+                    .ReadFromJsonAsync<LoginResponseDto>();
+
+                if (result == null || string.IsNullOrWhiteSpace(result.Token))
+                {
+                    Debug.WriteLine("[AuthService] A API não devolveu um token JWT.");
+                    return false;
+                }
+
+                await SecureStorage.SetAsync(TokenKey, result.Token);
+                SetAuthorizationHeader(result.Token);
+
+                return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[AuthService] Erro: {ex.Message}");
+                Debug.WriteLine($"[AuthService] Erro no login: {ex.Message}");
                 return false;
             }
         }
 
         /// <summary>
-        /// Verifica se existe um token JWT válido guardado no dispositivo.
+        /// Verifica se existe um token JWT válido e ainda não expirado.
         /// </summary>
-        /// <returns>True se o utilizador está autenticado.</returns>
         public async Task<bool> IsAuthenticatedAsync()
         {
-            var token = await SecureStorage.GetAsync(TokenKey);
-            return !string.IsNullOrEmpty(token);
+            try
+            {
+                var token = await SecureStorage.GetAsync(TokenKey);
+
+                if (string.IsNullOrWhiteSpace(token))
+                    return false;
+
+                var handler = new JwtSecurityTokenHandler();
+
+                if (!handler.CanReadToken(token))
+                {
+                    Logout();
+                    return false;
+                }
+
+                var jwt = handler.ReadJwtToken(token);
+
+                if (jwt.ValidTo <= DateTime.UtcNow)
+                {
+                    Logout();
+                    return false;
+                }
+
+                SetAuthorizationHeader(token);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(
+                    $"[AuthService] Erro ao validar sessão: {ex.Message}");
+
+                Logout();
+                return false;
+            }
         }
 
         /// <summary>
@@ -89,10 +116,14 @@ namespace LisAeroGest.Mobile.Services
         }
 
         /// <summary>
-        /// Regista um novo utilizador na API e guarda o token JWT.
+        /// Regista um novo passageiro na API.
         /// </summary>
         public async Task<(bool Success, string? ErrorMessage)> RegisterAsync(
-            string firstName, string lastName, string email, string password, string documentNumber)
+            string firstName,
+            string lastName,
+            string email,
+            string password,
+            string documentNumber)
         {
             try
             {
@@ -106,38 +137,69 @@ namespace LisAeroGest.Mobile.Services
                     DocumentType = "CC"
                 };
 
-                var response = await _httpClient.PostAsJsonAsync("api/Auth/register", registerDto);
+                var response = await _httpClient.PostAsJsonAsync(
+                    "api/Auth/register",
+                    registerDto);
 
-                if (response.IsSuccessStatusCode)
+                if (!response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<LoginResponseDto>();
-                    if (result != null && !string.IsNullOrEmpty(result.Token))
+                    var errorBody = await response.Content.ReadAsStringAsync();
+                    Debug.WriteLine(
+                        $"[AuthService] Registo falhou: {(int)response.StatusCode} - {errorBody}");
+
+                    try
                     {
-                        await SecureStorage.SetAsync(TokenKey, result.Token);
-                        _httpClient.DefaultRequestHeaders.Authorization =
-                            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", result.Token);
-                        return (true, null);
+                        var error = System.Text.Json.JsonSerializer
+                            .Deserialize<ErrorResponseDto>(errorBody);
+
+                        return (
+                            false,
+                            error?.Message ?? "Não foi possível criar a conta."
+                        );
+                    }
+                    catch
+                    {
+                        return (false, "Não foi possível criar a conta.");
                     }
                 }
 
-                // Ler mensagem de erro da API
-                var error = await response.Content.ReadFromJsonAsync<ErrorResponseDto>();
-                return (false, error?.Message ?? "Não foi possível criar a conta.");
+                var result = await response.Content
+                    .ReadFromJsonAsync<LoginResponseDto>();
+
+                if (result == null || string.IsNullOrWhiteSpace(result.Token))
+                {
+                    return (
+                        false,
+                        "A conta foi criada, mas a API não devolveu o token."
+                    );
+                }
+
+                await SecureStorage.SetAsync(TokenKey, result.Token);
+                SetAuthorizationHeader(result.Token);
+
+                return (true, null);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[AuthService] Erro registo: {ex.Message}");
+                Debug.WriteLine($"[AuthService] Erro no registo: {ex.Message}");
                 return (false, "Erro de ligação. Verifique a internet.");
             }
         }
 
         /// <summary>
-        /// Termina a sessão do utilizador removendo o token do dispositivo.
+        /// Termina a sessão e remove o token local.
         /// </summary>
         public void Logout()
         {
             SecureStorage.Remove(TokenKey);
             _httpClient.DefaultRequestHeaders.Authorization = null;
         }
+
+        private void SetAuthorizationHeader(string token)
+        {
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+        }
     }
 }
+

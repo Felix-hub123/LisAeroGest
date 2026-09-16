@@ -1,26 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net;
+using System.Net.Http.Headers;
+using Microsoft.Maui.Storage;
 
 namespace LisAeroGest.Mobile.Services
 {
     public class AuthTokenHandler : DelegatingHandler
     {
-        protected override async Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            var token = await SecureStorage.GetAsync("jwt_token");
+        private const string TokenKey = "jwt_token";
 
-            if (!string.IsNullOrEmpty(token))
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            var token = await SecureStorage.GetAsync(TokenKey);
+
+            if (!string.IsNullOrWhiteSpace(token))
             {
                 request.Headers.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                    new AuthenticationHeaderValue("Bearer", token);
             }
 
-            return await base.SendAsync(request, cancellationToken);
-        }
+            var response = await base.SendAsync(
+                request,
+                cancellationToken);
 
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                SecureStorage.Remove(TokenKey);
+            }
+
+            return response;
+        }
     }
 }

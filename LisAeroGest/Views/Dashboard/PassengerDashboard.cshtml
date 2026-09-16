@@ -9,8 +9,8 @@
 <div class="container py-4">
 
     <!-- Cabeçalho -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="mb-0">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <h1 class="mb-0 text-white">
             <i class="bi bi-person-circle me-2"></i>O Meu Dashboard
         </h1>
         <a asp-controller="Shop" asp-action="Index" class="btn btn-primary">
@@ -21,10 +21,10 @@
     <!-- Boas-vindas -->
     <div class="card shadow-sm mb-4 border-0">
         <div class="card-body">
-            <h5 class="mb-1">Bem-vindo, @passenger?.FirstName!</h5>
+            <h5 class="mb-1 text-white">Bem-vindo, @passenger?.FirstName!</h5>
             <p class="text-muted mb-0">
                 <i class="bi bi-person-vcard me-1"></i>
-                Documento: <strong>@passenger?.DocumentType</strong> — @passenger?.DocumentNumber
+                Documento: <strong class="text-white">@passenger?.DocumentType</strong> — @passenger?.DocumentNumber
             </p>
         </div>
     </div>
@@ -56,7 +56,7 @@
     <!-- Próximos Voos -->
     @if (upcoming != null && upcoming.Any())
     {
-        <h5 class="mb-3">
+        <h5 class="mb-3 text-white">
             <i class="bi bi-airplane-engines me-1"></i>Próximos Voos
         </h5>
 
@@ -64,8 +64,6 @@
             @foreach (var ticket in upcoming)
             {
                 var podeCheckIn = ConverterHelper.CanCheckInOnline(ticket);
-
-
 
                 <div class="col-12">
                     <div class="card shadow-sm border-0">
@@ -86,7 +84,7 @@
                                             @ticket.Flight?.Airline?.Name
                                         </span>
                                     </div>
-                                    <div class="fs-5">
+                                    <div class="fs-5 text-white">
                                         <strong>@ticket.Flight?.OriginAirport?.IATACode</strong>
                                         <i class="bi bi-arrow-right mx-2 text-muted"></i>
                                         <strong>@ticket.Flight?.DestinationAirport?.IATACode</strong>
@@ -146,21 +144,23 @@
     <!-- Histórico -->
     @if (past != null && past.Any())
     {
-        <h5 class="mb-3">
+        <h5 class="mb-3 text-white">
             <i class="bi bi-clock-history me-1"></i>Histórico de Voos
         </h5>
 
         <div class="list-group mb-4">
             @foreach (var ticket in past)
             {
-                <div class="list-group-item text-muted">
+                <div class="list-group-item">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <strong>@ticket.Flight?.FlightNumber</strong> —
-                            @ticket.Flight?.OriginAirport?.IATACode →
-                            @ticket.Flight?.DestinationAirport?.IATACode
+                            <strong class="text-white">@ticket.Flight?.FlightNumber</strong>
+                            <span class="text-muted">
+                                — @ticket.Flight?.OriginAirport?.IATACode →
+                                @ticket.Flight?.DestinationAirport?.IATACode
+                            </span>
                             <br />
-                            <small>
+                            <small class="text-muted">
                                 <i class="bi bi-calendar3 me-1"></i>
                                 @ticket.Flight?.DepartureTime.ToString("dd/MM/yyyy HH:mm")
                             </small>

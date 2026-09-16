@@ -6,6 +6,15 @@
 }
 
 <style>
+    .fs-7 {
+        font-size: 0.75rem;
+    }
+
+    /* Wrapper do QR Code com fundo branco (para o QR ser legível em dark mode) */
+    .qr-wrapper {
+        background-color: #ffffff !important;
+    }
+
     @@media print {
         body * {
             visibility: hidden;
@@ -25,6 +34,17 @@
         .no-print {
             display: none !important;
         }
+        /* No papel, o cartão fica com fundo branco para poupar tinta */
+        .print-area .card-body,
+        .print-area .card-footer {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+        }
+
+        .print-area strong,
+        .print-area h3 {
+            color: #000000 !important;
+        }
     }
 </style>
 
@@ -42,7 +62,7 @@
             <div class="row g-3 mb-4">
                 <div class="col-8">
                     <small class="text-muted text-uppercase d-block fs-7">Passageiro</small>
-                    <strong class="fs-5 text-dark">@passengerName</strong>
+                    <strong class="fs-5 text-white">@passengerName</strong>
                 </div>
                 <div class="col-4 text-end">
                     <small class="text-muted text-uppercase d-block fs-7">Sequência</small>
@@ -55,7 +75,7 @@
             <div class="row g-3 my-2 text-center">
                 <div class="col-4">
                     <small class="text-muted text-uppercase d-block">Voo</small>
-                    <strong class="fs-5 text-dark">@(Model.Ticket?.Flight?.FlightNumber ?? "N/A")</strong>
+                    <strong class="fs-5 text-white">@(Model.Ticket?.Flight?.FlightNumber ?? "N/A")</strong>
                 </div>
                 <div class="col-4">
                     <small class="text-muted text-uppercase d-block">Portão (Gate)</small>
@@ -70,17 +90,19 @@
             <hr />
 
             <div class="text-center my-4">
-                @if (!string.IsNullOrEmpty(Model.QRCodeBase64))
-                {
-                    <img src="@Model.QRCodeBase64" alt="QR Code Boarding Pass"
-                         class="img-fluid border p-2 rounded shadow-sm" style="max-width: 160px;" />
-                }
-                else
-                {
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=@(Uri.EscapeDataString(Model.QRCode ?? "BOARDING"))"
-                         alt="QR Code Boarding Pass"
-                         class="img-fluid border p-2 rounded shadow-sm" style="max-width: 160px;" />
-                }
+                <div class="d-inline-block qr-wrapper p-2 rounded shadow-sm">
+                    @if (!string.IsNullOrEmpty(Model.QRCodeBase64))
+                    {
+                        <img src="@Model.QRCodeBase64" alt="QR Code Boarding Pass"
+                             class="img-fluid" style="max-width: 160px;" />
+                    }
+                    else
+                    {
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=@(Uri.EscapeDataString(Model.QRCode ?? "BOARDING"))"
+                             alt="QR Code Boarding Pass"
+                             class="img-fluid" style="max-width: 160px;" />
+                    }
+                </div>
                 <small class="d-block text-muted mt-2">Apresente este código no portão de embarque</small>
             </div>
 
@@ -93,7 +115,7 @@
             </div>
         </div>
 
-        <div class="card-footer bg-light p-3 text-center no-print">
+        <div class="card-footer p-3 text-center no-print">
             <a asp-action="DownloadBoardingPassPdf" asp-route-boardingPassId="@Model.Id" class="btn btn-success me-2">
                 <i class="bi bi-file-earmark-pdf me-1"></i> Descarregar PDF
             </a>

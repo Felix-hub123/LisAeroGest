@@ -3,109 +3,257 @@
     ViewData["Title"] = "Voos a partir de Lisboa";
 }
 
-<section class="hero-section hero-lisaerogest rounded-4 overflow-hidden mb-4">
+<!-- ═══ HERO ═══ -->
+<section class="hero-section hero-lisaerogest rounded-4 overflow-hidden" data-aos="fade-in">
     <div class="hero-overlay"></div>
     <div class="container position-relative py-5 text-white">
         <div class="row align-items-center">
-            <div class="col-lg-7">
-                <span class="badge bg-white text-primary rounded-pill mb-3">Aeroporto de Lisboa · LIS</span>
-                <h1 class="display-5 fw-bold mb-3">Escolha o dia. Nós mostramos o voo.</h1>
-                <p class="lead opacity-75 mb-4">
-                    Partidas reais a partir de Lisboa. Sem formulários longos — abra o calendário e reserve.
+            <div class="col-lg-8">
+                <span class="badge rounded-pill mb-3">
+                    <i class="bi bi-airplane-fill me-1"></i>Aeroporto de Lisboa · LIS
+                </span>
+                <h1 class="fw-bold mb-3">
+                    Lisboa<br />
+                    liga-te ao<br />
+                    <span class="text-lime">mundo.</span>
+                </h1>
+                <p class="lead opacity-75 mb-0" style="max-width: 520px;">
+                    Pesquise voos, descubra destinos e reserve em 3 cliques.
+                    Tudo a partir do Aeroporto de Lisboa.
                 </p>
-                <a asp-controller="Shop" asp-action="Calendar" class="btn btn-light btn-lg fw-bold me-2">
-                    Ver calendário de voos
-                </a>
-                <a class="btn btn-outline-light btn-lg" data-bs-toggle="collapse" href="#advancedSearch">
-                    Pesquisa avançada
-                </a>
             </div>
-            <div class="col-lg-5 text-lg-end mt-4 mt-lg-0">
-                <div class="fw-bold fs-2" id="clockTime">00:00:00</div>
-                <div class="opacity-75" id="clockDate"></div>
+            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+                <div class="text-uppercase small opacity-75 mb-2">Hora local</div>
+                <div class="fw-bold display-4 text-lime" id="clockTime">00:00:00</div>
+                <div class="opacity-75 small" id="clockDate"></div>
+                <div class="mt-3 opacity-75 small">
+                    <i class="bi bi-geo-alt me-1"></i>Lisboa, Portugal (WEST)
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<div class="container mb-4">
-    <div class="collapse" id="advancedSearch">
-        <div class="card border-0 shadow rounded-4 p-3">
-            <form method="get" action="/Shop/Index">
-                <input type="hidden" name="origin" value="LIS" />
-                <input type="hidden" name="tripType" value="oneway" />
-                <div class="row g-2 align-items-end">
-                    <div class="col-md-4">
-                        <label class="form-label small fw-semibold">Destino</label>
-                        <input name="destination" class="form-control" placeholder="Cidade ou IATA" />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small fw-semibold">Data</label>
-                        <input type="date" name="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
-                    </div>
-                    <div class="col-md-5">
-                        <button class="btn btn-primary w-100">Pesquisar</button>
-                    </div>
+<!-- ═══ SEARCH BAR (sobreposta ao hero) ═══ -->
+<!-- ═══ SEARCH BAR (sobreposta ao hero) ═══ -->
+<div class="container lis-search-bar">
+    <div class="lis-search-card">
+        <div class="lis-search-form text-center">
+            <a asp-controller="Shop" asp-action="Calendar" class="lis-search-btn w-100 py-3">
+                <i class="bi bi-calendar-event me-2"></i>Ver calendário de voos
+                <i class="bi bi-arrow-right ms-2"></i>
+            </a>
+            <p class="text-muted small mt-3 mb-0">
+                <i class="bi bi-info-circle me-1"></i>
+                Consulte os voos disponíveis a partir de Lisboa e reserve em 3 cliques.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ COMO FUNCIONA ═══ -->
+<section class="container mb-5" data-aos="fade-up">
+    <div class="row align-items-end mb-4">
+        <div class="col-lg-8">
+            <div class="lis-section-label">Como funciona</div>
+            <h2 class="lis-section-title">
+                Reserve em <span class="highlight">3 cliques.</span>
+            </h2>
+            <p class="text-muted mb-0">
+                Sem formulários longos. Sem burocracia. Só o essencial para começar a viajar.
+            </p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="lis-step-card">
+                <div class="lis-step-number">01</div>
+                <div class="lis-step-icon">
+                    <i class="bi bi-calendar-event"></i>
                 </div>
-            </form>
+                <h5 class="lis-step-title">Escolha o dia</h5>
+                <p class="lis-step-desc">
+                    Abra o calendário e veja todos os voos disponíveis a partir de Lisboa.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="lis-step-card">
+                <div class="lis-step-number">02</div>
+                <div class="lis-step-icon">
+                    <i class="bi bi-grid-3x3-gap"></i>
+                </div>
+                <h5 class="lis-step-title">Escolha o lugar</h5>
+                <p class="lis-step-desc">
+                    Selecione o lugar ideal no mapa da cabine e adicione bagagem ou refeição.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="lis-step-card">
+                <div class="lis-step-number">03</div>
+                <div class="lis-step-icon">
+                    <i class="bi bi-credit-card"></i>
+                </div>
+                <h5 class="lis-step-title">Pague e viaje</h5>
+                <p class="lis-step-desc">
+                    Pagamento seguro via PayPal. Receba o bilhete com QR Code no seu email.
+                </p>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="container mb-4">
-    <div class="row g-3 text-center">
-        <div class="col-4">
-            <div class="card border-0 shadow-sm rounded-4 py-3">
-                <div class="small text-muted">Voos ativos</div>
-                <div class="fs-4 fw-bold text-primary">@Model.ActiveFlightsCount</div>
-            </div>
+    <div class="text-center mt-4">
+        <a asp-controller="Shop" asp-action="Calendar" class="lis-search-btn px-4 py-3">
+            <i class="bi bi-calendar-event me-2"></i>Começar agora
+            <i class="bi bi-arrow-right ms-2"></i>
+        </a>
+    </div>
+</section>
+
+<!-- ═══ COMPANHIAS PARCEIRAS ═══ -->
+<section class="container mb-5" data-aos="fade-up">
+    <div class="row align-items-end mb-4">
+        <div class="col-lg-8">
+            <div class="lis-section-label">Companhias Parceiras</div>
+            <h2 class="lis-section-title">
+                As melhores companhias,<br />
+                <span class="highlight">num só lugar.</span>
+            </h2>
         </div>
-        <div class="col-4">
-            <div class="card border-0 shadow-sm rounded-4 py-3">
-                <div class="small text-muted">Partidas</div>
-                <div class="fs-4 fw-bold text-primary">@Model.TotalPartidasFuturas</div>
-            </div>
-        </div>
-        <div class="col-4">
-            <div class="card border-0 shadow-sm rounded-4 py-3">
-                <div class="small text-muted">Destinos</div>
-                <div class="fs-4 fw-bold text-primary">@(Model.PopularDestinations?.Count ?? 0)</div>
-            </div>
+        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+            <a asp-controller="Airline" asp-action="PublicIndex" class="lis-link-lime">
+                Ver todas as companhias <i class="bi bi-arrow-right"></i>
+            </a>
         </div>
     </div>
-</div>
 
+    <div class="lis-airlines-card">
+        <div class="row g-4 align-items-center justify-content-center text-center">
+
+            <div class="col-6 col-md-3 col-lg-2">
+                <div class="lis-airline-logo">
+                    <div class="lis-airline-icon">TP</div>
+                    <div class="lis-airline-name">TAP Air Portugal</div>
+                    <div class="lis-airline-country">Portugal</div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3 col-lg-2">
+                <div class="lis-airline-logo">
+                    <div class="lis-airline-icon">FR</div>
+                    <div class="lis-airline-name">Ryanair</div>
+                    <div class="lis-airline-country">Irlanda</div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3 col-lg-2">
+                <div class="lis-airline-logo">
+                    <div class="lis-airline-icon">U2</div>
+                    <div class="lis-airline-name">EasyJet</div>
+                    <div class="lis-airline-country">Reino Unido</div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3 col-lg-2">
+                <div class="lis-airline-logo">
+                    <div class="lis-airline-icon">LH</div>
+                    <div class="lis-airline-name">Lufthansa</div>
+                    <div class="lis-airline-country">Alemanha</div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3 col-lg-2">
+                <div class="lis-airline-logo">
+                    <div class="lis-airline-icon">IB</div>
+                    <div class="lis-airline-name">Iberia</div>
+                    <div class="lis-airline-country">Espanha</div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3 col-lg-2">
+                <div class="lis-airline-logo">
+                    <div class="lis-airline-icon">AF</div>
+                    <div class="lis-airline-name">Air France</div>
+                    <div class="lis-airline-country">França</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ═══ DESTINOS POPULARES ═══ -->
 @if (Model.PopularDestinations?.Any() == true)
 {
-    <section class="container mb-5">
-        <h2 class="h4 fw-bold mb-3">Para onde voar a partir de Lisboa</h2>
+    var destImages = new Dictionary<string, string>
+    {
+        { "MAD", "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=600&q=80" },
+        { "CDG", "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&q=80" },
+        { "LHR", "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600&q=80" },
+        { "JFK", "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=600&q=80" },
+        { "FCO", "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=600&q=80" },
+        { "BCN", "https://images.unsplash.com/photo-1583422409516-2895a77efded?w=600&q=80" },
+        { "AMS", "https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=600&q=80" },
+        { "FRA", "https://images.unsplash.com/photo-1577985043696-8bd54d9f093f?w=600&q=80" }
+    };
+
+    <section class="container mb-5" data-aos="fade-up">
+        <div class="row align-items-end mb-4">
+            <div class="col-lg-5">
+                <div class="lis-section-label">Destinos Populares</div>
+                <h2 class="lis-section-title">
+                    Inspire-se.<br />
+                    Escolha o seu<br />
+                    <span class="highlight">próximo destino.</span>
+                </h2>
+            </div>
+            <div class="col-lg-7 text-lg-end mt-3 mt-lg-0">
+                <a asp-controller="Shop" asp-action="Calendar" class="lis-link-lime">
+                    Ver todos os destinos <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
         <div class="row g-3">
-            @foreach (var d in Model.PopularDestinations)
+            @foreach (var d in Model.PopularDestinations.Take(4))
             {
+                var imgUrl = destImages.GetValueOrDefault(d.IATA, "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&q=80");
                 <div class="col-6 col-lg-3">
-                    <a asp-controller="Shop" asp-action="Calendar"
-                       class="card border-0 shadow-sm rounded-4 h-100 text-decoration-none text-dark">
-                        <div class="card-body">
-                            <span class="badge bg-warning text-dark">@d.IATA</span>
-                            <div class="fw-bold mt-2">@d.Cidade</div>
-                            <small class="text-muted">@d.Pais</small>
-                            @if (d.Weather?.Main != null)
-                            {
-                                <div class="small text-muted mt-1">
-                                    @Math.Round(d.Weather.Main.Temp)°C
-                                    @if (d.Weather.Weather?.FirstOrDefault()?.Description != null)
+                    <a asp-controller="Shop" asp-action="Calendar" class="text-decoration-none">
+                        <div class="lis-dest-card">
+                            <img src="@imgUrl" alt="@d.Cidade" loading="lazy" />
+                            <div class="dest-overlay">
+                                <div class="dest-top">
+                                    <div>
+                                        <div class="dest-city">@d.Cidade</div>
+                                        <div class="dest-country">@d.Pais</div>
+                                    </div>
+                                    @if (d.Weather?.Main != null)
                                     {
-                                        <span> · @d.Weather.Weather.First().Description</span>
+                                        <div class="dest-temp">
+                                            <i class="bi bi-cloud-sun"></i> @Math.Round(d.Weather.Main.Temp)°C
+                                        </div>
                                     }
                                 </div>
-                            }
+                                <div class="dest-bottom">
+                                    <div>
+                                        <div class="dest-price-label">Desde</div>
+                                        <div class="dest-price">@(d.FromPrice > 0 ? d.FromPrice.Value.ToString("C0") : "—")</div>
+                                    </div>
+                                    <div class="dest-arrow">
+                                        <i class="bi bi-arrow-right"></i>
+                                    </div>
+                                </div>
+                            </div>
                             @if (d.IsAdverseWeather)
                             {
-                                <span class="badge bg-warning text-dark mt-1">Atenção ao tempo</span>
-                            }
-                            @if (d.FromPrice > 0)
-                            {
-                                <div class="text-success fw-semibold mt-2">desde @d.FromPrice.Value.ToString("C")</div>
+                                <div class="position-absolute top-0 end-0 m-2" style="z-index:2;">
+                                    <span class="badge bg-warning text-dark">⚠ Tempo</span>
+                                </div>
                             }
                         </div>
                     </a>
@@ -115,48 +263,119 @@
     </section>
 }
 
-<section class="container mb-5">
-    <div class="row g-3">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
-                <h6 class="fw-bold">Check-in online</h6>
-                <p class="small text-muted">Entre 48h e 1h antes da partida.</p>
-                <a asp-controller="CheckIn" asp-action="Index" class="btn btn-sm btn-outline-primary">Fazer check-in</a>
+<!-- ═══ QUICK LINKS ═══ -->
+<section class="container mb-5" data-aos="fade-up">
+    <div class="row g-4 align-items-center">
+        <div class="col-lg-6">
+            <div class="lis-quicklinks-img">
+                <img src="https://images.unsplash.com/photo-1569154941061-e231b4725ef1?w=800&q=80"
+                     alt="Aeroporto de Lisboa" loading="lazy" />
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
-                <h6 class="fw-bold">Painel do aeroporto</h6>
-                <p class="small text-muted">Partidas e chegadas em tempo real.</p>
-                <a asp-controller="Flights" asp-action="PublicIndex" class="btn btn-sm btn-outline-primary">Consultar</a>
-            </div>
+        <div class="col-lg-6">
+            <div class="lis-section-label">Atalhos Rápidos</div>
+            <h2 class="lis-section-title mb-4">
+                Tudo o que precisa,<br />
+                <span class="highlight">mais rápido.</span>
+            </h2>
+
+            <a asp-controller="CheckIn" asp-action="Index" class="lis-quicklink-item">
+                <div class="lis-quicklink-icon"><i class="bi bi-clipboard-check"></i></div>
+                <div>
+                    <div class="lis-quicklink-title">Check-in online</div>
+                    <div class="lis-quicklink-desc">Faça o check-in do seu voo</div>
+                </div>
+                <i class="bi bi-chevron-right lis-quicklink-arrow"></i>
+            </a>
+
+            <a asp-controller="Flights" asp-action="PublicIndex" class="lis-quicklink-item">
+                <div class="lis-quicklink-icon"><i class="bi bi-broadcast"></i></div>
+                <div>
+                    <div class="lis-quicklink-title">Estado dos voos</div>
+                    <div class="lis-quicklink-desc">Atualizações em tempo real</div>
+                </div>
+                <i class="bi bi-chevron-right lis-quicklink-arrow"></i>
+            </a>
+
+            <a asp-controller="Airline" asp-action="PublicIndex" class="lis-quicklink-item">
+                <div class="lis-quicklink-icon"><i class="bi bi-building"></i></div>
+                <div>
+                    <div class="lis-quicklink-title">Companhias aéreas</div>
+                    <div class="lis-quicklink-desc">Todas as companhias no LIS</div>
+                </div>
+                <i class="bi bi-chevron-right lis-quicklink-arrow"></i>
+            </a>
+
+            <a asp-controller="Shop" asp-action="Calendar" class="lis-quicklink-item">
+                <div class="lis-quicklink-icon"><i class="bi bi-calendar-event"></i></div>
+                <div>
+                    <div class="lis-quicklink-title">Calendário de voos</div>
+                    <div class="lis-quicklink-desc">Reserve em 3 cliques</div>
+                </div>
+                <i class="bi bi-chevron-right lis-quicklink-arrow"></i>
+            </a>
         </div>
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100 p-3">
-                @if (Model.Weather?.Main != null)
-                {
-                    <h6 class="fw-bold">Lisboa agora</h6>
-                    <div class="fs-3 fw-bold">@Math.Round(Model.Weather.Main.Temp)°C</div>
-                    <div class="small text-muted text-capitalize">@Model.Weather.Weather?.FirstOrDefault()?.Description</div>
-                }
+    </div>
+</section>
+
+<!-- ═══ MAPA DE ROTAS ═══ -->
+<section class="container mb-5" data-aos="fade-up">
+    <div class="lis-map-section">
+        <div class="row g-0">
+            <div class="col-lg-5 lis-map-content">
+                <div class="lis-section-label">Mapa de Rotas</div>
+                <h2 class="lis-section-title mb-3">
+                    Lisboa no centro<br />
+                    <span class="highlight">do mundo.</span>
+                </h2>
+                <p class="text-muted mb-4">
+                    Descubra todas as rotas diretas a partir de LIS e planeie a sua próxima viagem.
+                </p>
+                <a asp-controller="Shop" asp-action="Calendar" class="lis-link-lime">
+                    Explorar rotas <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+            <div class="col-lg-7">
+                <div id="routesMap" class="lis-map-container"></div>
             </div>
         </div>
     </div>
 </section>
 
-<section class="container mb-5">
-    <h2 class="h4 fw-bold mb-3">Rotas a partir de Lisboa</h2>
-    <div id="routesMap" class="rounded-4 shadow-sm" style="height: 360px;"></div>
-</section>
-
+<!-- ═══ CTA REGISTO ═══ -->
 @if (User.Identity?.IsAuthenticated != true)
 {
-    <section class="container mb-5">
-        <div class="cta-registo rounded-4 p-4 text-center text-white">
-            <h5 class="fw-bold">Reserve em 3 cliques</h5>
-            <p class="mb-3 opacity-75">Calendário → lugar → pagamento. Crie conta para guardar os bilhetes.</p>
-            <a asp-controller="Shop" asp-action="Calendar" class="btn btn-light fw-bold me-2">Ver voos</a>
-            <a asp-controller="Account" asp-action="Register" class="btn btn-outline-light">Criar conta</a>
+    <section class="container mb-5" data-aos="zoom-in">
+        <div class="lis-cta-register">
+            <div class="row g-0">
+                <div class="col-lg-5">
+                    <div class="cta-img">
+                        <img src="https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=800&q=80"
+                             alt="Viajar" loading="lazy" />
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="cta-body">
+                        <h3>Registe-se e viaje melhor.</h3>
+                        <p class="mb-4">Aceda a ofertas exclusivas, alertas de voos e uma experiência personalizada.</p>
+
+                        <form class="row g-2" asp-controller="Account" asp-action="Register" method="get">
+                            <div class="col-md-8">
+                                <input type="email" name="email" class="form-control" placeholder="O seu e-mail" />
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-register w-100">
+                                    Registar gratuitamente <i class="bi bi-arrow-right"></i>
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="lis-cta-check mt-3">
+                            <i class="bi bi-check-circle"></i> Grátis, rápido e seguro.
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 }
@@ -168,29 +387,70 @@
 @section Scripts {
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+        // Clock
         function updateClock() {
             const n = new Date();
             const t = document.getElementById("clockTime");
             const d = document.getElementById("clockDate");
             if (t) t.textContent = n.toLocaleTimeString("pt-PT");
-            if (d) d.textContent = n.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long" });
+            if (d) d.textContent = n.toLocaleDateString("pt-PT", {
+                weekday: "long", day: "numeric", month: "long", year: "numeric"
+            });
         }
         updateClock();
         setInterval(updateClock, 1000);
 
+        // Tabs de pesquisa
+        document.querySelectorAll('.lis-search-tab').forEach(tab => {
+            tab.addEventListener('click', function () {
+                document.querySelectorAll('.lis-search-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Mapa
         const markers = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MapMarkers ?? new List<LisAeroGest.Models.MapMarkerViewModel>()));
         const mapEl = document.getElementById("routesMap");
         if (mapEl && typeof L !== "undefined") {
-            const map = L.map("routesMap").setView([38.77, -9.13], 4);
-            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                attribution: "&copy; OpenStreetMap"
+            const map = L.map("routesMap", {
+                zoomControl: false,
+                attributionControl: false
+            }).setView([38.77, -9.13], 3);
+
+            L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+                maxZoom: 19
             }).addTo(map);
+
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+            // Marcador LIS (centro)
+            const lisIcon = L.divIcon({
+                className: '',
+                html: '<div style="width:32px;height:32px;background:#c8e629;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:10px;color:#0a0e17;box-shadow:0 0 20px rgba(200,230,41,0.6);">LIS</div>',
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+            });
+            L.marker([38.77, -9.13], { icon: lisIcon }).addTo(map);
+
             (markers || []).forEach(function (m) {
                 const lat = m.lat ?? m.Lat;
                 const lng = m.lng ?? m.Lng;
                 if (lat == null || lng == null) return;
-                L.marker([lat, lng]).addTo(map)
-                    .bindPopup((m.label || m.Label || "") + " (" + (m.iata || m.Iata || "") + ")");
+
+                // Linha a partir de LIS
+                L.polyline([[38.77, -9.13], [lat, lng]], {
+                    color: '#c8e629',
+                    weight: 1,
+                    opacity: 0.4
+                }).addTo(map);
+
+                L.circleMarker([lat, lng], {
+                    radius: 4,
+                    color: '#c8e629',
+                    fillColor: '#c8e629',
+                    fillOpacity: 0.8
+                }).addTo(map)
+                  .bindPopup('<strong>' + (m.label || m.Label || "") + '</strong> (' + (m.iata || m.Iata || "") + ')');
             });
         }
     </script>

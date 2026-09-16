@@ -12,23 +12,32 @@
     }
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/guestPayment.css" asp-append-version="true" />
+}
+
 <div class="container mt-5 mb-5">
     <div class="row justify-content-center">
         <div class="col-lg-7">
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="card-header bg-primary text-white p-4">
-                    <div class="d-flex justify-content-between align-items-center">
+            <div class="gp-card card border-0 shadow-lg rounded-4 overflow-hidden">
+
+                <!-- ═══ HEADER ═══ -->
+                <div class="gp-header p-4">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                         <div>
-                            <h3 class="fw-bold mb-0">
+                            <h3 class="fw-bold mb-0 text-white">
                                 <i class="bi bi-credit-card me-2"></i>Finalizar Pagamento
                             </h3>
-                            <small class="opacity-75">Pagamento via PayPal Sandbox — ambiente de testes.</small>
+                            <small class="gp-header-sub">
+                                <i class="bi bi-shield-lock me-1"></i>
+                                Pagamento via PayPal Sandbox — ambiente de testes.
+                            </small>
                         </div>
                         @if (Model.ExpiresAt.HasValue)
                         {
                             <div class="text-end">
-                                <small class="d-block opacity-75">Reserva expira em</small>
-                                <span class="fw-bold text-white" id="countdownTimer">
+                                <small class="gp-timer-label d-block">Reserva expira em</small>
+                                <span class="gp-timer fw-bold" id="countdownTimer">
                                     @TimeSpan.FromSeconds(remainingSeconds).ToString(@"mm\:ss")
                                 </span>
                             </div>
@@ -36,7 +45,9 @@
                     </div>
                 </div>
 
+                <!-- ═══ BODY ═══ -->
                 <div class="card-body p-4">
+
                     @if (remainingSeconds < 300 && remainingSeconds > 0)
                     {
                         <div class="alert alert-warning d-flex align-items-center" role="alert">
@@ -49,66 +60,105 @@
                     }
                     else if (Model.ExpiresAt.HasValue && remainingSeconds <= 0)
                     {
-                        <div class="alert alert-danger d-flex align-items-center" role="alert">
+                        <div class="alert alert-danger d-flex align-items-center flex-wrap gap-2" role="alert">
                             <i class="bi bi-x-circle-fill fs-4 me-3"></i>
-                            <div>
+                            <div class="flex-grow-1">
                                 <strong>Reserva expirada.</strong>
                                 <span class="d-block small">Faça uma nova reserva.</span>
                             </div>
-                            <a asp-action="Index" class="btn btn-danger ms-auto">Voltar à pesquisa</a>
+                            <a asp-action="Index" class="btn btn-danger">
+                                <i class="bi bi-search me-1"></i>Voltar à pesquisa
+                            </a>
                         </div>
                     }
 
-                    <h5 class="fw-bold mb-3">Resumo da compra</h5>
-                    <p class="mb-2">
+                    <!-- ═══ RESUMO ═══ -->
+                    <h5 class="gp-section-title mb-3">
+                        <i class="bi bi-receipt text-lime me-2"></i>Resumo da compra
+                    </h5>
+
+                    <p class="gp-passenger mb-3">
+                        <i class="bi bi-person-circle text-lime me-2"></i>
                         <strong>@Model.PassengerName</strong>
                     </p>
 
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Voo</th>
-                                <th>Rota</th>
-                                <th>Lugar</th>
-                                <th>Extras</th>
-                                <th class="text-end">Preço</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>@Model.FlightNumber</td>
-                                <td>@Model.OriginCode → @Model.DestinationCode</td>
-                                <td>@Model.SeatCode</td>
-                                <td>
-                                    @if (Model.ExtraLuggage)
-                                    {
-                                        <span class="badge bg-info">Bagagem</span>
-                                    }
-                                    @if (Model.MealIncluded)
-                                    {
-                                        <span class="badge bg-warning">Refeição</span>
-                                    }
-                                </td>
-                                <td class="text-end">@Model.TotalPrice.ToString("C", culture)</td>
-                            </tr>
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th colspan="4">Total a pagar</th>
-                                <th class="text-end text-success fs-5">@Model.TotalPrice.ToString("C", culture)</th>
-                            </tr>
-                        </tfoot>
-                    </table>
+                    <div class="gp-table-wrapper">
+                        <table class="table gp-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Voo</th>
+                                    <th>Rota</th>
+                                    <th>Lugar</th>
+                                    <th>Extras</th>
+                                    <th class="text-end">Preço</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <span class="gp-flight-number">
+                                            <i class="bi bi-airplane-fill me-1"></i>@Model.FlightNumber
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="gp-route">
+                                            <strong>@Model.OriginCode</strong>
+                                            <i class="bi bi-arrow-right text-lime mx-1"></i>
+                                            <strong>@Model.DestinationCode</strong>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="gp-seat">@Model.SeatCode</span>
+                                    </td>
+                                    <td>
+                                        <div class="gp-extras">
+                                            @if (Model.ExtraLuggage)
+                                            {
+                                                <span class="gp-badge gp-badge-luggage">
+                                                    <i class="bi bi-suitcase2 me-1"></i>Bagagem
+                                                </span>
+                                            }
+                                            @if (Model.MealIncluded)
+                                            {
+                                                <span class="gp-badge gp-badge-meal">
+                                                    <i class="bi bi-egg-fried me-1"></i>Refeição
+                                                </span>
+                                            }
+                                            @if (!Model.ExtraLuggage && !Model.MealIncluded)
+                                            {
+                                                <span class="text-muted small">—</span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="text-end text-white fw-semibold">
+                                        @Model.TotalPrice.ToString("C", culture)
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="gp-total-row">
+                                    <th colspan="4" class="text-white">Total a pagar</th>
+                                    <th class="text-end text-lime fs-5">
+                                        @Model.TotalPrice.ToString("C", culture)
+                                    </th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
 
+                    <!-- ═══ PAYPAL ═══ -->
                     <div id="paypal-error" class="alert alert-danger d-none mt-3"></div>
 
                     @if (!Model.ExpiresAt.HasValue || remainingSeconds > 0)
                     {
-                        <div id="paypal-button-container" class="mt-4"></div>
+                        <div class="gp-paypal-wrapper mt-4">
+                            <div id="paypal-button-container"></div>
+                        </div>
                     }
 
-                    <div class="text-center mt-3">
-                        <a asp-controller="Home" asp-action="Index" class="text-muted small">
+                    <!-- ═══ VOLTAR ═══ -->
+                    <div class="text-center mt-4">
+                        <a asp-controller="Home" asp-action="Index" class="gp-back-link">
                             <i class="bi bi-arrow-left me-1"></i>Voltar ao início
                         </a>
                     </div>

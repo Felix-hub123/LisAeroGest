@@ -1,0 +1,258 @@
+﻿/* ============================================
+   MY TICKETS — Os Meus Bilhetes
+   ============================================ */
+
+/* ═══ CABEÇALHO ═══ */
+.tickets-title {
+    color: var(--lis-text);
+    font-weight: 800;
+    letter-spacing: -0.3px;
+}
+
+.text-lime {
+    color: var(--lis-lime) !important;
+}
+
+.tickets-count-badge {
+    background-color: rgba(200, 230, 41, 0.1);
+    color: var(--lis-lime);
+    border: 1px solid rgba(200, 230, 41, 0.3);
+    border-radius: 999px;
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* ═══ EMPTY STATE ═══ */
+.tickets-empty {
+    background-color: var(--lis-dark-2);
+    border: 1px dashed var(--lis-border);
+    border-radius: 16px;
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+/* ═══ TABELA (Desktop) ═══ */
+.tickets-table-wrapper {
+    background-color: var(--lis-dark-2);
+    border: 1px solid var(--lis-border);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.tickets-table {
+    color: var(--lis-text);
+    margin-bottom: 0;
+}
+
+    .tickets-table thead {
+        background-color: var(--lis-dark-3);
+    }
+
+        .tickets-table thead th {
+            color: var(--lis-lime);
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--lis-border);
+            border-top: none;
+            white-space: nowrap;
+        }
+
+    .tickets-table tbody td {
+        padding: 1rem 1.25rem;
+        border-color: var(--lis-border);
+        background-color: var(--lis-dark-2);
+        color: var(--lis-text);
+        vertical-align: middle;
+    }
+
+    .tickets-table tbody tr {
+        transition: background-color 0.15s ease;
+    }
+
+        .tickets-table tbody tr:hover td {
+            background-color: var(--lis-dark-3);
+        }
+
+/* ═══ ELEMENTOS DA TABELA ═══ */
+.tickets-flight-number {
+    background-color: rgba(200, 230, 41, 0.1);
+    color: var(--lis-lime);
+    border: 1px solid rgba(200, 230, 41, 0.3);
+    border-radius: 999px;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.tickets-route {
+    display: inline-flex;
+    align-items: center;
+    color: var(--lis-text);
+    font-size: 0.95rem;
+}
+
+    .tickets-route strong {
+        color: var(--lis-text);
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+.tickets-seat {
+    background-color: var(--lis-dark-3);
+    color: var(--lis-text);
+    border: 1px solid var(--lis-border);
+    border-radius: 8px;
+    padding: 0.25rem 0.7rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: inline-block;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+}
+
+.tickets-price {
+    color: var(--lis-lime);
+    font-weight: 800;
+    font-size: 1.05rem;
+    letter-spacing: -0.3px;
+}
+
+/* ═══ BADGES DE ESTADO ═══ */
+.badge-status {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+    border: 1px solid;
+}
+
+.badge-paid {
+    background-color: rgba(25, 135, 84, 0.15);
+    border-color: rgba(25, 135, 84, 0.4);
+    color: #86efac;
+}
+
+.badge-checkin {
+    background-color: rgba(13, 202, 240, 0.15);
+    border-color: rgba(13, 202, 240, 0.4);
+    color: #7dd3fc;
+}
+
+.badge-cancelled {
+    background-color: rgba(220, 53, 69, 0.15);
+    border-color: rgba(220, 53, 69, 0.4);
+    color: #fca5a5;
+}
+
+.badge-pending {
+    background-color: rgba(148, 163, 184, 0.15);
+    border-color: rgba(148, 163, 184, 0.4);
+    color: #cbd5e1;
+}
+
+/* ═══ CARDS MOBILE ═══ */
+.tickets-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.ticket-mobile-card {
+    background-color: var(--lis-dark-2);
+    border: 1px solid var(--lis-border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    transition: border-color 0.2s ease;
+}
+
+    .ticket-mobile-card:hover {
+        border-color: var(--lis-lime);
+    }
+
+.tickets-mobile-route {
+    display: flex;
+    align-items: center;
+    color: var(--lis-text);
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+}
+
+    .tickets-mobile-route strong {
+        color: var(--lis-text);
+        font-weight: 800;
+        letter-spacing: 0.5px;
+    }
+
+.tickets-mobile-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--lis-border);
+}
+
+.tickets-mobile-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--lis-text-muted);
+}
+
+    .tickets-mobile-item i {
+        font-size: 0.9rem;
+        width: 18px;
+        text-align: center;
+    }
+
+.tickets-mobile-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--lis-border);
+}
+
+/* ═══ BOTÃO LIMA ═══ */
+.btn-lime {
+    background-color: var(--lis-lime);
+    color: var(--lis-dark);
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    padding: 0.6rem 1.25rem;
+    transition: all 0.2s ease;
+}
+
+    .btn-lime:hover,
+    .btn-lime:focus-visible {
+        background-color: var(--lis-lime-dark);
+        color: var(--lis-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(200, 230, 41, 0.3);
+        outline: none;
+    }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 768px) {
+    .tickets-title {
+        font-size: 1.35rem;
+    }
+
+    .tickets-empty {
+        padding: 2.5rem 1.25rem;
+    }
+}

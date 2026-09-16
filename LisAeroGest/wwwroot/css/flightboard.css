@@ -1,26 +1,26 @@
-/* ============================================
-   FLIGHT BOARD � Painel de Voos P�blico
+﻿/* ============================================
+   FLIGHT BOARD — Painel de Voos Público
    ============================================ */
 
-/* Wrapper principal do Flightboard para evitar colis�o com o footer */
+/* Wrapper principal do Flightboard para evitar colisão com o footer */
 .flightboard-wrapper {
-    margin-bottom: 3rem; /* Espa�o de seguran�a em rela��o ao footer */
+    margin-bottom: 3rem;
 }
 
-/* Hero Section */
+/* ═══ HERO SECTION ═══ */
 .hero-section {
     position: relative;
     overflow: hidden;
     background-size: cover !important;
     background-position: center !important;
-    margin-bottom: 2rem; /* Espa�amento inferior garantido */
+    margin-bottom: 2rem;
     border-radius: 12px;
 }
 
 .hero-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(13,61,107,0.85) 0%, rgba(31,92,153,0.75) 100%);
+    background: linear-gradient(135deg, rgba(10, 14, 23, 0.85) 0%, rgba(26, 35, 50, 0.75) 100%);
 }
 
 .hero-content {
@@ -28,11 +28,11 @@
     z-index: 2;
 }
 
-/* Rel�gio Digital */
+/* ═══ RELÓGIO DIGITAL ═══ */
 .digital-clock {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     padding: 12px 20px;
     text-align: center;
@@ -48,21 +48,21 @@
 
 .clock-date {
     font-size: 0.85rem;
-    color: rgba(255,255,255,0.7);
+    color: rgba(255, 255, 255, 0.7);
 }
 
-/* Widget do Tempo � mesma linguagem visual do rel�gio digital */
+/* ═══ WIDGET DO TEMPO ═══ */
 .weather-widget {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     padding: 10px 18px;
     color: white;
 }
 
     .weather-widget img {
-        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
     }
 
 .weather-temp {
@@ -74,7 +74,7 @@
 
 .weather-desc {
     font-size: 0.8rem;
-    color: rgba(255,255,255,0.7);
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .weather-details {
@@ -84,21 +84,22 @@
 }
 
 .weather-detail-pill {
-    background: #f1f5f9;
+    background: var(--lis-dark-3);
     border-radius: 999px;
     padding: 4px 14px;
     font-size: 0.82rem;
-    color: #475569;
+    color: var(--lis-text);
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    border: 1px solid var(--lis-border);
 }
 
     .weather-detail-pill i {
-        color: #1F5C99;
+        color: var(--lis-lime);
     }
 
-/* KPI Cards */
+/* ═══ KPI CARDS ═══ */
 .kpi-card {
     border-radius: 12px;
     transition: transform 0.2s, box-shadow 0.2s;
@@ -106,10 +107,10 @@
 
     .kpi-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.1) !important;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3) !important;
     }
 
-/* Ticker de Avisos */
+/* ═══ TICKER DE AVISOS ═══ */
 .boarding-ticker {
     background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
     border-radius: 8px;
@@ -134,7 +135,7 @@
 }
 
 .ticker-badge {
-    background: rgba(255,255,255,0.25);
+    background: rgba(255, 255, 255, 0.25);
     padding: 2px 10px;
     border-radius: 12px;
     font-size: 0.8rem;
@@ -150,25 +151,28 @@
     }
 }
 
-/* Destinos Cards */
+/* ═══ DESTINOS CARDS ═══ */
 .destinations-section {
-    background: #f8f9fa;
+    background: var(--lis-dark-2);
     border-radius: 12px;
     padding: 1.5rem;
     margin-bottom: 2.5rem;
+    border: 1px solid var(--lis-border);
 }
 
 .dest-card {
-    background: white;
+    background: var(--lis-dark-3);
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid var(--lis-border);
 }
 
     .dest-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        box-shadow: 0 8px 20px rgba(200, 230, 41, 0.15);
+        border-color: var(--lis-lime);
     }
 
 .dest-image {
@@ -182,62 +186,73 @@
     position: absolute;
     top: 8px;
     right: 8px;
-    background: rgba(255,255,255,0.95);
-    color: #0d3d6b;
+    background: rgba(10, 14, 23, 0.9);
+    color: var(--lis-lime);
     padding: 2px 10px;
     border-radius: 10px;
     font-size: 0.75rem;
     font-weight: 600;
+    border: 1px solid var(--lis-lime);
 }
 
 .dest-info {
     padding: 0.75rem;
+    color: var(--lis-text);
 }
 
-/* Flight Table Container */
+/* ═══ FLIGHT TABLE CONTAINER ═══ */
 .flight-table-container {
-    margin-bottom: 3rem; /* Impede que a tabela cole no footer */
+    margin-bottom: 3rem;
 }
 
 .flight-table {
     font-size: 0.9rem;
     margin-bottom: 0;
+    color: var(--lis-text);
 }
 
     .flight-table thead {
-        background: #0d3d6b;
-        color: white;
+        background: var(--lis-dark-3);
+        color: var(--lis-text);
     }
 
         .flight-table thead th {
             font-weight: 600;
             border: none;
             padding: 12px 16px;
+            border-bottom: 1px solid var(--lis-border);
         }
 
     .flight-table tbody td {
         padding: 12px 16px;
         vertical-align: middle;
-        border-color: #e9ecef;
+        border-color: var(--lis-border);
+        background-color: var(--lis-dark-2);
+        color: var(--lis-text);
     }
 
     .flight-table tbody tr:hover {
-        background-color: #f8f9fa;
+        background-color: var(--lis-dark-3);
     }
 
-/* Live Indicator */
+        .flight-table tbody tr:hover td {
+            background-color: var(--lis-dark-3);
+            color: var(--lis-text);
+        }
+
+/* ═══ LIVE INDICATOR ═══ */
 .live-indicator {
     display: flex;
     align-items: center;
     gap: 8px;
     font-size: 0.85rem;
-    color: #6c757d;
+    color: var(--lis-text-muted);
 }
 
 .live-dot {
     width: 10px;
     height: 10px;
-    background: #198754;
+    background: var(--lis-lime);
     border-radius: 50%;
     position: relative;
 }
@@ -246,7 +261,7 @@
         content: "";
         position: absolute;
         inset: -4px;
-        background: #198754;
+        background: var(--lis-lime);
         border-radius: 50%;
         opacity: 0.5;
         animation: pulse 1.5s infinite;
@@ -264,7 +279,7 @@
     }
 }
 
-/* Responsive */
+/* ═══ RESPONSIVE ═══ */
 @media (max-width: 768px) {
     .hero-section {
         padding: 2rem 1rem !important;
@@ -277,4 +292,184 @@
     .flight-table {
         font-size: 0.8rem;
     }
+}
+
+/* ============================================
+   FLIGHT CARD — Estrutura Interna
+   ============================================ */
+
+.flight-card-header {
+    margin-bottom: 0.75rem;
+}
+
+.flight-card-body {
+    margin-bottom: 0.75rem;
+}
+
+.flight-card-header .flight-number {
+    color: var(--lis-lime);
+    font-size: 1.15rem;
+}
+
+.flight-card-header .flight-airline {
+    font-size: 0.85rem;
+}
+
+/* Rota — Origem / Destino */
+.flight-route {
+    padding: 0.5rem 0;
+}
+
+.route-code {
+    color: var(--lis-text);
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.route-city {
+    color: var(--lis-text-muted) !important;
+}
+
+.route-arrow {
+    color: var(--lis-lime);
+    font-size: 1.1rem;
+}
+
+/* Horários */
+.scheduled-time {
+    color: var(--lis-text);
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.estimated-time {
+    color: var(--lis-lime);
+    font-size: 1.05rem;
+}
+
+/* Rodapé do card */
+.flight-card-footer {
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--lis-border);
+}
+
+.gate-info {
+    color: var(--lis-text);
+    font-size: 0.85rem;
+}
+
+    .gate-info i {
+        color: var(--lis-lime);
+    }
+
+.terminal-info {
+    color: var(--lis-text-muted);
+    font-size: 0.8rem;
+}
+
+/* Barra de Progresso do Ciclo de Vida */
+.flight-progress .progress {
+    background-color: var(--lis-dark-3);
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.flight-progress .progress-bar {
+    background: linear-gradient(90deg, var(--lis-lime-dark), var(--lis-lime));
+    border-radius: 2px;
+    transition: width 0.6s ease;
+}
+
+.flight-progress .progress-steps {
+    color: var(--lis-text-muted);
+    margin-bottom: 4px;
+}
+
+    .flight-progress .progress-steps .step.active {
+        color: var(--lis-lime);
+        font-weight: 700;
+    }
+
+/* Botões de ação no card */
+.flight-actions .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+    .flight-actions .btn:hover {
+        transform: translateY(-1px);
+    }
+
+/* ============================================
+   FLIGHT DETAIL MODAL — Info Card + Timeline
+   ============================================ */
+
+.info-card {
+    background: var(--lis-dark-3);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--lis-border);
+}
+
+    .info-card .text-muted {
+        color: var(--lis-text-muted) !important;
+        font-size: 0.75rem;
+    }
+
+    .info-card .fw-bold {
+        color: var(--lis-text);
+    }
+
+/* Timeline — Histórico do voo */
+.timeline {
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 4px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background-color: var(--lis-border);
+    }
+
+.timeline-item {
+    position: relative;
+    padding: 0.5rem 0;
+    padding-left: 1rem;
+}
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -1.3rem;
+        top: 0.7rem;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: var(--lis-lime);
+        border: 2px solid var(--lis-dark-2);
+        box-shadow: 0 0 0 2px var(--lis-lime);
+    }
+
+.timeline-time {
+    color: var(--lis-lime);
+    font-weight: 600;
+    font-size: 0.8rem;
+    margin-right: 0.75rem;
+}
+
+.timeline-status {
+    color: var(--lis-text);
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+
+.timeline-detail {
+    color: var(--lis-text-muted);
+    font-size: 0.85rem;
 }

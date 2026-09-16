@@ -9,15 +9,16 @@
             <div class="col-12 col-md-10 col-lg-8 col-xl-6">
                 <div class="card auth-card">
                     <div class="auth-header">
-                        <i class="bi bi-airplane-fill floating-plane"></i>
-                        <div class="auth-logo">
-                            <i class="bi bi-person-plus-fill"></i>
-                        </div>
+                        <a asp-controller="Home" asp-action="Index" class="auth-back-btn" title="Voltar ao início">
+                            <i class="bi bi-arrow-left"></i>
+                        </a>
+
+                       
                         <h1>Criar Conta</h1>
                         <p>Junte-se à plataforma LisAeroGest</p>
                         <div class="auth-wave">
                             <svg viewBox="0 0 1440 60" preserveAspectRatio="none">
-                                <path d="M0,32 C360,80 720,0 1080,32 C1260,48 1380,32 1440,32 L1440,60 L0,60 Z" fill="white" />
+                                <path d="M0,32 C360,80 720,0 1080,32 C1260,48 1380,32 1440,32 L1440,60 L0,60 Z" fill="#111827" />
                             </svg>
                         </div>
                     </div>
@@ -28,9 +29,6 @@
                             Crie a sua conta para comprar bilhetes, fazer check-in e gerir as suas viagens.
                         </p>
 
-                        <!-- ================================================ -->
-                        <!-- 🔥 ALERTA: Veio do Checkout Convidado           -->
-                        <!-- ================================================ -->
                         @if (!string.IsNullOrEmpty(ViewBag.PendingEmail))
                         {
                             <div class="alert alert-success d-flex align-items-center border-0 shadow-sm rounded-3" role="alert">
@@ -154,7 +152,6 @@
                                         </span>
                                     </div>
 
-                                    <!-- Barra de força -->
                                     <div class="password-strength mt-2" id="strengthWrap" style="display: none;">
                                         <div class="progress" style="height: 5px;">
                                             <div class="progress-bar" id="strengthBar" style="width: 0%; transition: width .2s;"></div>
@@ -178,7 +175,6 @@
                                     <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
                                 </div>
 
-                                <!-- Regras de password -->
                                 <div class="password-rules small text-muted">
                                     <p class="mb-1"><i class="bi bi-info-circle me-1"></i>A password deve ter:</p>
                                     <ul class="mb-0 ps-3" id="rulesList">
@@ -205,7 +201,7 @@
                         </form>
                     </div>
 
-                    <div class="card-footer bg-white text-center py-3 border-0">
+                    <div class="card-footer text-center py-3 border-0">
                         <span class="text-muted small">Já tem conta?</span>
                         <a asp-action="Login" class="ms-1 small fw-semibold">Entrar</a>
                     </div>
@@ -221,7 +217,6 @@
 
 @section Scripts {
     <script>
-        // ---- Toggle show/hide password (genérico) ----
         document.querySelectorAll('.password-toggle').forEach(function (toggle) {
             toggle.addEventListener('click', function () {
                 var input = document.getElementById(this.getAttribute('data-target'));
@@ -232,7 +227,6 @@
             });
         });
 
-        // ---- Força da password + regras visuais + match ----
         (function () {
             var newPass = document.getElementById('newPass');
             var confirmPass = document.getElementById('confirmPass');
@@ -304,7 +298,6 @@
             if (confirmPass) confirmPass.addEventListener('input', updateMatch);
         })();
 
-        // ---- Loading state no botão ----
         (function () {
             var form = document.getElementById('registerForm');
             var btn = document.getElementById('submitBtn');

@@ -19,7 +19,7 @@
     <!-- Cabeçalho -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-            <h2 class="fw-bold mb-1">
+            <h2 class="fw-bold mb-1 text-white">
                 <i class="bi bi-geo-alt-fill text-primary me-2"></i>Aeroportos
             </h2>
             <span class="text-muted small">@Model.Count() aeroportos registados</span>
@@ -78,9 +78,10 @@
                                         <img src="@ImageHelper.GetImageUrl(airport.ImageId, "airports")"
                                              alt="@airport.Name"
                                              class="rounded"
-                                             style="width:48px; height:48px; object-fit:cover;" />
+                                             style="width:48px; height:48px; object-fit:cover;"
+                                             onerror="this.src='/images/airports/noimage.png'" />
                                     </td>
-                                    <td class="fw-semibold">@airport.Name</td>
+                                    <td class="fw-semibold text-white">@airport.Name</td>
                                     <td>@airport.City</td>
                                     <td>@airport.Country</td>
                                     <td>

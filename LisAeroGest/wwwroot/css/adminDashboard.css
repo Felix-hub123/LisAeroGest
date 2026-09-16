@@ -1,4 +1,4 @@
-.section-title {
+﻿.section-title {
     color: #6c757d;
     font-weight: 600;
     text-transform: uppercase;
@@ -137,4 +137,36 @@
     position: relative;
     height: 260px;
     width: 100%;
+}
+
+
+/* ═══ DARK MODE — Admin Dashboard ═══ */
+
+body.dark-theme .menu-card {
+    background-color: var(--lis-dark-2);
+    border-color: var(--lis-border);
+    color: var(--lis-text);
+}
+
+    body.dark-theme .menu-card:hover {
+        background-color: var(--lis-dark-3);
+        color: var(--lis-text);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+    }
+
+body.dark-theme .menu-info small {
+    color: var(--lis-text-muted);
+}
+
+body.dark-theme .menu-info strong {
+    color: var(--lis-text);
+}
+
+body.dark-theme .section-title {
+    color: var(--lis-text-muted);
+}
+
+body.dark-theme .chart-wrap,
+body.dark-theme .chart-wrap-sm {
+    color: var(--lis-text-muted);
 }

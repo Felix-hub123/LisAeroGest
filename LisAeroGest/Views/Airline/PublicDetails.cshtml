@@ -19,7 +19,7 @@
                          onerror="this.src='/images/airlines/noimage.png'" />
                 </div>
                 <div class="col-md-7">
-                    <h2 class="fw-bold mb-1">@Model.Name</h2>
+                    <h2 class="fw-bold mb-1 text-white">@Model.Name</h2>
                     <div class="d-flex gap-3 mb-2">
                         <span class="badge bg-primary fs-6">@Model.IATACode</span>
                         <span class="badge bg-light text-dark border fs-6">@Model.Country</span>
@@ -39,7 +39,7 @@
     </div>
 
     <!-- Próximos Voos -->
-    <h4 class="fw-bold mb-3">
+    <h4 class="fw-bold mb-3 text-white">
         <i class="bi bi-clock-history me-2 text-primary"></i>Próximos Voos
     </h4>
 
@@ -64,7 +64,7 @@
                             @foreach (var flight in futureFlights)
                             {
                                 <tr>
-                                    <td class="fw-bold">@flight.FlightNumber</td>
+                                    <td class="fw-bold text-white">@flight.FlightNumber</td>
                                     <td>@(flight.OriginAirport?.City ?? "N/A")</td>
                                     <td>@(flight.DestinationAirport?.City ?? "N/A")</td>
                                     <td>@flight.DepartureTime.ToString("dd/MM/yyyy HH:mm")</td>
@@ -73,10 +73,10 @@
                                             @GetStatusDisplay(flight.Status)
                                         </span>
                                     </td>
-                                  <td>
+                                    <td>
                                         @if (flight.Gate != null)
                                         {
-                                            <span class="badge bg-secondary">@flight.Gate.GateNumber</span>  
+                                            <span class="badge bg-secondary">@flight.Gate.GateNumber</span>
                                         }
                                         else
                                         {

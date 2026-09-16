@@ -1,0 +1,307 @@
+﻿/* ============================================
+   GUEST PAYMENT — Finalizar Pagamento
+   ============================================ */
+
+/* ═══ CARD PRINCIPAL ═══ */
+.gp-card {
+    background-color: var(--lis-dark-2);
+    border: 1px solid var(--lis-border) !important;
+}
+
+/* ═══ HEADER ═══ */
+.gp-header {
+    background: linear-gradient(135deg, #0a2540 0%, #1F5C99 100%);
+    border-bottom: 3px solid var(--lis-lime);
+    position: relative;
+    overflow: hidden;
+}
+
+    .gp-header::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 80% 0%, rgba(200, 230, 41, 0.1) 0%, transparent 60%);
+        pointer-events: none;
+    }
+
+    .gp-header h3 {
+        color: #fff;
+        position: relative;
+        z-index: 1;
+    }
+
+.gp-header-sub {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+    position: relative;
+    z-index: 1;
+}
+
+.gp-timer-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.gp-timer {
+    color: var(--lis-lime);
+    font-size: 1.6rem;
+    letter-spacing: 1px;
+    font-family: 'Courier New', monospace;
+    position: relative;
+    z-index: 1;
+}
+
+    .gp-timer.text-warning {
+        color: #fde047 !important;
+    }
+
+    .gp-timer.text-danger {
+        color: #fca5a5 !important;
+    }
+
+/* ═══ SECÇÃO / PASSAGEIRO ═══ */
+.gp-section-title {
+    color: var(--lis-text);
+    font-weight: 700;
+}
+
+.text-lime {
+    color: var(--lis-lime) !important;
+}
+
+.gp-passenger {
+    color: var(--lis-text);
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+    background-color: var(--lis-dark-3);
+    border: 1px solid var(--lis-border);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+}
+
+    .gp-passenger strong {
+        color: var(--lis-text);
+    }
+
+/* ═══ TABELA ═══ */
+.gp-table-wrapper {
+    background-color: var(--lis-dark-3);
+    border: 1px solid var(--lis-border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.gp-table {
+    color: var(--lis-text);
+    margin-bottom: 0;
+}
+
+    .gp-table thead {
+        background-color: rgba(0, 0, 0, 0.2);
+    }
+
+        .gp-table thead th {
+            color: var(--lis-lime);
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--lis-border);
+            border-top: none;
+            white-space: nowrap;
+        }
+
+    .gp-table tbody td {
+        padding: 1rem;
+        border-color: var(--lis-border);
+        background-color: transparent;
+        color: var(--lis-text);
+        vertical-align: middle;
+    }
+
+    .gp-table tfoot th {
+        padding: 1rem;
+        border-top: 1px solid var(--lis-border);
+        border-bottom: none;
+        background-color: rgba(200, 230, 41, 0.05);
+    }
+
+.gp-total-row th {
+    border-top: 1px solid var(--lis-border) !important;
+}
+
+/* ═══ ELEMENTOS DA TABELA ═══ */
+.gp-flight-number {
+    background-color: rgba(200, 230, 41, 0.1);
+    color: var(--lis-lime);
+    border: 1px solid rgba(200, 230, 41, 0.3);
+    border-radius: 999px;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.gp-route {
+    display: inline-flex;
+    align-items: center;
+    color: var(--lis-text);
+}
+
+    .gp-route strong {
+        color: var(--lis-text);
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+.gp-seat {
+    background-color: var(--lis-dark-2);
+    color: var(--lis-text);
+    border: 1px solid var(--lis-border);
+    border-radius: 8px;
+    padding: 0.2rem 0.6rem;
+    font-weight: 700;
+    font-size: 0.8rem;
+    display: inline-block;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+}
+
+.gp-extras {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.gp-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border: 1px solid;
+    white-space: nowrap;
+}
+
+.gp-badge-luggage {
+    background-color: rgba(13, 202, 240, 0.15);
+    border-color: rgba(13, 202, 240, 0.4);
+    color: #7dd3fc;
+}
+
+.gp-badge-meal {
+    background-color: rgba(255, 193, 7, 0.15);
+    border-color: rgba(255, 193, 7, 0.4);
+    color: #fde047;
+}
+
+/* ═══ PAYPAL WRAPPER ═══ */
+.gp-paypal-wrapper {
+    background-color: var(--lis-dark-3);
+    border: 1px solid var(--lis-border);
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+/* ═══ LINK VOLTAR ═══ */
+.gp-back-link {
+    color: var(--lis-text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+    .gp-back-link:hover {
+        color: var(--lis-lime);
+    }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 768px) {
+    .gp-header h3 {
+        font-size: 1.25rem;
+    }
+
+    .gp-timer {
+        font-size: 1.3rem;
+    }
+
+    .gp-card .card-body {
+        padding: 1.25rem !important;
+    }
+
+    /* Tabela → cards verticais */
+    .gp-table thead {
+        display: none;
+    }
+
+    .gp-table,
+    .gp-table tbody,
+    .gp-table tr,
+    .gp-table td,
+    .gp-table tfoot,
+    .gp-table tfoot th {
+        display: block;
+        width: 100%;
+    }
+
+        .gp-table tbody tr {
+            padding: 1rem;
+            border-bottom: 1px solid var(--lis-border);
+        }
+
+        .gp-table tbody td {
+            padding: 0.4rem 0;
+            border: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+            .gp-table tbody td::before {
+                content: attr(data-label);
+                color: var(--lis-text-muted);
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                font-weight: 600;
+            }
+
+        .gp-table tfoot th {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+        }
+
+            .gp-table tfoot th[colspan] {
+                display: flex;
+            }
+
+            .gp-table tfoot th:first-child {
+                flex: 1;
+            }
+
+    .gp-extras {
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 480px) {
+    .gp-header h3 {
+        font-size: 1.1rem;
+    }
+
+    .gp-timer {
+        font-size: 1.15rem;
+    }
+}

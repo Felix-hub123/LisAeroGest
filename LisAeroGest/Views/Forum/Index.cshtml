@@ -5,9 +5,9 @@
 }
 
 <div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-            <h2 class="fw-bold mb-1">
+            <h2 class="fw-bold mb-1 text-white">
                 <i class="bi bi-chat-dots-fill text-primary me-2"></i>Fórum Interno
             </h2>
             <span class="text-muted small">@Model.Count() tópicos</span>
@@ -35,7 +35,7 @@
 
     @if (!Model.Any())
     {
-        <div class="text-center py-5 text-muted border rounded bg-light">
+        <div class="text-center py-5 text-muted empty-forum-box border rounded">
             <i class="bi bi-chat-slash fs-1 opacity-50"></i>
             <p class="mt-3 mb-0">Ainda não existem tópicos no fórum.</p>
         </div>
@@ -62,7 +62,7 @@
                                 {
                                     <span class="badge bg-success">Aberto</span>
                                 }
-                                <h6 class="mb-0 fw-semibold">@topic.Title</h6>
+                                <h6 class="mb-0 fw-semibold text-white">@topic.Title</h6>
                             </div>
                             <p class="text-muted small mb-1">
                                 @preview

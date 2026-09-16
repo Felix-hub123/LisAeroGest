@@ -102,30 +102,37 @@
                      Command="{Binding LoadDeparturesCommand}">
 
             <CollectionView ItemsSource="{Binding Departures}"
-                            EmptyView="Nenhum voo agendado para este dia.">
-
+                SelectionMode="None"
+                EmptyView="Nenhum voo agendado para este dia.">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:FlightDto">
-                        <Frame Margin="10,5" Padding="15" CornerRadius="8" HasShadow="True">
-                            <Grid ColumnDefinitions="*,*,Auto" RowDefinitions="Auto,Auto" RowSpacing="5">
-
+                        <Frame Margin="10,5"
+                   Padding="15"
+                   CornerRadius="8"
+                   HasShadow="True"
+                   BackgroundColor="White">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnFlightTapped"
+                                          CommandParameter="{Binding .}" />
+                            </Frame.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,*,Auto"
+                      RowDefinitions="Auto,Auto"
+                      RowSpacing="5">
                                 <Label Grid.Row="0" Grid.Column="0"
-                                       Text="{Binding FlightNumber}"
-                                       FontAttributes="Bold"
-                                       FontSize="16" />
-
+                           Text="{Binding FlightNumber}"
+                           FontAttributes="Bold"
+                           FontSize="16" />
                                 <Label Grid.Row="0" Grid.Column="1"
-                                       Text="{Binding Origin}"
-                                       HorizontalOptions="Center" />
-
+                           Text="{Binding Origin}"
+                           HorizontalOptions="Center" />
                                 <Label Grid.Row="0" Grid.Column="2"
-                                       Text="{Binding Status}"
-                                       FontAttributes="Bold" />
-
+                           Text="{Binding Status}"
+                           FontAttributes="Bold"
+                           TextColor="#1F5C99" />
                                 <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
-                                       Text="{Binding DepartureTime, StringFormat='{0:HH:mm}'}"
-                                       FontSize="12"
-                                       TextColor="Gray" />
+                           Text="{Binding DepartureTime, StringFormat='Partida {0:HH:mm}'}"
+                           FontSize="12"
+                           TextColor="Gray" />
                             </Grid>
                         </Frame>
                     </DataTemplate>

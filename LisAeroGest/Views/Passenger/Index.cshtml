@@ -4,9 +4,9 @@
 }
 
 <div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-            <h2 class="fw-bold mb-1">
+            <h2 class="fw-bold mb-1 text-white">
                 <i class="bi bi-people-fill text-primary me-2"></i>Passageiros
             </h2>
             <span class="text-muted small">@Model.Count() passageiro(s) registado(s)</span>
@@ -57,13 +57,13 @@
                             @foreach (var p in Model)
                             {
                                 <tr>
-                                    <td class="ps-3 fw-semibold">@p.FullName</td>
-                                    <td>
+                                    <td class="ps-3 fw-semibold text-white">@p.FullName</td>
+                                    <td class="text-white">
                                         <span class="badge bg-secondary">@p.DocumentType</span>
                                         @p.DocumentNumber
                                     </td>
-                                    <td>@p.User?.Email</td>
-                                    <td>@(p.BirthDate?.ToString("dd/MM/yyyy") ?? "—")</td>
+                                    <td class="text-white">@p.User?.Email</td>
+                                    <td class="text-white">@(p.BirthDate?.ToString("dd/MM/yyyy") ?? "—")</td>
                                     <td class="text-end pe-3">
                                         <a asp-action="Details" asp-route-id="@p.Id"
                                            class="btn btn-sm btn-outline-info me-1">

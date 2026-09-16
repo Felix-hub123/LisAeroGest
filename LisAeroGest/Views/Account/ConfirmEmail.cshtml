@@ -6,19 +6,7 @@
     var isErro = !isSucesso && !string.IsNullOrEmpty(mensagem);
 }
 
-@functions {
-    string BgGrad()
-    {
-        var mensagem = ViewBag.Message as string ?? "";
-        if (mensagem.Contains("sucesso", StringComparison.OrdinalIgnoreCase))
-            return "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)";
-        if (!string.IsNullOrEmpty(mensagem))
-            return "linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%)";
-        return "";  // usa o default da .auth-bg
-    }
-}
-
-<div class="auth-bg" style="@(string.IsNullOrEmpty(BgGrad()) ? "" : $"background: {BgGrad()};")">
+<div class="auth-bg">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-12 col-md-9 col-lg-7 col-xl-5">
@@ -28,6 +16,10 @@
                     @if (isSucesso)
                     {
                         <div class="success-header">
+                            <a asp-controller="Home" asp-action="Index" class="auth-back-btn" title="Voltar ao início">
+                                <i class="bi bi-arrow-left"></i>
+                            </a>
+
                             <div class="success-checkmark pulse-success">
                                 <i class="bi bi-check-lg"></i>
                             </div>
@@ -35,7 +27,7 @@
                             <p>A sua conta está activa</p>
                             <div class="auth-wave">
                                 <svg viewBox="0 0 1440 60" preserveAspectRatio="none">
-                                    <path d="M0,32 C360,80 720,0 1080,32 C1260,48 1380,32 1440,32 L1440,60 L0,60 Z" fill="white" />
+                                    <path d="M0,32 C360,80 720,0 1080,32 C1260,48 1380,32 1440,32 L1440,60 L0,60 Z" fill="#111827" />
                                 </svg>
                             </div>
                         </div>
@@ -47,6 +39,10 @@
                     else if (isErro)
                     {
                         <div class="denied-header">
+                            <a asp-controller="Home" asp-action="Index" class="auth-back-btn" title="Voltar ao início">
+                                <i class="bi bi-arrow-left"></i>
+                            </a>
+
                             <div class="shield-icon-wrap pulse-shield">
                                 <i class="bi bi-x-lg"></i>
                             </div>
@@ -54,7 +50,7 @@
                             <p>Não foi possível confirmar o email</p>
                             <div class="auth-wave">
                                 <svg viewBox="0 0 1440 60" preserveAspectRatio="none">
-                                    <path d="M0,32 C360,80 720,0 1080,32 C1260,48 1380,32 1440,32 L1440,60 L0,60 Z" fill="white" />
+                                    <path d="M0,32 C360,80 720,0 1080,32 C1260,48 1380,32 1440,32 L1440,60 L0,60 Z" fill="#111827" />
                                 </svg>
                             </div>
                         </div>
@@ -66,6 +62,10 @@
                     else
                     {
                         <div class="auth-header">
+                            <a asp-controller="Home" asp-action="Index" class="auth-back-btn" title="Voltar ao início">
+                                <i class="bi bi-arrow-left"></i>
+                            </a>
+
                             <div class="auth-logo">
                                 <i class="bi bi-envelope-check"></i>
                             </div>
@@ -73,7 +73,7 @@
                             <p>A processar o seu pedido</p>
                             <div class="auth-wave">
                                 <svg viewBox="0 0 1440 60" preserveAspectRatio="none">
-                                    <path d="M0,32 C360,80 720,0 1080,32 C1260,48 1380,32 1440,32 L1440,60 L0,60 Z" fill="white" />
+                                    <path d="M0,32 C360,80 720,0 1080,32 C1260,48 1380,32 1440,32 L1440,60 L0,60 Z" fill="#111827" />
                                 </svg>
                             </div>
                         </div>
@@ -138,7 +138,7 @@
                         </div>
                     </div>
 
-                    <div class="card-footer bg-white text-center py-3 border-0">
+                    <div class="card-footer text-center py-3 border-0">
                         <span class="text-muted small">&copy; @DateTime.Now.Year LisAeroGest · CINEL</span>
                     </div>
                 </div>

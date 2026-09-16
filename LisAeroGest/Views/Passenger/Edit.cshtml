@@ -11,7 +11,7 @@
                    class="btn btn-outline-secondary btn-sm me-3">
                     <i class="bi bi-arrow-left"></i>
                 </a>
-                <h2 class="fw-bold mb-0">
+                <h2 class="fw-bold mb-0 text-white">
                     <i class="bi bi-pencil-square text-warning me-2"></i>Editar Perfil
                 </h2>
             </div>
@@ -62,11 +62,16 @@
                                 <label asp-for="ImageFile" class="form-label fw-semibold"></label>
                                 <input asp-for="ImageFile" class="form-control" type="file" accept="image/*"
                                        onchange="previewImage(this)" />
-                                @if (!string.IsNullOrEmpty(Model.ImageFullPath))
-                                {
-                                    <img id="imagePreview" src="@Model.ImageFullPath" alt="Perfil"
-                                         class="mt-2 rounded" style="height:80px; object-fit:cover;" />
-                                }
+
+                                <!-- Preview sempre visível (com fallback) -->
+                                <div class="mt-2">
+                                    <img id="imagePreview"
+                                         src="@(string.IsNullOrEmpty(Model.ImageFullPath) ? "/images/passenger/noimage.png" : Model.ImageFullPath)"
+                                         alt="Perfil"
+                                         class="rounded border"
+                                         style="height: 80px; width: 80px; object-fit: cover;"
+                                         onerror="this.src='/images/passenger/noimage.png'" />
+                                </div>
                             </div>
                         </div>
 

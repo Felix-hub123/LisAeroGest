@@ -1,9 +1,37 @@
-/* Estilos de impress�o para o Cart�o de Embarque (Views/CheckIn/Confirmation.cshtml) */
+﻿/* ═══════════════════════════════════════════════════════ */
+/* CARTÃO DE EMBARQUE — Estilos + Impressão                */
+/* (Views/CheckIn/Confirmation.cshtml)                     */
+/* ═══════════════════════════════════════════════════════ */
+
+/* Tamanho de texto extra pequeno usado no cartão */
+.fs-7 {
+    font-size: 0.75rem;
+}
+
+.tracking-wider {
+    letter-spacing: 0.1em;
+}
+
+/* Rota do cartão (fundo escuro em dark mode) */
+.boarding-route {
+    background-color: var(--lis-dark-3, #1a2332);
+}
+
+/* Wrapper do QR Code com fundo branco (para o QR ser legível) */
+.qr-wrapper {
+    background-color: #ffffff !important;
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* IMPRESSÃO — Cartão de Embarque em papel                 */
+/* ═══════════════════════════════════════════════════════ */
 @media print {
+    /* Esconde tudo */
     body * {
         visibility: hidden;
     }
 
+    /* Mostra apenas o cartão */
     .print-area,
     .print-area * {
         visibility: visible;
@@ -13,10 +41,59 @@
         position: absolute;
         left: 0;
         top: 0;
-        width: 100%;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        border-radius: 0 !important;
     }
 
-    .no-print {
+    /* Esconde botões de ação */
+    .no-print,
+    .d-print-none {
         display: none !important;
+    }
+
+    /* No papel, o cartão fica com fundo branco e texto preto */
+    .print-area,
+    .print-area .card-body,
+    .print-area .card-footer {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+
+        /* Forçar texto escuro para impressão */
+        .print-area h3,
+        .print-area strong,
+        .print-area .text-white,
+        .print-area .text-dark,
+        .print-area .text-secondary {
+            color: #000000 !important;
+        }
+
+    /* Rota fica com fundo claro no papel */
+    .boarding-route {
+        background-color: #f8f9fa !important;
+    }
+
+    /* Header mantém-se legível (fundo escuro + texto branco) */
+    .print-area .card-header {
+        background-color: #212529 !important;
+        color: #ffffff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* QR Code mantém fundo branco */
+    .qr-wrapper {
+        background-color: #ffffff !important;
+        border: 1px solid #ddd !important;
+    }
+
+    /* Remover sombras e efeitos que não se imprimem bem */
+    .print-area .shadow-sm,
+    .print-area .shadow,
+    .print-area .shadow-lg {
+        box-shadow: none !important;
     }
 }

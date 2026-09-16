@@ -11,6 +11,7 @@
 
 <div class="container py-4 mb-5">
 
+    <!-- ═══ BREADCRUMB ═══ -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item">
@@ -19,7 +20,7 @@
             <li class="breadcrumb-item">
                 <a asp-action="Index">Pesquisar voos</a>
             </li>
-            <li class="breadcrumb-item active">Escolher lugares</li>
+            <li class="breadcrumb-item active" aria-current="page">Escolher lugares</li>
         </ol>
     </nav>
 
@@ -27,19 +28,20 @@
         <i class="bi bi-arrow-left me-1"></i>Voltar aos resultados
     </a>
 
+    <!-- ═══ CABEÇALHO ═══ -->
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
         <div>
-            <span class="badge bg-primary mb-2">
-                <i class="bi bi-airplane me-1"></i>@Model.Flight.FlightNumber
+            <span class="seat-flight-badge">
+                <i class="bi bi-airplane-fill me-1"></i>@Model.Flight.FlightNumber
             </span>
-            <h1 class="fw-bold mb-1">Escolha os seus lugares</h1>
+            <h1 class="seat-title mb-1">Escolha os seus lugares</h1>
             <p class="text-muted mb-0">
-                Selecione <strong>@Model.PassengerCount</strong> lugar(es) no mapa abaixo.
+                Selecione <strong class="text-lime">@Model.PassengerCount</strong> lugar(es) no mapa abaixo.
             </p>
         </div>
         <div class="text-end">
             <small class="text-muted d-block">Preço base</small>
-            <strong class="fs-4 text-success">@Model.Flight.BasePrice.ToString("C2", culture)</strong>
+            <strong class="seat-base-price">@Model.Flight.BasePrice.ToString("C2", culture)</strong>
             <small class="text-muted d-block">por adulto</small>
         </div>
     </div>
@@ -60,33 +62,34 @@
         </div>
     }
 
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <!-- ═══ INFO DO VOO ═══ -->
+    <div class="seat-info-card card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-body p-4">
             <div class="row g-3 align-items-center">
                 <div class="col-md-3">
                     <small class="text-muted d-block">Companhia</small>
-                    <strong>@(Model.Flight.Airline?.Name ?? "—")</strong>
+                    <strong class="text-white">@(Model.Flight.Airline?.Name ?? "—")</strong>
                     <div class="small text-muted">@(Model.Flight.Aircraft?.Model ?? "")</div>
                 </div>
                 <div class="col-md-3">
                     <small class="text-muted d-block">Partida</small>
-                    <div class="fs-4 fw-bold">@(Model.Flight.OriginAirport?.IATACode ?? "—")</div>
+                    <div class="seat-airport-code">@(Model.Flight.OriginAirport?.IATACode ?? "—")</div>
                     <div class="text-muted small">@(Model.Flight.OriginAirport?.City ?? "")</div>
-                    <div class="fw-semibold">@Model.Flight.DepartureTime.ToString("dd/MM/yyyy HH:mm")</div>
+                    <div class="fw-semibold text-white">@Model.Flight.DepartureTime.ToString("dd/MM/yyyy HH:mm")</div>
                 </div>
                 <div class="col-md-3 text-md-center">
                     <small class="text-muted d-block">Duração</small>
-                    <div class="fw-semibold">
+                    <div class="fw-semibold text-white">
                         @((int)(Model.Flight.ArrivalTime - Model.Flight.DepartureTime).TotalHours)h
                         @((Model.Flight.ArrivalTime - Model.Flight.DepartureTime).Minutes.ToString("00"))m
                     </div>
-                    <i class="bi bi-arrow-right"></i>
+                    <i class="bi bi-arrow-right text-lime"></i>
                 </div>
                 <div class="col-md-3">
                     <small class="text-muted d-block">Chegada</small>
-                    <div class="fs-4 fw-bold">@(Model.Flight.DestinationAirport?.IATACode ?? "—")</div>
+                    <div class="seat-airport-code">@(Model.Flight.DestinationAirport?.IATACode ?? "—")</div>
                     <div class="text-muted small">@(Model.Flight.DestinationAirport?.City ?? "")</div>
-                    <div class="fw-semibold">@Model.Flight.ArrivalTime.ToString("dd/MM/yyyy HH:mm")</div>
+                    <div class="fw-semibold text-white">@Model.Flight.ArrivalTime.ToString("dd/MM/yyyy HH:mm")</div>
                 </div>
             </div>
         </div>
@@ -96,19 +99,17 @@
         @Html.AntiForgeryToken()
         <input type="hidden" name="flightId" value="@Model.Flight.Id" />
 
-       
         <div id="selectedSeatsContainer"></div>
-
         <input type="hidden" id="passengerCount" value="@Model.PassengerCount" />
 
         <div class="row g-4">
 
-            <!-- MAPA -->
+            <!-- ═══ MAPA DA CABINE ═══ -->
             <div class="col-lg-7">
-                <div class="card border-0 shadow-sm rounded-4">
+                <div class="seat-map-card card border-0 shadow-sm rounded-4">
                     <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3">
-                            <i class="bi bi-grid-3x3-gap me-2"></i>Mapa da cabine
+                        <h5 class="seat-section-title mb-3">
+                            <i class="bi bi-grid-3x3-gap text-lime me-2"></i>Mapa da cabine
                         </h5>
 
                         @if (!Model.SeatRows.Any())
@@ -132,10 +133,22 @@
                                         <div class="wing wing-right"></div>
 
                                         <div class="cabin-legend d-flex justify-content-center gap-3 flex-wrap mb-3">
-                                            <div class="legend-item"><span class="legend-box legend-available"></span><small>Livre</small></div>
-                                            <div class="legend-item"><span class="legend-box legend-selected"></span><small>Selecionado</small></div>
-                                            <div class="legend-item"><span class="legend-box legend-occupied"></span><small>Ocupado</small></div>
-                                            <div class="legend-item"><span class="legend-box legend-business"></span><small>Executiva</small></div>
+                                            <div class="legend-item">
+                                                <span class="legend-box legend-available"></span>
+                                                <small>Livre</small>
+                                            </div>
+                                            <div class="legend-item">
+                                                <span class="legend-box legend-selected"></span>
+                                                <small>Selecionado</small>
+                                            </div>
+                                            <div class="legend-item">
+                                                <span class="legend-box legend-occupied"></span>
+                                                <small>Ocupado</small>
+                                            </div>
+                                            <div class="legend-item">
+                                                <span class="legend-box legend-business"></span>
+                                                <small>Executiva</small>
+                                            </div>
                                         </div>
 
                                         @foreach (var row in Model.SeatRows)
@@ -204,77 +217,84 @@
                 </div>
             </div>
 
-            <!-- RESUMO -->
+            <!-- ═══ RESUMO ═══ -->
             <div class="col-lg-5">
-                <div class="card border-0 shadow-sm rounded-4 sticky-lg-top" style="top: 20px;">
-                    <div class="card-header bg-dark text-white border-0 rounded-top-4 p-4">
-                        <h5 class="mb-0 fw-bold"><i class="bi bi-cart-check me-2"></i>Resumo da viagem</h5>
+                <div class="seat-summary-card card border-0 shadow-sm rounded-4 sticky-lg-top" style="top: 20px;">
+                    <div class="seat-summary-header card-header rounded-top-4 p-4">
+                        <h5 class="mb-0 fw-bold text-white">
+                            <i class="bi bi-cart-check me-2 text-lime"></i>Resumo da viagem
+                        </h5>
                     </div>
                     <div class="card-body p-4">
 
-                        <!-- 🔥 Contador de lugares selecionados -->
-                        <div class="alert alert-info d-flex justify-content-between align-items-center mb-3">
+                        <!-- Contador -->
+                        <div class="seat-counter mb-3">
                             <div>
                                 <i class="bi bi-people-fill me-2"></i>
                                 <strong>Passageiros:</strong> @Model.PassengerCount
                             </div>
                             <div>
                                 <strong>Lugares:</strong>
-                                <span id="selectedCount" class="badge bg-primary fs-6">0</span> / @Model.PassengerCount
+                                <span id="selectedCount" class="seat-counter-badge">0</span>
+                                <span class="text-muted"> / @Model.PassengerCount</span>
                             </div>
                         </div>
 
-                        <div class="selection-box mb-4">
+                        <div class="seat-selection-box mb-4">
                             <small class="text-muted d-block">Lugares escolhidos</small>
-                            <div id="seatDisplay" class="fs-2 fw-bold text-primary">Nenhum</div>
-                            <div id="seatClassDisplay" class="text-muted">Selecione os lugares no mapa</div>
+                            <div id="seatDisplay" class="seat-selection-value">Nenhum</div>
+                            <div id="seatClassDisplay" class="seat-selection-hint">Selecione os lugares no mapa</div>
                         </div>
 
-                        <div class="price-line">
+                        <div class="seat-price-line">
                             <span>Voo (@Model.PassengerCount x @Model.Flight.BasePrice.ToString("C2", culture))</span>
                             <strong id="flightPrice">@((Model.Flight.BasePrice * Model.PassengerCount).ToString("C2", culture))</strong>
                         </div>
-                        <div class="price-line">
+                        <div class="seat-price-line">
                             <span>Lugar</span>
                             <strong id="seatPrice">0,00 €</strong>
                         </div>
 
-                        <hr />
-                        <h6 class="fw-bold mb-3"><i class="bi bi-plus-circle me-1"></i>Serviços adicionais</h6>
+                        <hr class="border-secondary" />
 
-                        <div class="extra-option mb-3">
+                        <h6 class="seat-section-subtitle mb-3">
+                            <i class="bi bi-plus-circle me-1"></i>Serviços adicionais
+                        </h6>
+
+                        <div class="seat-extra-option mb-3">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="extraLuggage"
                                        name="extraLuggage" value="true" onchange="updateTotal()" />
                                 <label class="form-check-label" for="extraLuggage">
-                                    <strong>Bagagem extra</strong>
+                                    <strong class="text-white">Bagagem extra</strong>
                                     <small class="d-block text-muted">Bagagem de porão adicional</small>
                                 </label>
                             </div>
-                            <strong class="text-success">+@Model.ExtraLuggagePrice.ToString("C2", culture)</strong>
+                            <strong class="text-lime">+@Model.ExtraLuggagePrice.ToString("C2", culture)</strong>
                         </div>
 
-                        <div class="extra-option mb-4">
+                        <div class="seat-extra-option mb-4">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="mealIncluded"
                                        name="mealIncluded" value="true" onchange="updateTotal()" />
                                 <label class="form-check-label" for="mealIncluded">
-                                    <strong>Refeição a bordo</strong>
+                                    <strong class="text-white">Refeição a bordo</strong>
                                     <small class="d-block text-muted">Refeição quente</small>
                                 </label>
                             </div>
-                            <strong class="text-success">+@Model.MealIncludedPrice.ToString("C2", culture)</strong>
+                            <strong class="text-lime">+@Model.MealIncludedPrice.ToString("C2", culture)</strong>
                         </div>
 
-                        <hr />
+                        <hr class="border-secondary" />
+
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <span class="fs-5 fw-bold">Total</span>
-                            <span id="totalPriceDisplay" class="fs-3 fw-bold text-success">
+                            <span class="fs-5 fw-bold text-white">Total</span>
+                            <span id="totalPriceDisplay" class="seat-total-price">
                                 @((Model.Flight.BasePrice * Model.PassengerCount).ToString("C2", culture))
                             </span>
                         </div>
 
-                        <button type="submit" id="btnSubmit" class="btn btn-primary btn-lg w-100 fw-bold" disabled>
+                        <button type="submit" id="btnSubmit" class="seat-submit-btn" disabled>
                             <i class="bi bi-cart-plus me-2"></i>Continuar para reserva
                         </button>
                     </div>

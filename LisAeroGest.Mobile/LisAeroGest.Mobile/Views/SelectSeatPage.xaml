@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
+    xmlns:models="clr-namespace:LisAeroGest.Mobile.Models"
+    x:Class="LisAeroGest.Mobile.Views.SelectSeatPage"
+    x:DataType="vm:SelectSeatViewModel"
+    Title="Seleccionar lugar">
+
+    <Grid RowDefinitions="Auto,Auto,* ,Auto" Padding="16" RowSpacing="12">
+
+        <Label
+            Grid.Row="0"
+            Text="Seleccione o seu lugar"
+            FontSize="22"
+            FontAttributes="Bold"
+            HorizontalOptions="Center" />
+
+        <ActivityIndicator
+            Grid.Row="1"
+            IsRunning="{Binding IsBusy}"
+            IsVisible="{Binding IsBusy}"
+            HorizontalOptions="Center" />
+
+        <CollectionView
+            Grid.Row="2"
+            ItemsSource="{Binding Seats}"
+            SelectionMode="None">
+
+            <CollectionView.EmptyView>
+                <Label
+                    Text="Não existem lugares disponíveis."
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    TextColor="#607D8B" />
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout
+                    Orientation="Vertical"
+                    Span="3"
+                    HorizontalItemSpacing="8"
+                    VerticalItemSpacing="8" />
+            </CollectionView.ItemsLayout>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:SeatDto">
+                    <Border
+                        Padding="8"
+                        Stroke="#B0BEC5"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8">
+
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:SelectSeatViewModel}}, Path=SelectSeatCommand}"
+                                CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+
+                        <VerticalStackLayout Spacing="3">
+                            <Label
+                                Text="{Binding Code}"
+                                FontSize="18"
+                                FontAttributes="Bold"
+                                HorizontalOptions="Center" />
+
+                            <Label
+                                Text="{Binding SeatClass}"
+                                FontSize="11"
+                                HorizontalOptions="Center" />
+
+                            <Label
+                                Text="{Binding DisplayPrice}"
+                                FontSize="11"
+                                HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <VerticalStackLayout Grid.Row="3" Spacing="8">
+            <Label
+                Text="{Binding ErrorMessage}"
+                TextColor="Red"
+                HorizontalOptions="Center" />
+
+            <Label
+                Text="{Binding SelectedSeat.Code, StringFormat='Lugar seleccionado: {0}'}"
+                HorizontalOptions="Center"
+                FontAttributes="Bold" />
+
+            <Button
+                Text="Confirmar lugar"
+                Command="{Binding ConfirmSeatCommand}"
+                BackgroundColor="#1565C0"
+                TextColor="White" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

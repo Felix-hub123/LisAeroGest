@@ -1,0 +1,161 @@
+﻿/* ============================================
+   CHECKOUT CONFIRMATION — Confirmação de Reserva
+   ============================================ */
+
+.checkout-card {
+    background-color: var(--lis-dark-2);
+    border: 1px solid var(--lis-border) !important;
+}
+
+/* ═══ HEADER ═══ */
+.checkout-header {
+    background: linear-gradient(135deg, #052e16 0%, #0f5132 60%, #198754 100%);
+    border-bottom: 3px solid var(--lis-lime);
+    position: relative;
+    overflow: hidden;
+}
+
+    .checkout-header::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 30% 120%, rgba(200, 230, 41, 0.15) 0%, transparent 60%);
+        pointer-events: none;
+    }
+
+    .checkout-header .display-1 {
+        color: #fff;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+        animation: popIn 0.5s ease;
+    }
+
+@keyframes popIn {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    70% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ═══ Nº RESERVA ═══ */
+.checkout-ticket-id {
+    color: var(--lis-lime);
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin: 0.25rem 0;
+    word-break: break-all;
+}
+
+.text-lime {
+    color: var(--lis-lime) !important;
+}
+
+.text-white-50 {
+    color: rgba(226, 232, 240, 0.5) !important;
+}
+
+/* ═══ INFO BOXES (Voo / Lugar / Partida / Preços / Passageiro) ═══ */
+.checkout-info-box {
+    background-color: var(--lis-dark-3);
+    border: 1px solid var(--lis-border);
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+    .checkout-info-box small.text-muted {
+        color: var(--lis-text-muted) !important;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .checkout-info-box strong {
+        color: var(--lis-text);
+    }
+
+    .checkout-info-box h6 {
+        color: var(--lis-lime);
+        margin-bottom: 0.75rem;
+    }
+
+/* ═══ CTA CARDS ═══ */
+.checkout-cta-card {
+    background-color: var(--lis-dark-3);
+    border: 1px solid var(--lis-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    transition: border-color 0.2s ease;
+}
+
+    .checkout-cta-card:hover {
+        border-color: var(--lis-lime);
+    }
+
+/* ═══ BOTÕES ═══ */
+.btn-lime {
+    background-color: var(--lis-lime);
+    color: var(--lis-dark);
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    padding: 0.6rem 1.25rem;
+    transition: all 0.2s ease;
+}
+
+    .btn-lime:hover,
+    .btn-lime:focus-visible {
+        background-color: var(--lis-lime-dark);
+        color: var(--lis-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(200, 230, 41, 0.3);
+        outline: none;
+    }
+
+.btn-outline-lime {
+    background-color: transparent;
+    color: var(--lis-lime);
+    border: 1px solid var(--lis-lime);
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.6rem 1.25rem;
+    transition: all 0.2s ease;
+}
+
+    .btn-outline-lime:hover,
+    .btn-outline-lime:focus-visible {
+        background-color: var(--lis-lime);
+        color: var(--lis-dark);
+        outline: none;
+    }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 768px) {
+    .checkout-header .display-1 {
+        font-size: 3rem;
+    }
+
+    .checkout-ticket-id {
+        font-size: 1.5rem;
+    }
+
+    .checkout-cta-card {
+        padding: 1.25rem;
+    }
+
+        .checkout-cta-card .btn-lg {
+            width: 100%;
+        }
+}

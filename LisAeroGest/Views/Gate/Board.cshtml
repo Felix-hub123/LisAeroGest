@@ -7,9 +7,9 @@
 <div class="container-fluid mt-4">
 
     <!-- Cabeçalho -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-            <h2 class="fw-bold mb-1">
+            <h2 class="fw-bold mb-1 text-white">
                 <i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>Painel de Gates
             </h2>
             <span class="text-muted small">Estado operacional em tempo real</span>
@@ -44,7 +44,7 @@
         @foreach (var terminal in terminals)
         {
             <div class="mb-5">
-                <h5 class="fw-semibold text-secondary mb-3">
+                <h5 class="fw-semibold mb-3 text-white">
                     <i class="bi bi-building me-2"></i>@terminal
                 </h5>
 
@@ -58,15 +58,6 @@
                             "Cleaning" => "border-info",
                             "Maintenance" => "border-warning",
                             _ => "border-secondary"
-                        };
-
-                        var bgClass = gate.Status switch
-                        {
-                            "Available" => "bg-success-subtle",
-                            "Occupied" => "bg-danger-subtle",
-                            "Cleaning" => "bg-info-subtle",
-                            "Maintenance" => "bg-warning-subtle",
-                            _ => "bg-light"
                         };
 
                         var statusText = gate.Status switch
@@ -88,14 +79,14 @@
                         };
 
                         <div class="col-6 col-md-4 col-lg-3 col-xl-2">
-                            <div class="card h-100 shadow-sm @cardClass @bgClass border-2">
+                            <div class="card h-100 shadow-sm gate-card @cardClass border-2">
                                 <div class="card-body text-center py-4">
-                                    <div class="display-6 fw-bold mb-2">@gate.GateNumber</div>
+                                    <div class="display-6 fw-bold mb-2 text-white">@gate.GateNumber</div>
                                     <span class="badge @statusBadge px-3 py-2">@statusText</span>
                                 </div>
                                 <div class="card-footer bg-transparent border-0 text-center pb-3">
                                     <a asp-action="Edit" asp-route-id="@gate.Id"
-                                       class="btn btn-sm btn-outline-dark">
+                                       class="btn btn-sm btn-outline-light">
                                         <i class="bi bi-pencil"></i> Alterar
                                     </a>
                                 </div>

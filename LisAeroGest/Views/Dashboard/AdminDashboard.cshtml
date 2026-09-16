@@ -19,12 +19,12 @@
     <!-- Cabeçalho -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-            <h2 class="fw-bold mb-1">
+            <h2 class="fw-bold mb-1 text-white">
                 <i class="bi bi-speedometer2 text-primary me-2"></i>Dashboard Administrativo
             </h2>
             <p class="text-muted mb-0">
                 Visão geral da operação e da gestão do aeroporto —
-                <strong>@Model.AdminName</strong>
+                <strong class="text-white">@Model.AdminName</strong>
                 <span class="badge bg-primary ms-1">Administrador</span>
             </p>
         </div>
@@ -71,7 +71,7 @@
 
     <!-- KPIs -->
     <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center cursor-pointer"
+        <div class="card-header py-3 d-flex justify-content-between align-items-center cursor-pointer"
              data-bs-toggle="collapse" data-bs-target="#groupKPIs" aria-expanded="true">
             <h5 class="mb-0 fw-bold text-primary">
                 <i class="bi bi-graph-up me-2"></i>Resumo de Indicadores (KPIs)
@@ -144,7 +144,7 @@
                             <div class="card-body d-flex align-items-center gap-3">
                                 <i class="bi bi-people-fill fs-2 text-primary"></i>
                                 <div>
-                                    <div class="fw-bold fs-5">@Model.OccupancyRate%</div>
+                                    <div class="fw-bold fs-5 text-white">@Model.OccupancyRate%</div>
                                     <small class="text-muted">Taxa média de ocupação (@Model.OccupiedSeats / @Model.TotalSeats lugares)</small>
                                 </div>
                             </div>
@@ -157,7 +157,7 @@
 
     <!-- Gestão do Sistema -->
     <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center cursor-pointer"
+        <div class="card-header py-3 d-flex justify-content-between align-items-center cursor-pointer"
              data-bs-toggle="collapse" data-bs-target="#groupManagement" aria-expanded="true">
             <h5 class="mb-0 fw-bold text-success">
                 <i class="bi bi-gear-fill me-2"></i>Gestão do Sistema
@@ -215,8 +215,6 @@
                             <div class="menu-info"><strong>Fórum</strong><small>Discussões internas</small></div>
                         </a>
                     </div>
-
-                    <!-- NOVOS ATALHOS -->
                     <div class="col-6 col-md-3">
                         <a asp-controller="Forum" asp-action="PendingComments" class="menu-card h-100">
                             <div class="menu-icon bg-warning-subtle text-warning"><i class="bi bi-hourglass-split"></i></div>
@@ -254,7 +252,7 @@
 
     <!-- Gráficos -->
     <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center cursor-pointer"
+        <div class="card-header py-3 d-flex justify-content-between align-items-center cursor-pointer"
              data-bs-toggle="collapse" data-bs-target="#groupCharts" aria-expanded="true">
             <h5 class="mb-0 fw-bold text-warning">
                 <i class="bi bi-bar-chart-line-fill me-2"></i>Estatísticas de Desempenho
@@ -267,7 +265,7 @@
                     <div class="col-lg-6">
                         <div class="card shadow-sm border-0 h-100">
                             <div class="card-body">
-                                <h5 class="card-title"><i class="bi bi-airplane-engines me-2 text-primary"></i>Voos por Companhia</h5>
+                                <h5 class="card-title text-white"><i class="bi bi-airplane-engines me-2 text-primary"></i>Voos por Companhia</h5>
                                 <div class="chart-wrap"><canvas id="chartAirlines"></canvas></div>
                             </div>
                         </div>
@@ -275,7 +273,7 @@
                     <div class="col-lg-6">
                         <div class="card shadow-sm border-0 h-100">
                             <div class="card-body">
-                                <h5 class="card-title"><i class="bi bi-pie-chart-fill me-2 text-success"></i>Voos por Estado</h5>
+                                <h5 class="card-title text-white"><i class="bi bi-pie-chart-fill me-2 text-success"></i>Voos por Estado</h5>
                                 <div class="chart-wrap"><canvas id="chartStatus"></canvas></div>
                             </div>
                         </div>
@@ -285,7 +283,7 @@
                     <div class="col-lg-8">
                         <div class="card shadow-sm border-0 h-100">
                             <div class="card-body">
-                                <h5 class="card-title">
+                                <h5 class="card-title text-white">
                                     <i class="bi bi-cash-stack me-2 text-warning"></i>Receita por Mês
                                     <small class="text-muted">(últimos 12 meses)</small>
                                 </h5>
@@ -296,7 +294,7 @@
                     <div class="col-lg-4">
                         <div class="card shadow-sm border-0 h-100">
                             <div class="card-body">
-                                <h5 class="card-title"><i class="bi bi-trophy-fill me-2 text-warning"></i>Top 5 Rotas</h5>
+                                <h5 class="card-title text-white"><i class="bi bi-trophy-fill me-2 text-warning"></i>Top 5 Rotas</h5>
                                 <ul class="list-group list-group-flush" id="topRoutesList"></ul>
                             </div>
                         </div>
@@ -304,7 +302,7 @@
                 </div>
                 <div class="card shadow-sm border-0">
                     <div class="card-body">
-                        <h5 class="card-title"><i class="bi bi-bar-chart-line-fill me-2 text-success"></i>Receita por Companhia Aérea</h5>
+                        <h5 class="card-title text-white"><i class="bi bi-bar-chart-line-fill me-2 text-success"></i>Receita por Companhia Aérea</h5>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle">
                                 <thead class="table-light">
@@ -455,7 +453,7 @@
                 var tr = document.createElement('tr');
                 tr.innerHTML =
                     '<td>' + (i + 1) + '</td>' +
-                    '<td><strong>' + r.airline + '</strong></td>' +
+                    '<td><strong class="text-white">' + r.airline + '</strong></td>' +
                     '<td class="text-center"><span class="badge bg-info">' + r.tickets + '</span></td>' +
                     '<td class="text-end fw-bold">' +
                         r.revenue.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' }) +

@@ -29,7 +29,7 @@
                         <!-- Nome (Gerado Automaticamente) -->
                         <div class="mb-3">
                             <label asp-for="Name" class="form-label fw-semibold"></label>
-                            <input asp-for="Name" class="form-control bg-light" placeholder="Selecione primeiro uma Cidade..." id="AirportName" readonly />
+                            <input asp-for="Name" class="form-control" placeholder="Selecione primeiro uma Cidade..." id="AirportName" readonly />
                             <span asp-validation-for="Name" class="text-danger"></span>
                         </div>
 
@@ -53,7 +53,7 @@
                         <!-- Código IATA (Gerado Automaticamente) -->
                         <div class="mb-3">
                             <label asp-for="IATACode" class="form-label fw-semibold"></label>
-                            <input asp-for="IATACode" class="form-control text-uppercase bg-light" placeholder="IATA" id="IATACode" readonly />
+                            <input asp-for="IATACode" class="form-control text-uppercase" placeholder="IATA" id="IATACode" readonly />
                             <span asp-validation-for="IATACode" class="text-danger"></span>
                         </div>
 

@@ -1,0 +1,129 @@
+﻿/* ============================================
+   GUEST CHECKOUT — Reserva como visitante
+   ============================================ */
+
+/* ═══ HEADER ═══ */
+.gc-title {
+    color: var(--lis-text);
+    font-weight: 800;
+    letter-spacing: -0.3px;
+}
+
+.text-lime {
+    color: var(--lis-lime) !important;
+}
+
+/* ═══ CARDS ═══ */
+.gc-card {
+    background-color: var(--lis-dark-2);
+    border: 1px solid var(--lis-border) !important;
+    transition: border-color 0.2s ease;
+}
+
+    .gc-card:hover {
+        border-color: var(--lis-border);
+    }
+
+.gc-summary-header {
+    background-color: var(--lis-dark-3) !important;
+    border-bottom: 1px solid var(--lis-border) !important;
+}
+
+/* ═══ INFO BOX (Voo / Lugar) ═══ */
+.gc-info-box {
+    background-color: var(--lis-dark-3);
+    border: 1px solid var(--lis-border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+}
+
+    .gc-info-box small.text-muted {
+        color: var(--lis-text-muted) !important;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .gc-info-box strong {
+        color: var(--lis-text);
+        font-size: 1.05rem;
+    }
+
+/* ═══ EXTRAS (bagagem / refeição) ═══ */
+.gc-extra-item {
+    background-color: rgba(200, 230, 41, 0.08);
+    border: 1px solid rgba(200, 230, 41, 0.25);
+    color: var(--lis-lime);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+    .gc-extra-item i {
+        color: var(--lis-lime);
+    }
+
+/* ═══ FORMULÁRIO ═══ */
+.gc-card .form-label {
+    color: var(--lis-text);
+    font-size: 0.9rem;
+}
+
+.gc-card .form-text {
+    color: var(--lis-text-muted);
+}
+
+.gc-card .form-check-label {
+    color: var(--lis-text);
+    cursor: pointer;
+}
+
+/* ═══ BOTÃO LIMA ═══ */
+.btn-lime {
+    background-color: var(--lis-lime);
+    color: var(--lis-dark);
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    padding: 0.6rem 1.25rem;
+    transition: all 0.2s ease;
+}
+
+    .btn-lime:hover,
+    .btn-lime:focus-visible {
+        background-color: var(--lis-lime-dark);
+        color: var(--lis-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(200, 230, 41, 0.3);
+        outline: none;
+    }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 768px) {
+    .gc-title {
+        font-size: 1.35rem;
+    }
+
+    .gc-card .card-body {
+        padding: 1.25rem !important;
+    }
+
+    /* Botão "Continuar" fica full-width em mobile */
+    .gc-card .btn-lime {
+        width: 100%;
+        margin-left: 0 !important;
+    }
+
+    .gc-card .d-flex.gap-2 {
+        flex-direction: column-reverse;
+    }
+
+        .gc-card .d-flex.gap-2 .btn {
+            width: 100%;
+        }
+}

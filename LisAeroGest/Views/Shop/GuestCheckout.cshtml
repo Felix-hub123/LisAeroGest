@@ -5,8 +5,13 @@
     var culture = new CultureInfo("pt-PT");
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/guestCheckout.css" asp-append-version="true" />
+}
+
 <div class="container py-4 mb-5">
 
+    <!-- ═══ BREADCRUMB ═══ -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb mb-0">
             <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Início</a></li>
@@ -14,11 +19,14 @@
             <li class="breadcrumb-item">
                 <a asp-action="SelectSeat" asp-route-flightId="@Model.FlightId">Lugar</a>
             </li>
-            <li class="breadcrumb-item active">Os seus dados</li>
+            <li class="breadcrumb-item active" aria-current="page">Os seus dados</li>
         </ol>
     </nav>
 
-    <h1 class="h3 fw-bold mb-1">Reserve como visitante</h1>
+    <!-- ═══ HEADER ═══ -->
+    <h1 class="gc-title mb-1">
+        <i class="bi bi-person-vcard text-lime me-2"></i>Reserve como visitante
+    </h1>
     <p class="text-muted mb-4">
         Preencha os dados do passageiro para continuar para o pagamento.
         Não é obrigatório criar conta.
@@ -26,12 +34,16 @@
 
     @if (TempData["Error"] != null)
     {
-        <div class="alert alert-danger">@TempData["Error"]</div>
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+        </div>
     }
 
     <div class="row g-4">
+
+        <!-- ═══ FORMULÁRIO ═══ -->
         <div class="col-lg-7">
-            <div class="card border-0 shadow-sm rounded-4">
+            <div class="gc-card card border-0 shadow-sm rounded-4">
                 <div class="card-body p-4">
                     <form asp-action="ProcessGuestCheckout" method="post">
                         @Html.AntiForgeryToken()
@@ -80,11 +92,13 @@
                             </div>
                         </div>
 
-                        <div class="d-flex gap-2 mt-4">
+                        <div class="d-flex gap-2 mt-4 flex-wrap">
                             <a asp-action="SelectSeat" asp-route-flightId="@Model.FlightId"
-                               class="btn btn-outline-secondary">Voltar</a>
-                            <button type="submit" class="btn btn-primary fw-bold">
-                                Continuar para pagamento
+                               class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i>Voltar
+                            </a>
+                            <button type="submit" class="btn btn-lime fw-bold ms-auto">
+                                <i class="bi bi-credit-card me-1"></i>Continuar para pagamento
                             </button>
                         </div>
                     </form>
@@ -92,42 +106,58 @@
             </div>
         </div>
 
+        <!-- ═══ RESUMO ═══ -->
         <div class="col-lg-5">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-header bg-dark text-white rounded-top-4 p-3">
-                    <strong>Resumo</strong>
+            <div class="gc-card card border-0 shadow-sm rounded-4">
+                <div class="gc-summary-header card-header rounded-top-4 p-3">
+                    <strong class="text-white">
+                        <i class="bi bi-receipt me-2 text-lime"></i>Resumo
+                    </strong>
                 </div>
                 <div class="card-body p-4">
-                    <div class="mb-3">
+
+                    <div class="gc-info-box mb-3">
                         <small class="text-muted d-block">Voo</small>
-                        <strong>@Model.FlightNumber</strong>
-                        <div>@Model.OriginCode → @Model.DestinationCode</div>
+                        <strong class="text-white">@Model.FlightNumber</strong>
+                        <div class="text-muted small">
+                            @Model.OriginCode → @Model.DestinationCode
+                        </div>
                     </div>
-                    <div class="mb-3">
+
+                    <div class="gc-info-box mb-3">
                         <small class="text-muted d-block">Lugar</small>
-                        <strong>@Model.SeatCode</strong>
+                        <strong class="text-white">@Model.SeatCode</strong>
                     </div>
+
                     @if (Model.ExtraLuggage)
                     {
-                        <div class="small mb-1">Bagagem extra incluída</div>
+                        <div class="gc-extra-item">
+                            <i class="bi bi-suitcase2 me-2"></i>Bagagem extra incluída
+                        </div>
                     }
                     @if (Model.MealIncluded)
                     {
-                        <div class="small mb-1">Refeição incluída</div>
+                        <div class="gc-extra-item">
+                            <i class="bi bi-egg-fried me-2"></i>Refeição incluída
+                        </div>
                     }
-                    <hr />
-                    <div class="d-flex justify-content-between">
-                        <span>Voo</span>
-                        <span>@Model.FlightPrice.ToString("C", culture)</span>
+
+                    <hr class="border-secondary" />
+
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Voo</span>
+                        <span class="text-white">@Model.FlightPrice.ToString("C", culture)</span>
                     </div>
-                    <div class="d-flex justify-content-between">
-                        <span>Lugar</span>
-                        <span>@Model.SeatPrice.ToString("C", culture)</span>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Lugar</span>
+                        <span class="text-white">@Model.SeatPrice.ToString("C", culture)</span>
                     </div>
-                    <hr />
+
+                    <hr class="border-secondary" />
+
                     <div class="d-flex justify-content-between align-items-center">
-                        <strong>Total</strong>
-                        <strong class="fs-4 text-success">@Model.TotalPrice.ToString("C", culture)</strong>
+                        <strong class="text-white">Total</strong>
+                        <strong class="fs-4 text-lime">@Model.TotalPrice.ToString("C", culture)</strong>
                     </div>
                 </div>
             </div>
