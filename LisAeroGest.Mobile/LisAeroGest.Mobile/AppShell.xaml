@@ -1,21 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
 <Shell
     x:Class="LisAeroGest.Mobile.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:LisAeroGest.Mobile.Views"
-    Title="LisAeroGest Mobile">
+    Title="LisAeroGest"
+    FlyoutBehavior="Flyout">
 
-    <!-- Área autenticada — só é atingida depois do login, nunca antes -->
-    <TabBar>
+    <!-- NÃO AUTENTICADO -->
+
+    <FlyoutItem
+        x:Name="LoginItem"
+        Title="Iniciar sessão">
+
         <ShellContent
-            Title="Partidas"
+            ContentTemplate="{DataTemplate views:LoginPage}"
+            Route="LoginPage" />
+
+    </FlyoutItem>
+
+    <FlyoutItem
+        x:Name="RegisterItem"
+        Title="Registar">
+
+        <ShellContent
+            ContentTemplate="{DataTemplate views:RegisterPage}"
+            Route="RegisterPage" />
+
+    </FlyoutItem>
+
+
+    <!-- PASSAGEIRO / FUNCIONÁRIO -->
+
+    <FlyoutItem
+        x:Name="VoosItem"
+        Title="Partidas"
+        IsVisible="False">
+
+        <ShellContent
             ContentTemplate="{DataTemplate views:FlightBoardPage}"
             Route="FlightBoardPage" />
 
+    </FlyoutItem>
+
+    <FlyoutItem
+        x:Name="BilhetesItem"
+        Title="Bilhetes"
+        IsVisible="False">
+
         <ShellContent
-            Title="Bilhetes"
             ContentTemplate="{DataTemplate views:TicketsPage}"
             Route="TicketsPage" />
-    </TabBar>
+
+    </FlyoutItem>
+
+    <FlyoutItem
+        x:Name="LerQrItem"
+        Title="Ler QR"
+        IsVisible="False">
+
+        <ShellContent
+            ContentTemplate="{DataTemplate views:ScanTicketPage}"
+            Route="ScanTicketPage" />
+
+    </FlyoutItem>
+
+
+    <!-- BOTÃO TERMINAR SESSÃO -->
+
+    <Shell.FlyoutFooter>
+
+        <VerticalStackLayout Padding="20">
+
+            <Button
+                x:Name="LogoutButton"
+                Text="Terminar sessão"
+                IsVisible="False"
+                Clicked="OnLogoutClicked"
+                HeightRequest="50" />
+
+        </VerticalStackLayout>
+
+    </Shell.FlyoutFooter>
 
 </Shell>

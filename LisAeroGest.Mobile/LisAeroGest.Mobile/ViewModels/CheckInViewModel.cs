@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LisAeroGest.Mobile.Services;
+using System.Diagnostics;
 
 namespace LisAeroGest.Mobile.ViewModels
 {
@@ -63,12 +64,21 @@ namespace LisAeroGest.Mobile.ViewModels
         [RelayCommand]
         public async Task ConfirmCheckInAsync()
         {
-            if (IsBusy) return;
+            if (IsBusy)
+                return;
+
+            if (TicketId <= 0)
+            {
+                ErrorMessage = "Bilhete inválido.";
+                HasError = true;
+                return;
+            }
 
             try
             {
                 IsBusy = true;
                 HasError = false;
+                ErrorMessage = string.Empty;
 
                 var result = await _apiService.DoCheckInAsync(TicketId);
 
@@ -79,23 +89,25 @@ namespace LisAeroGest.Mobile.ViewModels
                     SequenceNumber = result.SequenceNumber;
                     QrData = result.QRData;
 
-                    // Gera o QR Code com base no QRData retornado pela API (ou usa o TicketId/FlightNumber já atualizados)
-                    var contentToEncode = !string.IsNullOrEmpty(result.QRData)
+                    var contentToEncode = !string.IsNullOrWhiteSpace(result.QRData)
                         ? result.QRData
                         : $"BOARDING|{TicketId}|{FlightNumber}";
 
-                    QrImageUrl = $"https://quickchart.io/qr?text={Uri.EscapeDataString(contentToEncode)}";
+                    QrImageUrl =
+                        $"https://quickchart.io/qr?text={Uri.EscapeDataString(contentToEncode)}";
 
                     CheckInDone = true;
                 }
                 else
                 {
-                    ErrorMessage = result.ErrorMessage ?? "Erro desconhecido.";
+                    ErrorMessage = result.ErrorMessage ?? "Não foi possível fazer o check-in.";
                     HasError = true;
                 }
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"[CheckInViewModel] {ex.Message}");
+
                 ErrorMessage = "Ocorreu um erro de ligação ao servidor.";
                 HasError = true;
             }

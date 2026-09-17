@@ -10,19 +10,36 @@
         public string OriginCode { get; set; } = string.Empty;
         public string Destination { get; set; } = string.Empty;
         public string DestinationCode { get; set; } = string.Empty;
-        public string AircraftModel { get; set; } = string.Empty;
         public string Gate { get; set; } = string.Empty;
         public DateTime DepartureTime { get; set; }
         public DateTime ArrivalTime { get; set; }
         public decimal BasePrice { get; set; }
         public string Status { get; set; } = string.Empty;
-        public int DurationMinutes { get; set; }
+        public string Aircraft { get; set; } = string.Empty;
 
-        public string DurationLabel =>
-            DurationMinutes > 0
-                ? $"{DurationMinutes / 60}h {DurationMinutes % 60:00}m"
-                : "Não disponível";
+        public string AircraftModel =>
+            string.IsNullOrWhiteSpace(Aircraft) ? string.Empty : Aircraft;
 
-        public string PriceLabel => BasePrice.ToString("C2");
+        public string PriceLabel =>
+            BasePrice > 0
+                ? BasePrice.ToString("C", new System.Globalization.CultureInfo("pt-PT"))
+                : string.Empty;
+
+        public string DurationLabel
+        {
+            get
+            {
+                if (ArrivalTime == default || DepartureTime == default)
+                    return string.Empty;
+
+                var duration = ArrivalTime - DepartureTime;
+                if (duration.TotalMinutes <= 0)
+                    return string.Empty;
+
+                return duration.TotalHours >= 1
+                    ? $"{(int)duration.TotalHours}h {duration.Minutes:00}m"
+                    : $"{duration.Minutes} min";
+            }
+        }
     }
 }

@@ -33,20 +33,20 @@ namespace LisAeroGest.Mobile
             {
                 client.BaseAddress = new Uri(
                     "https://lisaerogest.onrender.com/");
-                client.Timeout = TimeSpan.FromSeconds(15);
+
+                client.Timeout = TimeSpan.FromSeconds(30);
             })
-            .AddHttpMessageHandler<AuthTokenHandler>()
-            .ConfigurePrimaryHttpMessageHandler(() =>
-            {
-                var handler = new HttpClientHandler();
+              .ConfigurePrimaryHttpMessageHandler(() =>
+              {
+                  var handler = new HttpClientHandler();
 
-#if DEBUG
-                handler.ServerCertificateCustomValidationCallback =
-                    (message, cert, chain, errors) => true;
-#endif
+            #if DEBUG
+                  handler.ServerCertificateCustomValidationCallback =
+                      (message, cert, chain, errors) => true;
+            #endif
 
-                return handler;
-            });
+                  return handler;
+              });
 
             builder.Services.AddHttpClient<AuthService>(client =>
             {
@@ -66,7 +66,7 @@ namespace LisAeroGest.Mobile
                 return handler;
             });
 
-            // ── ViewModels existentes ───────────────────────────────────
+            // ── ViewModels ─────────────────────────────────────────────────
             builder.Services.AddTransient<LoginViewModel>();
             builder.Services.AddTransient<FlightBoardViewModel>();
             builder.Services.AddTransient<FlightDetailsViewModel>();
@@ -74,20 +74,19 @@ namespace LisAeroGest.Mobile
             builder.Services.AddTransient<CheckInViewModel>();
             builder.Services.AddTransient<RegisterViewModel>();
             builder.Services.AddTransient<SelectSeatViewModel>();
+            builder.Services.AddTransient<PaymentViewModel>();
 
-
-
-            // ── Views existentes ────────────────────────────────────────
+            // ── Views ──────────────────────────────────────────────────────
             builder.Services.AddTransient<AppShell>();
+
             builder.Services.AddTransient<LoginPage>();
             builder.Services.AddTransient<FlightBoardPage>();
             builder.Services.AddTransient<FlightDetailsPage>();
             builder.Services.AddTransient<TicketsPage>();
-            builder.Services.AddTransient<CheckInPage>();
             builder.Services.AddTransient<RegisterPage>();
             builder.Services.AddTransient<SelectSeatPage>();
-
-
+            builder.Services.AddTransient<PaymentPage>();
+            builder.Services.AddTransient<ScanTicketPage>();
 
             return builder.Build();
         }

@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LisAeroGest.Mobile.Helpers;
 using LisAeroGest.Mobile.Models;
 using LisAeroGest.Mobile.Services;
 using System.Collections.ObjectModel;
@@ -54,7 +55,17 @@ namespace LisAeroGest.Mobile.ViewModels
                 ErrorMessage = string.Empty;
 
                 var result = await _apiService.GetSeatsAsync(FlightId);
-                Seats = new ObservableCollection<SeatDto>(result);
+
+                if (!result.Success)
+                {
+                    ErrorMessage = result.ErrorMessage
+                        ?? "Não foi possível carregar os lugares.";
+                    Seats = new ObservableCollection<SeatDto>();
+                    return;
+                }
+
+                Seats = new ObservableCollection<SeatDto>(
+                    result.Data ?? new List<SeatDto>());
             }
             catch (Exception ex)
             {
@@ -86,7 +97,12 @@ namespace LisAeroGest.Mobile.ViewModels
                 return;
             }
 
-            await Shell.Current.GoToAsync("..");
+            await Shell.Current.DisplayAlert(
+                "Reserva",
+                "A compra é feita no site LisAeroGest.\nO lugar escolhido fica registado só neste ecrã para a demo.",
+                "OK");
+
+            await Shell.Current.GoToAsync("//TicketsPage");
         }
     }
 }

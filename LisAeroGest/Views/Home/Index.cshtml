@@ -18,8 +18,7 @@
                     <span class="text-lime">mundo.</span>
                 </h1>
                 <p class="lead opacity-75 mb-0" style="max-width: 520px;">
-                    Pesquise voos, descubra destinos e reserve em 3 cliques.
-                    Tudo a partir do Aeroporto de Lisboa.
+                    Partidas reais a partir de Lisboa. Sem formulários longos — abra o calendário e reserve.
                 </p>
             </div>
             <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
@@ -34,24 +33,7 @@
     </div>
 </section>
 
-<!-- ═══ SEARCH BAR (sobreposta ao hero) ═══ -->
-<!-- ═══ SEARCH BAR (sobreposta ao hero) ═══ -->
-<div class="container lis-search-bar">
-    <div class="lis-search-card">
-        <div class="lis-search-form text-center">
-            <a asp-controller="Shop" asp-action="Calendar" class="lis-search-btn w-100 py-3">
-                <i class="bi bi-calendar-event me-2"></i>Ver calendário de voos
-                <i class="bi bi-arrow-right ms-2"></i>
-            </a>
-            <p class="text-muted small mt-3 mb-0">
-                <i class="bi bi-info-circle me-1"></i>
-                Consulte os voos disponíveis a partir de Lisboa e reserve em 3 cliques.
-            </p>
-        </div>
-    </div>
-</div>
-
-<!-- ═══ COMO FUNCIONA ═══ -->
+<!-- ═══ COMO FUNCIONA (com CTA principal) ═══ -->
 <section class="container mb-5" data-aos="fade-up">
     <div class="row align-items-end mb-4">
         <div class="col-lg-8">
@@ -203,18 +185,13 @@
 
     <section class="container mb-5" data-aos="fade-up">
         <div class="row align-items-end mb-4">
-            <div class="col-lg-5">
+            <div class="col-lg-8">
                 <div class="lis-section-label">Destinos Populares</div>
                 <h2 class="lis-section-title">
                     Inspire-se.<br />
                     Escolha o seu<br />
                     <span class="highlight">próximo destino.</span>
                 </h2>
-            </div>
-            <div class="col-lg-7 text-lg-end mt-3 mt-lg-0">
-                <a asp-controller="Shop" asp-action="Calendar" class="lis-link-lime">
-                    Ver todos os destinos <i class="bi bi-arrow-right"></i>
-                </a>
             </div>
         </div>
 
@@ -223,7 +200,7 @@
             {
                 var imgUrl = destImages.GetValueOrDefault(d.IATA, "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&q=80");
                 <div class="col-6 col-lg-3">
-                    <a asp-controller="Shop" asp-action="Calendar" class="text-decoration-none">
+                    <a asp-controller="Shop" asp-action="Calendar" asp-route-destination="@d.IATA" class="text-decoration-none">
                         <div class="lis-dest-card">
                             <img src="@imgUrl" alt="@d.Cidade" loading="lazy" />
                             <div class="dest-overlay">
@@ -263,7 +240,7 @@
     </section>
 }
 
-<!-- ═══ QUICK LINKS ═══ -->
+<!-- ═══ QUICK LINKS (apenas 3, sem Calendário) ═══ -->
 <section class="container mb-5" data-aos="fade-up">
     <div class="row g-4 align-items-center">
         <div class="col-lg-6">
@@ -305,15 +282,6 @@
                 </div>
                 <i class="bi bi-chevron-right lis-quicklink-arrow"></i>
             </a>
-
-            <a asp-controller="Shop" asp-action="Calendar" class="lis-quicklink-item">
-                <div class="lis-quicklink-icon"><i class="bi bi-calendar-event"></i></div>
-                <div>
-                    <div class="lis-quicklink-title">Calendário de voos</div>
-                    <div class="lis-quicklink-desc">Reserve em 3 cliques</div>
-                </div>
-                <i class="bi bi-chevron-right lis-quicklink-arrow"></i>
-            </a>
         </div>
     </div>
 </section>
@@ -331,8 +299,8 @@
                 <p class="text-muted mb-4">
                     Descubra todas as rotas diretas a partir de LIS e planeie a sua próxima viagem.
                 </p>
-                <a asp-controller="Shop" asp-action="Calendar" class="lis-link-lime">
-                    Explorar rotas <i class="bi bi-arrow-right"></i>
+                <a asp-controller="Airline" asp-action="PublicIndex" class="lis-link-lime">
+                    Ver companhias <i class="bi bi-arrow-right"></i>
                 </a>
             </div>
             <div class="col-lg-7">
@@ -400,14 +368,6 @@
         updateClock();
         setInterval(updateClock, 1000);
 
-        // Tabs de pesquisa
-        document.querySelectorAll('.lis-search-tab').forEach(tab => {
-            tab.addEventListener('click', function () {
-                document.querySelectorAll('.lis-search-tab').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-
         // Mapa
         const markers = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MapMarkers ?? new List<LisAeroGest.Models.MapMarkerViewModel>()));
         const mapEl = document.getElementById("routesMap");
@@ -437,7 +397,6 @@
                 const lng = m.lng ?? m.Lng;
                 if (lat == null || lng == null) return;
 
-                // Linha a partir de LIS
                 L.polyline([[38.77, -9.13], [lat, lng]], {
                     color: '#c8e629',
                     weight: 1,

@@ -1,30 +1,33 @@
+using LisAeroGest.Mobile.Helpers;
 using LisAeroGest.Mobile.Models;
 using LisAeroGest.Mobile.ViewModels;
 
-namespace LisAeroGest.Mobile.Views;
-
-public partial class TicketsPage : ContentPage
+namespace LisAeroGest.Mobile.Views
 {
-    private readonly TicketsViewModel _viewModel;
-
-    public TicketsPage(TicketsViewModel viewModel)
+    public partial class TicketsPage : ContentPage
     {
-        InitializeComponent();
-        _viewModel = viewModel;
-        BindingContext = _viewModel;
-    }
-
-    protected override async void OnAppearing()
-    {
-        base.OnAppearing();
-        await _viewModel.LoadTicketsCommand.ExecuteAsync(null);
-    }
-
-    private async void OnCheckInClicked(object sender, EventArgs e)
-    {
-        if (sender is Button button && button.BindingContext is TicketDto ticket)
+        public TicketsPage(TicketsViewModel viewModel)
         {
-            await Shell.Current.GoToAsync($"{nameof(CheckInPage)}?ticketId={ticket.Id}");
+            InitializeComponent();
+            BindingContext = viewModel;
         }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+            if (BindingContext is TicketsViewModel vm)
+                await vm.LoadTicketsCommand.ExecuteAsync(null);
+        }
+
+        private async void OnCheckInClicked(object sender, EventArgs e)
+        {
+            if (sender is Button btn && btn.BindingContext is TicketDto ticket)
+            {
+                PendingBooking.TicketId = ticket.Id;
+                await Shell.Current.GoToAsync(nameof(CheckInPage));
+            }
+        }
+
+       
     }
 }

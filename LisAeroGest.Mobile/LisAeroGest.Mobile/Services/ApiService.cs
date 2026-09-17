@@ -14,16 +14,21 @@ namespace LisAeroGest.Mobile.Services
             _httpClient = httpClient;
         }
 
+        // ═══════════════════════════════════════════════════════════
+        // MÉTODOS GENÉRICOS
+        // ═══════════════════════════════════════════════════════════
+
+        private static bool HasInternet() =>
+            Connectivity.Current.NetworkAccess == NetworkAccess.Internet;
+
         /// <summary>
-        /// Obtém a lista de voos de partida.
+        /// GET genérico — devolve ApiResult com dados ou mensagem de erro.
         /// </summary>
-        public async Task<List<FlightDto>> GetDeparturesAsync()
+        private async Task<ApiResult<T>> GetAsync<T>(string endpoint)
         {
-            if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
-            {
-                Debug.WriteLine("[ApiService] Sem ligação à Internet.");
-                return new List<FlightDto>();
-            }
+            if (!HasInternet())
+                return ApiResult<T>.Fail(
+                    "Sem ligação à Internet. Verifique a sua rede.");
 
             try
             {
@@ -31,215 +36,90 @@ namespace LisAeroGest.Mobile.Services
                     TimeSpan.FromSeconds(15));
 
                 var response = await _httpClient.GetAsync(
-                    "api/flights/departures",
-                    cts.Token);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var departures = await response.Content
-                        .ReadFromJsonAsync<List<FlightDto>>(
-                            cancellationToken: cts.Token);
-
-                    return departures ?? new List<FlightDto>();
-                }
-
-                Debug.WriteLine(
-                    $"[ApiService Error] HTTP {(int)response.StatusCode}: " +
-                    response.ReasonPhrase);
-
-                return new List<FlightDto>();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(
-                    $"[ApiService Error] Exceção ao obter partidas: {ex.Message}");
-
-                return new List<FlightDto>();
-            }
-        }
-
-        /// <summary>
-        /// Obtém a lista de voos de chegada.
-        /// </summary>
-        public async Task<List<FlightDto>> GetArrivalsAsync()
-        {
-            if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
-            {
-                Debug.WriteLine("[ApiService] Sem ligação à Internet.");
-                return new List<FlightDto>();
-            }
-
-            try
-            {
-                using var cts = new CancellationTokenSource(
-                    TimeSpan.FromSeconds(15));
-
-                var response = await _httpClient.GetAsync(
-                    "api/flights/arrivals",
-                    cts.Token);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    return await response.Content
-                        .ReadFromJsonAsync<List<FlightDto>>(
-                            cancellationToken: cts.Token)
-                        ?? new List<FlightDto>();
-                }
-
-                Debug.WriteLine(
-                    $"[ApiService Error] HTTP {(int)response.StatusCode}: " +
-                    response.ReasonPhrase);
-
-                return new List<FlightDto>();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(
-                    $"[ApiService Error] Exceção ao obter chegadas: {ex.Message}");
-
-                return new List<FlightDto>();
-            }
-        }
-
-        /// <summary>
-        /// Obtém os bilhetes do passageiro autenticado.
-        /// </summary>
-        public async Task<List<TicketDto>> GetMyTicketsAsync()
-        {
-            if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
-            {
-                Debug.WriteLine("[ApiService] Sem ligação à Internet.");
-                return new List<TicketDto>();
-            }
-
-            try
-            {
-                using var cts = new CancellationTokenSource(
-                    TimeSpan.FromSeconds(15));
-
-                var response = await _httpClient.GetAsync("api/flights/my-tickets", cts.Token);
-
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var tickets = await response.Content
-                        .ReadFromJsonAsync<List<TicketDto>>(
-                            cancellationToken: cts.Token);
-
-                    return tickets ?? new List<TicketDto>();
-                }
-
-                Debug.WriteLine(
-                    $"[ApiService Error] HTTP {(int)response.StatusCode}: " +
-                    response.ReasonPhrase);
-
-                return new List<TicketDto>();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(
-                    $"[ApiService Error] Exceção ao obter bilhetes: {ex.Message}");
-
-                return new List<TicketDto>();
-            }
-        }
-
-        /// <summary>
-        /// Obtém os detalhes de um voo específico.
-        /// </summary>
-        public async Task<FlightDetailDto?> GetDetailsAsync(int id)
-        {
-            if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
-            {
-                Debug.WriteLine("[ApiService] Sem ligação à Internet.");
-                return null;
-            }
-
-            try
-            {
-                using var cts = new CancellationTokenSource(
-                    TimeSpan.FromSeconds(15));
-
-                var response = await _httpClient.GetAsync(
-                    $"api/voos/{id}",
-                    cts.Token);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    return await response.Content
-                        .ReadFromJsonAsync<FlightDetailDto>(
-                            cancellationToken: cts.Token);
-                }
-
-                var errorBody = await response.Content
-                    .ReadAsStringAsync(cts.Token);
-
-                Debug.WriteLine(
-                    $"[ApiService Error] HTTP {(int)response.StatusCode}: {errorBody}");
-
-                return null;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(
-                    $"[ApiService Error] Exceção ao obter detalhes: {ex.Message}");
-
-                return null;
-            }
-        }
-
-
-        /// <summary>
-        /// Obtém os lugares disponíveis de um voo.
-        /// </summary>
-        public async Task<List<SeatDto>> GetSeatsAsync(int id)
-        {
-            if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
-            {
-                Debug.WriteLine("[ApiService] Sem ligação à Internet.");
-                return new List<SeatDto>();
-            }
-
-            try
-            {
-                using var cts = new CancellationTokenSource(
-                    TimeSpan.FromSeconds(15));
-
-                var response = await _httpClient.GetAsync(
-                    $"api/voos/{id}/seats",
-                    cts.Token);
+                    endpoint, cts.Token);
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var errorBody = await response.Content
-                        .ReadAsStringAsync(cts.Token);
-
                     Debug.WriteLine(
-                        $"[ApiService Error] HTTP {(int)response.StatusCode} " +
-                        $"ao obter lugares: {errorBody}");
-
-                    return new List<SeatDto>();
+                        $"[ApiService] HTTP {(int)response.StatusCode} em {endpoint}");
+                    return ApiResult<T>.Fail(
+                        $"Erro do servidor ({(int)response.StatusCode}).");
                 }
 
-                return await response.Content
-                    .ReadFromJsonAsync<List<SeatDto>>(
-                        cancellationToken: cts.Token)
-                    ?? new List<SeatDto>();
+                var data = await response.Content
+                    .ReadFromJsonAsync<T>(
+                        cancellationToken: cts.Token);
+
+                if (data == null)
+                    return ApiResult<T>.Fail("Resposta vazia do servidor.");
+
+                return ApiResult<T>.Ok(data);
+            }
+            catch (TaskCanceledException)
+            {
+                return ApiResult<T>.Fail(
+                    "O servidor demorou demasiado tempo a responder.");
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(
-                    $"[ApiService Error] Exceção ao obter lugares: {ex.Message}");
-
-                return new List<SeatDto>();
+                    $"[ApiService] Exceção em {endpoint}: {ex.Message}");
+                return ApiResult<T>.Fail(
+                    "Erro de ligação ao servidor.");
             }
         }
 
-        /// <summary>
-        /// Realiza o check-in de um bilhete.
-        /// </summary>
+        // ═══════════════════════════════════════════════════════════
+        // PARTIDAS
+        // ═══════════════════════════════════════════════════════════
+
+        public Task<ApiResult<List<FlightDto>>> GetDeparturesAsync()
+            => GetAsync<List<FlightDto>>("api/flights/departures");
+
+        // ═══════════════════════════════════════════════════════════
+        // CHEGADAS
+        // ═══════════════════════════════════════════════════════════
+
+        public Task<ApiResult<List<FlightDto>>> GetArrivalsAsync()
+            => GetAsync<List<FlightDto>>("api/flights/arrivals");
+
+        // ═══════════════════════════════════════════════════════════
+        // MEUS BILHETES
+        // ═══════════════════════════════════════════════════════════
+
+        public Task<ApiResult<List<TicketDto>>> GetMyTicketsAsync()
+     => GetAsync<List<TicketDto>>("api/voos/my-tickets");
+
+        // ═══════════════════════════════════════════════════════════
+        // DETALHES DE VOO
+        // ═══════════════════════════════════════════════════════════
+
+        public Task<ApiResult<FlightDetailDto>> GetDetailsAsync(int id)
+            => GetAsync<FlightDetailDto>($"api/voos/{id}");
+
+        // ═══════════════════════════════════════════════════════════
+        // LUGARES
+        // ═══════════════════════════════════════════════════════════
+
+        public Task<ApiResult<List<SeatDto>>> GetSeatsAsync(int id)
+            => GetAsync<List<SeatDto>>($"api/voos/{id}/seats");
+
+        // ═══════════════════════════════════════════════════════════
+        // CHECK-IN
+        // ═══════════════════════════════════════════════════════════
+
         public async Task<CheckInResultDto> DoCheckInAsync(int ticketId)
         {
+            if (!HasInternet())
+            {
+                return new CheckInResultDto
+                {
+                    Success = false,
+                    ErrorMessage =
+                        "Sem ligação à Internet. Verifique a sua rede."
+                };
+            }
+
             try
             {
                 using var cts = new CancellationTokenSource(
@@ -247,10 +127,7 @@ namespace LisAeroGest.Mobile.Services
 
                 var response = await _httpClient.PostAsJsonAsync(
                     "api/checkin",
-                    new CheckInRequestDto
-                    {
-                        TicketId = ticketId
-                    },
+                    new CheckInRequestDto { TicketId = ticketId },
                     cts.Token);
 
                 if (response.IsSuccessStatusCode)
@@ -291,12 +168,91 @@ namespace LisAeroGest.Mobile.Services
                         ?? "Não foi possível fazer check-in."
                 };
             }
+            catch (TaskCanceledException)
+            {
+                return new CheckInResultDto
+                {
+                    Success = false,
+                    ErrorMessage =
+                        "O servidor demorou demasiado tempo a responder."
+                };
+            }
             catch (Exception ex)
             {
                 return new CheckInResultDto
                 {
                     Success = false,
                     ErrorMessage = $"Erro de ligação: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<ValidateBoardingPassResult> ValidateBoardingPassAsync(
+      string qrData)
+        {
+            try
+            {
+                if (!HasInternet())
+                {
+                    return new ValidateBoardingPassResult
+                    {
+                        Success = false,
+                        ErrorMessage = "Sem ligação à internet."
+                    };
+                }
+
+                var response = await _httpClient.PostAsJsonAsync(
+                    "api/checkin/validate",
+                    new
+                    {
+                        QRData = qrData
+                    });
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    string errorMessage = "Bilhete inválido.";
+
+                    try
+                    {
+                        var json = await response.Content
+                            .ReadFromJsonAsync<Dictionary<string, string>>();
+
+                        if (json != null &&
+                            json.TryGetValue("message", out var message))
+                        {
+                            errorMessage = message;
+                        }
+                    }
+                    catch
+                    {
+                        // Mantém a mensagem padrão
+                    }
+
+                    return new ValidateBoardingPassResult
+                    {
+                        Success = false,
+                        ErrorMessage = errorMessage
+                    };
+                }
+
+                var result = await response.Content
+                    .ReadFromJsonAsync<ValidateBoardingPassResult>();
+
+                return result ?? new ValidateBoardingPassResult
+                {
+                    Success = false,
+                    ErrorMessage = "Resposta inválida da API."
+                };
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(
+                    $"[ApiService] Validate QR: {ex.Message}");
+
+                return new ValidateBoardingPassResult
+                {
+                    Success = false,
+                    ErrorMessage = "Erro ao validar o bilhete."
                 };
             }
         }

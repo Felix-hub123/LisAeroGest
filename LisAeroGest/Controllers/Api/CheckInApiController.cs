@@ -94,5 +94,97 @@ namespace LisAeroGest.Controllers.Api
                 QRData = boardingPass.QRCode
             });
         }
+
+        [HttpPost("validate")]
+        [Authorize(Roles = "Employee")]
+        public async Task<IActionResult> ValidateBoardingPass(
+             [FromBody] ValidateBoardingPassRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.QRData))
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "QR Code inválido."
+                });
+            }
+
+            // Formato:
+            // BOARDING|TicketId|FlightNumber|Gate
+            var parts = request.QRData.Split('|');
+
+            if (parts.Length < 4 || parts[0] != "BOARDING")
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "QR Code não reconhecido."
+                });
+            }
+
+            if (!int.TryParse(parts[1], out var ticketId))
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Bilhete inválido."
+                });
+            }
+
+            var ticket = await _ticketRepository.GetTicketWithDetailsAsync(ticketId);
+
+            if (ticket == null)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "Bilhete não encontrado."
+                });
+            }
+
+            if (ticket.Status != "CheckedIn")
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Este bilhete não tem check-in válido."
+                });
+            }
+
+            if (ticket.Flight == null)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Voo associado ao bilhete não encontrado."
+                });
+            }
+
+            // Confirma que os dados principais do QR correspondem ao bilhete
+            var qrFlightNumber = parts[2];
+            var qrGate = parts[3];
+
+            if (ticket.Flight.FlightNumber != qrFlightNumber ||
+                (ticket.Flight.Gate?.GateNumber ?? "TBA") != qrGate)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Os dados do QR Code não correspondem ao bilhete."
+                });
+            }
+
+            return Ok(new
+            {
+                success = true,
+                message = "Bilhete válido.",
+                ticketId = ticket.Id,
+                flightNumber = ticket.Flight.FlightNumber,
+                gate = ticket.Flight.Gate?.GateNumber ?? "TBA",
+                status = ticket.Status
+            });
+        }
+
+
     }
 }

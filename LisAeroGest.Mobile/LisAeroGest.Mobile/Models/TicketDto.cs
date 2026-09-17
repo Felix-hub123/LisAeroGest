@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace LisAeroGest.Mobile.Models
+﻿namespace LisAeroGest.Mobile.Models
 {
     public class TicketDto
     {
@@ -20,6 +14,5 @@ namespace LisAeroGest.Mobile.Models
         public bool ExtraLuggage { get; set; }
         public bool MealIncluded { get; set; }
         public int? BoardingPassId { get; set; }
-
     }
 }

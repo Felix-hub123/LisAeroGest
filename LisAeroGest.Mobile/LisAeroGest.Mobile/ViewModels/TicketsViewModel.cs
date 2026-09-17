@@ -1,9 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LisAeroGest.Mobile.Helpers;
 using LisAeroGest.Mobile.Models;
 using LisAeroGest.Mobile.Services;
 using LisAeroGest.Mobile.Views;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace LisAeroGest.Mobile.ViewModels
 {
@@ -17,7 +19,8 @@ namespace LisAeroGest.Mobile.ViewModels
         private bool _isBusy;
 
         public ObservableCollection<TicketDto> Tickets { get; } = new();
-
+        [ObservableProperty] private string _errorMessage = string.Empty;
+        [ObservableProperty] private bool _hasError;
         public TicketsViewModel(ApiService apiService, AuthService authService, IServiceProvider serviceProvider)
         {
             _apiService = apiService;
@@ -36,27 +39,60 @@ namespace LisAeroGest.Mobile.ViewModels
         [RelayCommand]
         public async Task LoadTicketsAsync()
         {
-            if (IsBusy) return;
+            if (IsBusy)
+                return;
 
             try
             {
                 IsBusy = true;
-                var tickets = await _apiService.GetMyTicketsAsync();
+                HasError = false;
+                ErrorMessage = string.Empty;
 
+                var result = await _apiService.GetMyTicketsAsync();
                 Tickets.Clear();
-                foreach (var ticket in tickets)
+
+                if (result == null || !result.Success)
                 {
-                    Tickets.Add(ticket);
+                    ErrorMessage = result?.ErrorMessage ?? "Não foi possível carregar os bilhetes.";
+                    HasError = true;
+                    return;
                 }
+
+                foreach (var ticket in result.Data ?? new List<TicketDto>())
+                    Tickets.Add(ticket);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao carregar bilhetes: {ex.Message}");
+                ErrorMessage = "Erro ao carregar bilhetes.";
+                HasError = true;
+                Debug.WriteLine(ex.Message);
             }
             finally
             {
                 IsBusy = false;
             }
+        }
+
+        [RelayCommand]
+        private async Task OpenTicketAsync(TicketDto? ticket)
+        {
+            if (ticket == null)
+                return;
+
+            if (ticket.Status is "Paid" or "CheckedIn")
+            {
+                PendingBooking.TicketId = ticket.Id;
+
+                await Shell.Current.GoToAsync(
+                    nameof(CheckInPage));
+
+                return;
+            }
+
+            await Shell.Current.DisplayAlert(
+                "Bilhete",
+                $"Estado atual: {ticket.Status}.",
+                "OK");
         }
     }
 }

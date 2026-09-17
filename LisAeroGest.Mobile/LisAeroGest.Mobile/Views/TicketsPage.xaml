@@ -50,7 +50,9 @@
                                 <Button Text="Fazer Check-in"
                                     Margin="0,8,0,0"
                                     Clicked="OnCheckInClicked"
-                                    IsVisible="{Binding Status, Converter={StaticResource StatusIsPaidConverter}}" />   
+                                    IsVisible="{Binding Status, Converter={StaticResource StatusIsPaidConverter}}" />
+
+                                    
                             </VerticalStackLayout>
                         </Frame>
                     </DataTemplate>

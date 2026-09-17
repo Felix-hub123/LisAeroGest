@@ -1,19 +1,26 @@
 using LisAeroGest.Mobile.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace LisAeroGest.Mobile.Views
 {
     public partial class LoginPage : ContentPage
     {
-        public LoginPage(LoginViewModel viewModel)
+        private readonly IServiceProvider _serviceProvider;
+
+        public LoginPage(
+            LoginViewModel viewModel,
+            IServiceProvider serviceProvider)
         {
             InitializeComponent();
+
             BindingContext = viewModel;
+            _serviceProvider = serviceProvider;
         }
 
-
-        private async void OnRegisterClicked(object sender, EventArgs e)
+        private void OnRegisterClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync(nameof(RegisterPage));
+            Application.Current!.MainPage =
+                _serviceProvider.GetRequiredService<RegisterPage>();
         }
     }
 }

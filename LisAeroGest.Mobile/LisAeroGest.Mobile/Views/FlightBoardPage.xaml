@@ -7,11 +7,9 @@
              x:DataType="vm:FlightBoardViewModel"
              Title="Painel de Partidas">
 
-    <Grid RowDefinitions="Auto,Auto,*">
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
 
-        <!-- ═══════════════════════════════════════════════════════ -->
-        <!-- SELETOR DE DIA (CALENDÁRIO HORIZONTAL)                  -->
-        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- SELETOR DE DIA + FILTROS -->
         <Border Grid.Row="0"
                 Margin="10,10,10,0"
                 Padding="12"
@@ -22,8 +20,9 @@
 
             <VerticalStackLayout Spacing="10">
 
-                <!-- Label do dia selecionado -->
+                <!-- Título do dia selecionado -->
                 <Grid ColumnDefinitions="Auto,*,Auto">
+
                     <Label Grid.Column="0"
                            Text="📅"
                            FontSize="20"
@@ -42,10 +41,50 @@
                            FontSize="12"
                            TextColor="Gray"
                            VerticalOptions="Center" />
+
                 </Grid>
 
-                <!-- Navegação de dias -->
-                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                <!-- Filtros de rota -->
+                <Grid ColumnDefinitions="*,*"
+                      ColumnSpacing="8">
+
+                    <Border Grid.Column="0"
+                            Stroke="#CCCCCC"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 8"
+                            BackgroundColor="White">
+
+                        <SearchBar Placeholder="Origem (ex.: LIS)"
+                                   Text="{Binding FilterOrigin}"
+                                   BackgroundColor="Transparent"
+                                   TextColor="Black"
+                                   PlaceholderColor="Gray"
+                                   CancelButtonColor="#1F5C99"
+                                   HeightRequest="40" />
+
+                    </Border>
+
+                    <Border Grid.Column="1"
+                            Stroke="#CCCCCC"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 8"
+                            BackgroundColor="White">
+
+                        <SearchBar Placeholder="Destino (ex.: CDG)"
+                                   Text="{Binding FilterDestination}"
+                                   BackgroundColor="Transparent"
+                                   TextColor="Black"
+                                   PlaceholderColor="Gray"
+                                   CancelButtonColor="#1F5C99"
+                                   HeightRequest="40" />
+
+                    </Border>
+
+                </Grid>
+
+                <!-- Botões de navegação -->
+                <Grid ColumnDefinitions="Auto,*,Auto"
+                      ColumnSpacing="10">
 
                     <Button Grid.Column="0"
                             Text="← Anterior"
@@ -80,65 +119,116 @@
                             CornerRadius="8"
                             HeightRequest="40"
                             Padding="10,0" />
+
                 </Grid>
 
-                <!-- Barra de datas (calendário compacto) -->
-                <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
-                    <HorizontalStackLayout x:Name="CalendarStrip" Spacing="6" Padding="0,4" />
-                </ScrollView>
             </VerticalStackLayout>
+
         </Border>
 
-        <!-- Indicador de Carregamento -->
+        <!-- Indicador de carregamento -->
         <ActivityIndicator Grid.Row="1"
                            IsRunning="{Binding IsBusy}"
                            IsVisible="{Binding IsBusy}"
                            HorizontalOptions="Center"
                            Margin="10" />
 
-        <!-- Lista de Voos do dia selecionado -->
-        <RefreshView Grid.Row="2"
+        <!-- Mensagem de erro -->
+        <Label Grid.Row="2"
+               Text="{Binding ErrorMessage}"
+               IsVisible="{Binding HasError}"
+               TextColor="Red"
+               HorizontalOptions="Center"
+               Margin="10,0" />
+
+        <!-- Lista de voos -->
+        <RefreshView Grid.Row="3"
                      IsRefreshing="{Binding IsBusy}"
                      Command="{Binding LoadDeparturesCommand}">
 
             <CollectionView ItemsSource="{Binding Departures}"
-                SelectionMode="None"
-                EmptyView="Nenhum voo agendado para este dia.">
+                            SelectionMode="None">
+
+                <CollectionView.EmptyView>
+
+                    <VerticalStackLayout Padding="20"
+                                         Spacing="8"
+                                         HorizontalOptions="Center">
+
+                        <Label Text="✈️"
+                               FontSize="40"
+                               HorizontalOptions="Center" />
+
+                        <Label Text="Nenhum voo encontrado"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center" />
+
+                        <Label Text="Tente alterar a data ou limpar os filtros."
+                               FontSize="12"
+                               TextColor="Gray"
+                               HorizontalTextAlignment="Center" />
+
+                    </VerticalStackLayout>
+
+                </CollectionView.EmptyView>
+
                 <CollectionView.ItemTemplate>
+
                     <DataTemplate x:DataType="models:FlightDto">
+
                         <Frame Margin="10,5"
-                   Padding="15"
-                   CornerRadius="8"
-                   HasShadow="True"
-                   BackgroundColor="White">
+                               Padding="15"
+                               CornerRadius="8"
+                               HasShadow="True"
+                               BackgroundColor="White">
+
                             <Frame.GestureRecognizers>
+
                                 <TapGestureRecognizer Tapped="OnFlightTapped"
-                                          CommandParameter="{Binding .}" />
+                                                      CommandParameter="{Binding .}" />
+
                             </Frame.GestureRecognizers>
+
                             <Grid ColumnDefinitions="*,*,Auto"
-                      RowDefinitions="Auto,Auto"
-                      RowSpacing="5">
-                                <Label Grid.Row="0" Grid.Column="0"
-                           Text="{Binding FlightNumber}"
-                           FontAttributes="Bold"
-                           FontSize="16" />
-                                <Label Grid.Row="0" Grid.Column="1"
-                           Text="{Binding Origin}"
-                           HorizontalOptions="Center" />
-                                <Label Grid.Row="0" Grid.Column="2"
-                           Text="{Binding Status}"
-                           FontAttributes="Bold"
-                           TextColor="#1F5C99" />
-                                <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
-                           Text="{Binding DepartureTime, StringFormat='Partida {0:HH:mm}'}"
-                           FontSize="12"
-                           TextColor="Gray" />
+                                  RowDefinitions="Auto,Auto"
+                                  RowSpacing="5">
+
+                                <Label Grid.Row="0"
+                                       Grid.Column="0"
+                                       Text="{Binding FlightNumber}"
+                                       FontAttributes="Bold"
+                                       FontSize="16" />
+
+                                <Label Grid.Row="0"
+                                       Grid.Column="1"
+                                       Text="{Binding Origin}"
+                                       HorizontalOptions="Center" />
+
+                                <Label Grid.Row="0"
+                                       Grid.Column="2"
+                                       Text="{Binding Status}"
+                                       FontAttributes="Bold"
+                                       TextColor="#1F5C99" />
+
+                                <Label Grid.Row="1"
+                                       Grid.Column="0"
+                                       Grid.ColumnSpan="3"
+                                       Text="{Binding DepartureTime, StringFormat='Partida {0:HH:mm}'}"
+                                       FontSize="12"
+                                       TextColor="Gray" />
+
                             </Grid>
+
                         </Frame>
+
                     </DataTemplate>
+
                 </CollectionView.ItemTemplate>
+
             </CollectionView>
+
         </RefreshView>
 
     </Grid>
+
 </ContentPage>

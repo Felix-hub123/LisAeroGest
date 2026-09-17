@@ -50,7 +50,17 @@ namespace LisAeroGest.Mobile.ViewModels
                 IsBusy = true;
                 ErrorMessage = string.Empty;
 
-                Flight = await _apiService.GetDetailsAsync(FlightId);
+                var result = await _apiService.GetDetailsAsync(FlightId);
+
+                if (!result.Success)
+                {
+                    Flight = null;
+                    ErrorMessage = result.ErrorMessage
+                        ?? "Não foi possível encontrar os detalhes do voo.";
+                    return;
+                }
+
+                Flight = result.Data;
 
                 if (Flight == null)
                 {
@@ -72,6 +82,9 @@ namespace LisAeroGest.Mobile.ViewModels
             }
         }
 
+        /// <summary>
+        /// Navega para a página de seleção de lugar deste voo.
+        /// </summary>
         [RelayCommand]
         private async Task SelectSeatAsync()
         {

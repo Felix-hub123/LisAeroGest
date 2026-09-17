@@ -1,10 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
 	<PropertyGroup>
-
-		<TargetFrameworks>net8.0-android</TargetFrameworks>
-		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.19041.0</TargetFrameworks>
-
+		<TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
 		<OutputType>Exe</OutputType>
 		<RootNamespace>LisAeroGest.Mobile</RootNamespace>
 		<UseMaui>true</UseMaui>
@@ -12,90 +8,109 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<LangVersion>latest</LangVersion>
-
-
 		<CheckEolWorkloads>false</CheckEolWorkloads>
-
-		<!-- Display name -->
-		<ApplicationTitle>LisAeroGest.Mobile</ApplicationTitle>
-
-		<!-- App Identifier -->
+		<ApplicationTitle>LisAeroGest</ApplicationTitle>
 		<ApplicationId>com.companyname.lisaerogest.mobile</ApplicationId>
-
-		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>
-
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+		<WindowsPackageType>None</WindowsPackageType>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<PlatformTarget>x64</PlatformTarget>
 	</PropertyGroup>
 
 	<ItemGroup>
 
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
 
-
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
 
-
 		<MauiImage Include="Resources\Images\*" />
-		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
 
+		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
 
 		<MauiFont Include="Resources\Fonts\*" />
 
-
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+
 	</ItemGroup>
 
-	
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.12" />
+
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
+
 		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
+
+		<PackageReference Include="Microsoft.Maui.Controls" Version="8.0.100" />
+
+		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.100" />
+
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.22.0" />
+
 		<PackageReference Include="ZXing.Net.Maui.Controls" Version="0.4.0" />
+
+		<PackageReference Include="Plugin.Maui.Calendar" Version="1.2.6" />
+
 	</ItemGroup>
 
-	
 
 	<ItemGroup>
-	  <MauiXaml Update="Views\CheckInPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\FlightDetailsPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\LoginPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\RegisterPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\SelectSeatPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\TicketsPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
+
+		<MauiXaml Update="Views\CheckInPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+
+		<MauiXaml Update="Views\FlightDetailsPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+
+		<MauiXaml Update="Views\LoginPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+
+		<MauiXaml Update="Views\PaymentPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+
+		<MauiXaml Update="Views\RegisterPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+
+		<MauiXaml Update="Views\ScanTicketPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+
+		<MauiXaml Update="Views\SelectSeatPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+
+		<MauiXaml Update="Views\TicketsPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+
 	</ItemGroup>
 
-	
 
 	<ItemGroup>
-	  <None Update="Views\CheckInPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </None>
-	  <None Update="Views\TicketsPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </None>
+
+		<None Update="Views\CheckInPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+
+		<None Update="Views\TicketsPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+
 	</ItemGroup>
-
-
 
 </Project>
