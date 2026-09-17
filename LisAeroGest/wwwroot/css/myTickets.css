@@ -256,3 +256,23 @@
         padding: 2.5rem 1.25rem;
     }
 }
+
+
+/* ═══ BOTÃO WHATSAPP ═══ */
+.btn-whatsapp {
+    background-color: #25D366;
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+    .btn-whatsapp:hover,
+    .btn-whatsapp:focus-visible {
+        background-color: #1ebe5b;
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+        outline: none;
+    }

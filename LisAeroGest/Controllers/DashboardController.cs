@@ -323,14 +323,21 @@ namespace LisAeroGest.Controllers
 
             var tickets = (await _ticketRepository.GetByPassengerAsync(passenger.Id)).ToList();
 
+            // ── Próximos voos (pagos, ainda não partiram) ──
             var upcoming = tickets
                 .Where(t => t.Flight != null
                     && t.Flight.DepartureTime > DateTime.UtcNow
-                    && t.Status != "Cancelled"
-                    && t.Status != "Expired")
+                    && (t.Status == "Paid" || t.Status == "CheckedIn"))
                 .OrderBy(t => t.Flight!.DepartureTime)
                 .ToList();
 
+            // ── Reservas pendentes (aguardam pagamento, ainda válidas) ──
+            var pending = tickets
+                .Where(t => t.Status == "Reserved" && t.IsReservationValid)
+                .OrderBy(t => t.ReservationExpiresAt)
+                .ToList();
+
+            // ── Histórico (já partiram, ou foram cancelados/expirados) ──
             var past = tickets
                 .Where(t => t.Flight != null
                     && (t.Flight.DepartureTime <= DateTime.UtcNow
@@ -339,13 +346,62 @@ namespace LisAeroGest.Controllers
                 .OrderByDescending(t => t.Flight!.DepartureTime)
                 .ToList();
 
+            // ── Total gasto (só bilhetes pagos) ──
+            var totalSpent = tickets
+                .Where(t => t.Status == "Paid" || t.Status == "CheckedIn")
+                .Sum(t => t.TotalPrice);
+
+            // ── Notificações ──
+            var allNotifications = (await _notificationRepository.GetByUserAsync(user.Id)).ToList();
+            var recentNotifications = allNotifications
+                .OrderByDescending(n => n.CreatedAt)
+                .Take(4)
+                .ToList();
+            var unreadCount = allNotifications.Count(n => !n.IsRead);
+
+            // ── LisAeroPoints ──
+            // Regra: 1€ = 10 pontos
+            var loyaltyPoints = (int)(totalSpent * 10);
+
+            // Níveis (regra)
+            string tier;
+            int pointsToNext;
+            int progressPercent;
+            int nextThreshold;
+
+            if (loyaltyPoints < 500)
+            {
+                tier = "Bronze";
+                nextThreshold = 500;
+            }
+            else if (loyaltyPoints < 1500)
+            {
+                tier = "Prata";
+                nextThreshold = 1500;
+            }
+            else if (loyaltyPoints < 3000)
+            {
+                tier = "Ouro";
+                nextThreshold = 3000;
+            }
+            else
+            {
+                tier = "Platina";
+                nextThreshold = loyaltyPoints; // já no topo
+            }
+
+            pointsToNext = Math.Max(0, nextThreshold - loyaltyPoints);
+            progressPercent = nextThreshold > 0
+                ? Math.Min(100, (int)Math.Round((double)loyaltyPoints * 100 / nextThreshold))
+                : 100;
+
+            // ── Mapper ──
             PassengerTicketItemViewModel MapTicket(Ticket t)
             {
                 var flight = t.Flight!;
                 var departure = flight.DelayedDepartureTime ?? flight.DepartureTime;
                 var hoursUntil = (departure - DateTime.UtcNow).TotalHours;
 
-                // Check-in online disponível entre 48h e 1h antes do voo
                 bool canCheckIn = t.Status == "Paid"
                     && hoursUntil <= 48
                     && hoursUntil >= 1
@@ -376,10 +432,24 @@ namespace LisAeroGest.Controllers
             {
                 Passenger = passenger,
                 FullName = $"{passenger.FirstName} {passenger.LastName}".Trim(),
+
                 UpcomingTickets = upcoming.Select(MapTicket).ToList(),
+                PendingReservations = pending.Select(MapTicket).ToList(),
                 PastTickets = past.Select(MapTicket).ToList(),
+
                 UpcomingCount = upcoming.Count,
-                PastCount = past.Count
+                PendingCount = pending.Count,
+                PastCount = past.Count,
+
+                TotalSpent = totalSpent,
+
+                RecentNotifications = recentNotifications,
+                UnreadNotificationsCount = unreadCount,
+
+                LoyaltyPoints = loyaltyPoints,
+                LoyaltyTier = tier,
+                PointsToNextTier = pointsToNext,
+                LoyaltyProgressPercent = progressPercent
             };
 
             model.NextFlight = model.UpcomingTickets.FirstOrDefault();

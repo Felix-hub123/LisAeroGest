@@ -1663,12 +1663,20 @@ body.dark-theme {
 /* AUTH — Header Dark + Botão Voltar                       */
 /* ═══════════════════════════════════════════════════════ */
 
+
 /* Header dark com linha verde-limão em baixo */
 body.dark-theme .auth-header {
     background: linear-gradient(135deg, #0a0e17 0%, #131b2a 60%, #1a2332 100%);
     border-bottom: 3px solid var(--lis-lime);
+    position: relative; /* 🔥 garante que o botão fica dentro */
+    padding: 2rem 3.5rem 0 3.5rem; /* 🔥 espaço para o botão à esquerda */
 }
 
+@media (max-width: 576px) {
+    body.dark-theme .auth-header {
+        padding: 1.5rem 2.5rem 0 2.5rem;
+    }
+}
 /* Botão voltar redondo no canto superior esquerdo */
 .auth-back-btn {
     position: absolute;
@@ -2137,3 +2145,7 @@ body.dark-theme .notification-list-icon {
         box-shadow: 0 6px 20px rgba(200, 230, 41, 0.3);
         outline: none;
     }
+
+.lis-map-container .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(1.1);
+}

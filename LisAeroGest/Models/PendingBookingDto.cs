@@ -6,5 +6,8 @@
         public int SeatId { get; set; }
         public List<int> ExtraIds { get; set; } = new List<int>();
         public decimal TotalPrice { get; set; }
+
+        public bool ExtraLuggage { get; set; }   
+        public bool MealIncluded { get; set; }  
     }
 }

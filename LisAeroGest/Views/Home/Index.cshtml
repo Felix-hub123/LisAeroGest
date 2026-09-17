@@ -377,9 +377,10 @@
                 attributionControl: false
             }).setView([38.77, -9.13], 3);
 
-            L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-                maxZoom: 19
-            }).addTo(map);
+                L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+             }).addTo(map);
 
             L.control.zoom({ position: 'bottomright' }).addTo(map);
 

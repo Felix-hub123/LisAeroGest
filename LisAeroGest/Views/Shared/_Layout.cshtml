@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="~/css/flightCalendar.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/checkoutConfirmation.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/guestCheckout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/passengerDashboard.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -23,6 +24,8 @@
     <header>
         <nav class="navbar navbar-expand-lg lis-navbar sticky-top">
             <div class="container-fluid">
+
+                <!-- ═══ LOGO ═══ -->
                 @if (User.IsInRole("Admin") || User.IsInRole("Employee"))
                 {
                     <a class="navbar-brand" asp-controller="Dashboard" asp-action="Index">
@@ -35,35 +38,39 @@
                         <i class="bi bi-airplane-fill"></i>LisAeroGest
                     </a>
                 }
+
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
                 <div class="navbar-collapse collapse d-lg-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">
-                                <i class="bi bi-house me-1"></i>Início
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Shop" asp-action="Index">
-                                <i class="bi bi-search me-1"></i>Pesquisar voos
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Flights" asp-action="PublicIndex">
-                                <i class="bi bi-airplane me-1"></i>Voos
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Airline" asp-action="PublicIndex">
-                                <i class="bi bi-building me-1"></i>Companhias
-                            </a>
-                        </li>
 
+                    <!-- ═══ LINKS DE NAVEGAÇÃO ═══ -->
+                    <ul class="navbar-nav flex-grow-1">
+
+                        <!-- 🔓 VISITANTE (não autenticado) — só Início e Pesquisar -->
+                        @if (User.Identity?.IsAuthenticated != true)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Index">
+                                    <i class="bi bi-house me-1"></i>Início
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Shop" asp-action="Index">
+                                    <i class="bi bi-search me-1"></i>Pesquisar voos
+                                </a>
+                            </li>
+                        }
+
+                        <!-- 🔐 ADMIN -->
                         @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
                         {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
+                                    <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                                </a>
+                            </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                                     <i class="bi bi-gear me-1"></i>Gestão
@@ -71,10 +78,10 @@
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" asp-controller="Airport" asp-action="Index">Aeroportos</a></li>
                                     <li><a class="dropdown-item" asp-controller="Airline" asp-action="Index">Companhias</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Gate" asp-action="Board">Painel de Gates</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Gate" asp-action="Index">Gates (Lista)</a></li>
                                     <li><a class="dropdown-item" asp-controller="Aircraft" asp-action="Index">Aeronaves</a></li>
                                     <li><a class="dropdown-item" asp-controller="Flight" asp-action="Index">Voos</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Gate" asp-action="Board">Painel de Gates</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Gate" asp-action="Index">Gates</a></li>
                                     <li><a class="dropdown-item" asp-controller="Forum" asp-action="Index">Fórum</a></li>
                                     <li><a class="dropdown-item" asp-controller="CheckIn" asp-action="EmployeeCheckIn">Check-in presencial</a></li>
                                     <li>
@@ -83,14 +90,18 @@
                                             <span id="notifBadgeAdmin" class="badge bg-danger ms-2 d-none">0</span>
                                         </a>
                                     </li>
-                                    <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
                                 </ul>
                             </li>
                         }
 
+                        <!-- 🔐 FUNCIONÁRIO -->
                         @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Employee"))
                         {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
+                                    <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                                </a>
+                            </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                                     <i class="bi bi-clipboard me-1"></i>Operacional
@@ -98,7 +109,6 @@
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" asp-controller="Flight" asp-action="Index">Voos</a></li>
                                     <li><a class="dropdown-item" asp-controller="Gate" asp-action="Board">Painel de Gates</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Gate" asp-action="Index">Gates (Lista)</a></li>
                                     <li><a class="dropdown-item" asp-controller="Forum" asp-action="Index">Fórum</a></li>
                                     <li><a class="dropdown-item" asp-controller="CheckIn" asp-action="EmployeeCheckIn">Check-in presencial</a></li>
                                     <li>
@@ -107,28 +117,32 @@
                                             <span id="notifBadgeEmployee" class="badge bg-danger ms-2 d-none">0</span>
                                         </a>
                                     </li>
-                                    <li><hr class="dropdown-divider" /></li>
-                                    <li><a class="dropdown-item" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
                                 </ul>
                             </li>
                         }
 
+                        <!-- 🔐 PASSAGEIRO -->
                         @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Passenger"))
                         {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                                    <i class="bi bi-ticket me-1"></i>Passageiro
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Shop" asp-action="Index">
+                                    <i class="bi bi-search me-1"></i>Pesquisar voos
                                 </a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" asp-controller="Shop" asp-action="Index">Comprar bilhetes</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Shop" asp-action="MyTickets">Os meus bilhetes</a></li>
-                                    <li><a class="dropdown-item" asp-controller="CheckIn" asp-action="Index">Check-in online</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
-                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Shop" asp-action="MyTickets">
+                                    <i class="bi bi-ticket-perforated me-1"></i>Os meus bilhetes
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="CheckIn" asp-action="Index">
+                                    <i class="bi bi-clipboard-check me-1"></i>Check-in
+                                </a>
                             </li>
                         }
                     </ul>
 
+                    <!-- ═══ LOGIN / REGISTO / PERFIL / LOGOUT (partial) ═══ -->
                     <partial name="_LoginPartial" />
                 </div>
             </div>

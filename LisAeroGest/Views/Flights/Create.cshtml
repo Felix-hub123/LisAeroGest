@@ -40,10 +40,9 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label asp-for="OriginAirportId" class="form-label fw-bold">Aeroporto de Origem</label>
-                    <select asp-for="OriginAirportId" asp-items="Model.Airports" id="OriginAirportId" class="form-select">
-                        <option value="">-- Selecionar Origem --</option>
-                    </select>
+                    <label class="form-label fw-bold">Aeroporto de Origem</label>
+                    <input type="text" class="form-control state-readonly-field" value="Lisboa (LIS)" readonly />
+                    <input type="hidden" asp-for="OriginAirportId" value="@Model.OriginAirportId" />
                     <span asp-validation-for="OriginAirportId" class="text-danger small"></span>
                 </div>
 

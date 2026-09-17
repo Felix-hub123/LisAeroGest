@@ -1,0 +1,597 @@
+﻿/* ============================================
+   PASSENGER DASHBOARD
+   ============================================ */
+
+/* ═══ CABEÇALHO ═══ */
+.pd-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.pd-title {
+    color: var(--lis-text);
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.pd-subtitle {
+    color: var(--lis-text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+/* ═══ ALERTA RESERVAS PENDENTES ═══ */
+.pd-alert-pending {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.4);
+    border-left: 4px solid #ffc107;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.pd-alert-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255, 193, 7, 0.2);
+    color: #fde047;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+.pd-alert-content {
+    flex: 1;
+    min-width: 200px;
+}
+
+.pd-alert-title {
+    color: #fde047;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.pd-alert-desc {
+    color: var(--lis-text-muted);
+    font-size: 0.85rem;
+}
+
+/* ═══ KPIs ═══ */
+.pd-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.pd-kpi {
+    background: var(--lis-dark-2);
+    border: 1px solid var(--lis-border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    text-align: center;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+    .pd-kpi:hover {
+        transform: translateY(-2px);
+        border-color: var(--lis-lime);
+    }
+
+    .pd-kpi i {
+        font-size: 1.8rem;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+
+.pd-kpi-value {
+    color: var(--lis-text);
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 0.35rem;
+}
+
+.pd-kpi-label {
+    color: var(--lis-text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.pd-kpi-blue i {
+    color: #60a5fa;
+}
+
+.pd-kpi-orange i {
+    color: #fb923c;
+}
+
+.pd-kpi-purple i {
+    color: #c084fc;
+}
+
+.pd-kpi-green i {
+    color: var(--lis-lime);
+}
+
+/* ═══ SECÇÕES ═══ */
+.pd-section {
+    margin-bottom: 2.5rem;
+}
+
+.pd-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.pd-section-title {
+    color: var(--lis-text);
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.pd-link {
+    color: var(--lis-lime);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+    .pd-link:hover {
+        color: var(--lis-text);
+        gap: 0.5rem;
+    }
+
+/* ═══ PRÓXIMO VOO (destaque) ═══ */
+.pd-next-flight {
+    background: linear-gradient(135deg, rgba(31, 92, 153, 0.15), rgba(31, 92, 153, 0.05));
+    border: 1px solid var(--lis-primary);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.pd-next-left {
+    min-width: 0;
+}
+
+.pd-next-flight-num {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.pd-badge-flight {
+    background: rgba(200, 230, 41, 0.1);
+    color: var(--lis-lime);
+    border: 1px solid rgba(200, 230, 41, 0.3);
+    border-radius: 8px;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.pd-airline {
+    color: var(--lis-text-muted);
+    font-size: 0.85rem;
+}
+
+.pd-next-route {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.pd-code {
+    color: var(--lis-text);
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.pd-arrow {
+    color: var(--lis-lime);
+    font-size: 1.2rem;
+}
+
+.pd-next-cities {
+    color: var(--lis-text-muted);
+    font-size: 0.85rem;
+}
+
+.pd-next-info {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    grid-column: 1 / -1;
+    padding-top: 1rem;
+    border-top: 1px solid var(--lis-border);
+}
+
+.pd-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+    .pd-info-item i {
+        color: var(--lis-lime);
+        font-size: 1.2rem;
+    }
+
+    .pd-info-item small {
+        display: block;
+        color: var(--lis-text-muted);
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .pd-info-item strong {
+        color: var(--lis-text);
+        font-size: 0.95rem;
+    }
+
+.pd-next-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+}
+
+/* ═══ NOTIFICAÇÕES ═══ */
+.pd-notif-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.pd-notif-item {
+    background: var(--lis-dark-2);
+    border: 1px solid var(--lis-border);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    gap: 0.75rem;
+    transition: border-color 0.2s ease;
+}
+
+    .pd-notif-item:hover {
+        border-color: var(--lis-lime);
+    }
+
+.pd-notif-unread {
+    border-left: 3px solid var(--lis-lime);
+    background: rgba(200, 230, 41, 0.03);
+}
+
+.pd-notif-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(200, 230, 41, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.pd-notif-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.pd-notif-title {
+    color: var(--lis-text);
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 0.15rem;
+}
+
+.pd-notif-desc {
+    color: var(--lis-text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 0.35rem;
+}
+
+.pd-notif-time {
+    color: var(--lis-text-muted);
+    font-size: 0.75rem;
+}
+
+/* ═══ LIS AERO POINTS ═══ */
+.pd-loyalty {
+    background: linear-gradient(135deg, rgba(200, 230, 41, 0.08), rgba(200, 230, 41, 0.02));
+    border: 1px solid rgba(200, 230, 41, 0.3);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.pd-loyalty-left {
+    flex: 1;
+    min-width: 250px;
+}
+
+.pd-loyalty-label {
+    color: var(--lis-lime);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.pd-loyalty-points {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.pd-points-value {
+    color: var(--lis-text);
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1;
+}
+
+.pd-points-unit {
+    color: var(--lis-text-muted);
+    font-size: 0.95rem;
+}
+
+.pd-loyalty-tier {
+    color: var(--lis-text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+}
+
+    .pd-loyalty-tier strong {
+        color: var(--lis-lime);
+    }
+
+.pd-loyalty-progress {
+    height: 8px;
+    background: var(--lis-dark-3);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+    max-width: 400px;
+}
+
+.pd-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--lis-lime-dark), var(--lis-lime));
+    border-radius: 999px;
+    transition: width 0.6s ease;
+}
+
+.pd-loyalty-hint {
+    color: var(--lis-text-muted);
+    font-size: 0.8rem;
+}
+
+    .pd-loyalty-hint strong {
+        color: var(--lis-lime);
+    }
+
+/* ═══ LISTA DE VOOS ═══ */
+.pd-flights-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.pd-flight-card {
+    background: var(--lis-dark-2);
+    border: 1px solid var(--lis-border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    transition: border-color 0.2s ease;
+}
+
+    .pd-flight-card:hover {
+        border-color: var(--lis-lime);
+    }
+
+.pd-flight-info {
+    flex: 1;
+    min-width: 250px;
+}
+
+.pd-flight-route {
+    color: var(--lis-text);
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0.35rem 0;
+}
+
+.pd-flight-actions {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+}
+
+/* ═══ HISTÓRICO ═══ */
+.pd-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.pd-history-item {
+    background: var(--lis-dark-2);
+    border: 1px solid var(--lis-border);
+    border-radius: 10px;
+    padding: 0.85rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.pd-status-badge {
+    border-radius: 999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid;
+}
+
+.pd-status-checked {
+    background: rgba(25, 135, 84, 0.15);
+    border-color: rgba(25, 135, 84, 0.4);
+    color: #86efac;
+}
+
+.pd-status-cancelled {
+    background: rgba(220, 53, 69, 0.15);
+    border-color: rgba(220, 53, 69, 0.4);
+    color: #fca5a5;
+}
+
+.pd-status-default {
+    background: rgba(148, 163, 184, 0.15);
+    border-color: rgba(148, 163, 184, 0.4);
+    color: #cbd5e1;
+}
+
+/* ═══ EMPTY STATE ═══ */
+.pd-empty {
+    background: var(--lis-dark-2);
+    border: 1px dashed var(--lis-border);
+    border-radius: 16px;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: var(--lis-text-muted);
+    margin-bottom: 2rem;
+}
+
+/* ═══ BOTÕES ═══ */
+.btn-lime {
+    background-color: var(--lis-lime);
+    color: var(--lis-dark);
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+    .btn-lime:hover,
+    .btn-lime:focus-visible {
+        background-color: var(--lis-lime-dark);
+        color: var(--lis-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(200, 230, 41, 0.3);
+        outline: none;
+    }
+
+.btn-outline-lime {
+    background-color: transparent;
+    color: var(--lis-lime);
+    border: 1px solid var(--lis-lime);
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+    .btn-outline-lime:hover,
+    .btn-outline-lime:focus-visible {
+        background-color: var(--lis-lime);
+        color: var(--lis-dark);
+        outline: none;
+    }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 768px) {
+    .pd-title {
+        font-size: 1.35rem;
+    }
+
+    .pd-next-flight {
+        grid-template-columns: 1fr;
+        padding: 1.25rem;
+    }
+
+    .pd-next-actions {
+        justify-content: stretch;
+    }
+
+        .pd-next-actions .btn {
+            flex: 1;
+        }
+
+    .pd-kpis {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .pd-points-value {
+        font-size: 2rem;
+    }
+
+    .pd-next-route .pd-code {
+        font-size: 1.35rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .pd-kpis {
+        grid-template-columns: 1fr;
+    }
+
+    .pd-alert-pending {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .pd-loyalty {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

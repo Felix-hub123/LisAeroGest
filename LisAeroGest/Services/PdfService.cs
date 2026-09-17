@@ -14,6 +14,129 @@ namespace LisAeroGest.Services
             QuestPDF.Settings.License = LicenseType.Community;
         }
 
+        public byte[] GenerateReservationPdf(Ticket ticket)
+        {
+            var flight = ticket.Flight;
+            var passenger = ticket.Passenger;
+
+            var document = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A5.Landscape());
+                    page.Margin(30);
+                    page.DefaultTextStyle(x => x.FontSize(10));
+
+                    page.Header().Element(c => ComposeHeader(c, "COMPROVATIVO DE RESERVA"));
+                    page.Content().Element(c => ComposeReservationContent(c, ticket, flight, passenger));
+                    page.Footer().Element(ComposeFooter);
+                });
+            });
+
+            return document.GeneratePdf();
+        }
+
+
+        // ─── Conteúdo da Reserva ────────────────────────────────────────────────
+        private void ComposeReservationContent(IContainer container, Ticket ticket,
+            Flight? flight, Passenger? passenger)
+        {
+            container.PaddingVertical(15).Column(col =>
+            {
+                // ⚠️ Aviso: isto é uma reserva, não um bilhete
+                col.Item()
+                    .Background(Colors.Orange.Lighten4)
+                    .Border(1).BorderColor(Colors.Orange.Medium)
+                    .Padding(8)
+                    .Text("Esta é uma RESERVA. O bilhete definitivo só é emitido após pagamento.")
+                    .FontSize(8).Bold().FontColor(Colors.Orange.Darken3);
+
+                col.Item().PaddingTop(8).Text($"Nº Reserva: #{ticket.Id:D6}")
+                    .FontSize(9).FontColor(Colors.Grey.Darken2);
+
+                col.Item().Text($"Data da reserva: {ticket.PurchaseDate:dd/MM/yyyy HH:mm}")
+                    .FontSize(9).FontColor(Colors.Grey.Darken2);
+
+                if (ticket.ReservationExpiresAt.HasValue)
+                {
+                    col.Item().Text($"Válida até: {ticket.ReservationExpiresAt.Value:dd/MM/yyyy HH:mm}")
+                        .FontSize(9).Bold().FontColor(Colors.Red.Darken2);
+                }
+
+                col.Item().PaddingTop(10).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
+
+                // Passageiro
+                col.Item().PaddingVertical(10).Row(row =>
+                {
+                    row.RelativeItem().Column(c =>
+                    {
+                        c.Item().Text("PASSAGEIRO").Bold().FontColor(Colors.Grey.Darken2);
+                        c.Item().PaddingTop(4).Text(passenger?.User?.FullName ?? "—").Bold().FontSize(12);
+                        c.Item().Text($"Doc: {passenger?.DocumentType} {passenger?.DocumentNumber}").FontSize(9);
+                        c.Item().Text($"Email: {passenger?.Email}").FontSize(9);
+                    });
+                    row.RelativeItem().Column(c =>
+                    {
+                        c.Item().Text("VOO").Bold().FontColor(Colors.Grey.Darken2);
+                        c.Item().PaddingTop(4).Text(flight?.FlightNumber ?? "—").Bold().FontSize(14);
+                        c.Item().Text($"{flight?.OriginAirport?.City} → {flight?.DestinationAirport?.City}").FontSize(10);
+                    });
+                    row.RelativeItem().Column(c =>
+                    {
+                        c.Item().Text("DATA / HORA").Bold().FontColor(Colors.Grey.Darken2);
+                        c.Item().PaddingTop(4).Text(flight?.DepartureTime.ToString("dd/MM/yyyy") ?? "—").Bold().FontSize(11);
+                        c.Item().Text(flight?.DepartureTime.ToString("HH:mm") ?? "—").Bold().FontSize(14);
+                    });
+                });
+
+                col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
+
+                // Detalhes
+                col.Item().PaddingVertical(10).Row(row =>
+                {
+                    row.RelativeItem().Column(c =>
+                    {
+                        c.Item().Text("CLASSE").Bold().FontColor(Colors.Grey.Darken2);
+                        c.Item().PaddingTop(4).Text(ticket.Seat?.SeatClass ?? "—").FontSize(10);
+                    });
+                    row.RelativeItem().Column(c =>
+                    {
+                        c.Item().Text("LUGAR").Bold().FontColor(Colors.Grey.Darken2);
+                        c.Item().PaddingTop(4).Text(ticket.Seat?.Code ?? "—").Bold().FontSize(12);
+                    });
+                    row.RelativeItem().Column(c =>
+                    {
+                        c.Item().Text("BAGAGEM").Bold().FontColor(Colors.Grey.Darken2);
+                        c.Item().PaddingTop(4).Text(ticket.ExtraLuggage == true ? "Extra (+1)" : "Normal (1)").FontSize(10);
+                    });
+                    row.RelativeItem().Column(c =>
+                    {
+                        c.Item().Text("REFEIÇÃO").Bold().FontColor(Colors.Grey.Darken2);
+                        c.Item().PaddingTop(4).Text(ticket.MealIncluded == true ? "Incluída" : "—").FontSize(10);
+                    });
+                });
+
+                col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
+
+                // Preço
+                col.Item().PaddingVertical(10).Row(row =>
+                {
+                    row.RelativeItem().AlignLeft()
+                        .Text($"PREÇO TOTAL: {ticket.TotalPrice:C}").Bold().FontSize(12);
+                    row.RelativeItem().AlignRight()
+                        .Text("SEM QR CODE").FontSize(8).FontColor(Colors.Grey.Medium);
+                });
+
+                col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
+
+                col.Item().PaddingTop(8).AlignCenter().Text(
+                    "Apresente este comprovativo para concluir o pagamento. " +
+                    "Após o pagamento, receberá o bilhete definitivo com QR Code.")
+                    .FontSize(7).FontColor(Colors.Grey.Darken1);
+            });
+        }
+
+
         public byte[] GenerateTicketPdf(Ticket ticket)
         {
             var qrContent = $"TICKET|{ticket.Id}|{ticket.Flight?.FlightNumber}|{ticket.Seat?.Code}";

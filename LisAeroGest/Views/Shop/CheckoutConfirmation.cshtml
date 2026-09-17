@@ -3,12 +3,6 @@
     ViewData["Title"] = "Reserva Confirmada!";
     var isGuest = ViewBag.IsGuest ?? false;
     var isPaid = Model.Ticket?.Status == "Paid";
-
-    // ✅ Declarado no topo para evitar problemas de scope no Razor
-    var wa = isGuest && isPaid
-        ? Uri.EscapeDataString(
-            $"LisAeroGest — pagamento confirmado. Reserva #{ViewBag.TicketDisplayId}. Crie conta no site com o mesmo email para descarregar o bilhete.")
-        : "";
 }
 
 @section Styles {
@@ -164,7 +158,7 @@
                         <p class="mb-0"><small class="text-muted">Doc: @Model.Passenger?.DocumentNumber</small></p>
                     </div>
 
-                    <!-- ═══ CTA: Guest + Não Pago ═══ -->
+                    @* ═══ CTA: Guest + Não Pago ═══ *@
                     @if (isGuest && !isPaid)
                     {
                         <div class="checkout-cta-card">
@@ -181,17 +175,17 @@
                             </a>
                         </div>
                     }
-                    <!-- ═══ CTA: Guest + Pago ═══ -->
+                    @* ═══ CTA: Guest + Pago ═══ *@
                     else if (isGuest && isPaid)
                     {
-                    <div class="checkout-cta-card">
-                        <h5 class="fw-bold mb-1 text-lime">
-                            <i class="bi bi-check-circle-fill me-1"></i>Pagamento Confirmado!
-                        </h5>
-                        <p class="text-muted mb-3">
-                            O PDF do bilhete só fica disponível depois de criar conta com o mesmo email.
-                        </p>
-                        <div class="d-flex flex-wrap gap-2">
+                        <div class="checkout-cta-card">
+                            <h5 class="fw-bold mb-1 text-lime">
+                                <i class="bi bi-check-circle-fill me-1"></i>Pagamento Confirmado!
+                            </h5>
+                            <p class="text-muted mb-3">
+                                Crie conta com o mesmo email para aceder ao bilhete, descarregá-lo em PDF
+                                e receber notificações do voo.
+                            </p>
                             <a asp-controller="Account" asp-action="Register"
                                asp-route-email="@Model.Passenger?.Email"
                                asp-route-firstName="@Model.Passenger?.FirstName"
@@ -199,31 +193,27 @@
                                class="btn btn-lime btn-lg">
                                 <i class="bi bi-person-plus me-1"></i>Criar conta e ver o bilhete
                             </a>
-                            <a class="btn btn-success btn-lg" href="https://wa.me/?text=@wa" target="_blank">
-                                <i class="bi bi-whatsapp me-1"></i>WhatsApp
-                            </a>
                         </div>
-                    </div>
                     }
-                    <!-- ═══ CTA: Logado + Pago ═══ -->
+                    @* ═══ CTA: Logado + Pago ═══ *@
                     else if (!isGuest && isPaid)
                     {
-                    <div class="checkout-cta-card text-center">
-                        <h5 class="fw-bold text-lime">
-                            <i class="bi bi-check-circle-fill me-1"></i>Pagamento Confirmado!
-                        </h5>
-                        <p class="text-muted">O bilhete está na sua conta.</p>
-                        <div class="d-flex flex-wrap justify-content-center gap-2">
-                            <a asp-controller="Shop" asp-action="MyTickets" class="btn btn-lime">
-                                <i class="bi bi-ticket-perforated me-1"></i>Os meus bilhetes
-                            </a>
-                            <a asp-controller="Shop" asp-action="DownloadTicketPdf"
-                               asp-route-ticketId="@Model.Ticket?.Id"
-                               class="btn btn-outline-lime">
-                                <i class="bi bi-download me-1"></i>Descarregar PDF
-                            </a>
+                        <div class="checkout-cta-card text-center">
+                            <h5 class="fw-bold text-lime">
+                                <i class="bi bi-check-circle-fill me-1"></i>Pagamento Confirmado!
+                            </h5>
+                            <p class="text-muted">O bilhete está na sua conta.</p>
+                            <div class="d-flex flex-wrap justify-content-center gap-2">
+                                <a asp-controller="Shop" asp-action="MyTickets" class="btn btn-lime">
+                                    <i class="bi bi-ticket-perforated me-1"></i>Os meus bilhetes
+                                </a>
+                                <a asp-controller="Shop" asp-action="DownloadTicketPdf"
+                                   asp-route-ticketId="@Model.Ticket?.Id"
+                                   class="btn btn-outline-lime">
+                                    <i class="bi bi-download me-1"></i>Descarregar PDF
+                                </a>
+                            </div>
                         </div>
-                    </div>
                     }
 
                     <!-- Voltar -->

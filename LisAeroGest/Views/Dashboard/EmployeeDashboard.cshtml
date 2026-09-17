@@ -9,142 +9,127 @@
 
 <div class="container-fluid mt-4 mb-5">
 
-    <!-- Cabeçalho -->
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <!-- ═══ CABEÇALHO ═══ -->
+    <div class="ed-header mb-4">
         <div>
-            <h2 class="fw-bold mb-1 text-white">
-                <i class="bi bi-person-badge text-primary me-2"></i>Dashboard Operacional
+            <h2 class="ed-title">
+                <i class="bi bi-person-badge text-lime me-2"></i>Dashboard Operacional
             </h2>
-            <p class="text-muted mb-0">
+            <p class="ed-subtitle">
                 Operador: <strong class="text-white">@Model.EmployeeName</strong>
-                <span class="badge bg-primary ms-2">Operações</span>
+                <span class="ed-badge-role">Operações</span>
             </p>
         </div>
-        <div class="text-end text-muted small">
+        <div class="ed-updated">
             <i class="bi bi-clock me-1"></i>
             @Model.LastUpdated.ToString("dd/MM/yyyy — HH:mm")
         </div>
     </div>
 
-    <!-- Acesso Rápido -->
+    <!-- ═══ ACESSO RÁPIDO ═══ -->
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
-            <a asp-controller="CheckIn" asp-action="EmployeeCheckIn"
-               class="card text-decoration-none shadow-sm border-0 bg-success text-white h-100">
-                <div class="card-body d-flex align-items-center justify-content-between p-3">
+            <a asp-controller="CheckIn" asp-action="EmployeeCheckIn" class="ed-quicklink ed-quicklink-green">
+                <div class="ed-quicklink-content">
                     <div>
-                        <h6 class="fw-bold mb-1">Balcão Check-in</h6>
-                        <small class="opacity-75">Processar passageiros</small>
+                        <h6 class="ed-quicklink-title">Balcão Check-in</h6>
+                        <small class="ed-quicklink-desc">Processar passageiros</small>
                     </div>
-                    <i class="bi bi-person-check fs-1"></i>
+                    <i class="bi bi-person-check ed-quicklink-icon"></i>
                 </div>
             </a>
         </div>
         <div class="col-6 col-md-3">
-            <a asp-controller="Gate" asp-action="Index"
-               class="card text-decoration-none shadow-sm border-0 bg-warning text-dark h-100">
-                <div class="card-body d-flex align-items-center justify-content-between p-3">
+            <a asp-controller="Gate" asp-action="Index" class="ed-quicklink ed-quicklink-orange">
+                <div class="ed-quicklink-content">
                     <div>
-                        <h6 class="fw-bold mb-1">Gestão de Gates</h6>
-                        <small class="opacity-75">Atribuir / Alterar</small>
+                        <h6 class="ed-quicklink-title">Gestão de Gates</h6>
+                        <small class="ed-quicklink-desc">Atribuir / Alterar</small>
                     </div>
-                    <i class="bi bi-door-open fs-1"></i>
+                    <i class="bi bi-door-open ed-quicklink-icon"></i>
                 </div>
             </a>
         </div>
         <div class="col-6 col-md-3">
-            <a asp-controller="Flights" asp-action="Index"
-               class="card text-decoration-none shadow-sm border-0 bg-primary text-white h-100">
-                <div class="card-body d-flex align-items-center justify-content-between p-3">
+            <a asp-controller="Flights" asp-action="Index" class="ed-quicklink ed-quicklink-blue">
+                <div class="ed-quicklink-content">
                     <div>
-                        <h6 class="fw-bold mb-1">Lista de Voos</h6>
-                        <small class="opacity-75">Consultar / Atualizar</small>
+                        <h6 class="ed-quicklink-title">Lista de Voos</h6>
+                        <small class="ed-quicklink-desc">Consultar / Atualizar</small>
                     </div>
-                    <i class="bi bi-airplane fs-1"></i>
+                    <i class="bi bi-airplane ed-quicklink-icon"></i>
                 </div>
             </a>
         </div>
         <div class="col-6 col-md-3">
-            <a asp-controller="Forum" asp-action="Index"
-               class="card text-decoration-none shadow-sm border-0 bg-dark text-white h-100">
-                <div class="card-body d-flex align-items-center justify-content-between p-3">
+            <a asp-controller="Forum" asp-action="Index" class="ed-quicklink ed-quicklink-purple">
+                <div class="ed-quicklink-content">
                     <div>
-                        <h6 class="fw-bold mb-1">Fórum Interno</h6>
-                        <small class="opacity-75">Avisos da equipa</small>
+                        <h6 class="ed-quicklink-title">Fórum Interno</h6>
+                        <small class="ed-quicklink-desc">Avisos da equipa</small>
                     </div>
-                    <i class="bi bi-chat-dots fs-1"></i>
+                    <i class="bi bi-chat-dots ed-quicklink-icon"></i>
                 </div>
             </a>
         </div>
     </div>
 
-    <!-- KPIs do dia -->
+    <!-- ═══ KPIs ═══ -->
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-4 col-lg-2">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <span class="text-muted small fw-bold text-uppercase">Voos de Hoje</span>
-                    <h2 class="fw-bold my-1 text-primary">@Model.TodayFlights</h2>
-                </div>
+            <div class="ed-kpi ed-kpi-blue">
+                <span class="ed-kpi-label">Voos de Hoje</span>
+                <h2 class="ed-kpi-value">@Model.TodayFlights</h2>
             </div>
         </div>
         <div class="col-6 col-md-4 col-lg-2">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <span class="text-muted small fw-bold text-uppercase">Próxima Hora</span>
-                    <h2 class="fw-bold my-1 text-success">@Model.UpcomingFlights</h2>
-                </div>
+            <div class="ed-kpi ed-kpi-green">
+                <span class="ed-kpi-label">Próxima Hora</span>
+                <h2 class="ed-kpi-value">@Model.UpcomingFlights</h2>
             </div>
         </div>
         <div class="col-6 col-md-4 col-lg-2">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <span class="text-muted small fw-bold text-uppercase">Atrasados</span>
-                    <h2 class="fw-bold my-1 text-warning">@Model.DelayedToday</h2>
-                </div>
+            <div class="ed-kpi ed-kpi-orange">
+                <span class="ed-kpi-label">Atrasados</span>
+                <h2 class="ed-kpi-value">@Model.DelayedToday</h2>
             </div>
         </div>
         <div class="col-6 col-md-4 col-lg-2">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <span class="text-muted small fw-bold text-uppercase">Cancelados</span>
-                    <h2 class="fw-bold my-1 text-danger">@Model.CancelledToday</h2>
-                </div>
+            <div class="ed-kpi ed-kpi-red">
+                <span class="ed-kpi-label">Cancelados</span>
+                <h2 class="ed-kpi-value">@Model.CancelledToday</h2>
             </div>
         </div>
         <div class="col-6 col-md-4 col-lg-2">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <span class="text-muted small fw-bold text-uppercase">Check-ins Pendentes</span>
-                    <h2 class="fw-bold my-1 text-info">@Model.PendingCheckIns</h2>
-                </div>
+            <div class="ed-kpi ed-kpi-cyan">
+                <span class="ed-kpi-label">Check-ins Pendentes</span>
+                <h2 class="ed-kpi-value">@Model.PendingCheckIns</h2>
             </div>
         </div>
         <div class="col-6 col-md-4 col-lg-2">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <span class="text-muted small fw-bold text-uppercase">A Embarcar</span>
-                    <h2 class="fw-bold my-1 text-secondary">@Model.BoardingNow</h2>
-                </div>
+            <div class="ed-kpi ed-kpi-lime">
+                <span class="ed-kpi-label">A Embarcar</span>
+                <h2 class="ed-kpi-value">@Model.BoardingNow</h2>
             </div>
         </div>
     </div>
 
     <div class="row g-4 mb-4">
-        <!-- Lista de voos de hoje -->
+
+        <!-- ═══ LISTA DE VOOS DE HOJE ═══ -->
         <div class="col-lg-8">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-header py-3">
-                    <h6 class="fw-bold mb-0 text-white">
-                        <i class="bi bi-list-ul me-2 text-primary"></i>Voos de Hoje
+            <div class="ed-card h-100">
+                <div class="ed-card-header">
+                    <h6 class="ed-card-title">
+                        <i class="bi bi-list-ul text-lime me-2"></i>Voos de Hoje
                     </h6>
                 </div>
-                <div class="card-body p-0">
+                <div class="ed-card-body p-0">
                     @if (Model.TodayFlightList.Any())
                     {
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
+                            <table class="table ed-table align-middle mb-0">
+                                <thead>
                                     <tr>
                                         <th>Voo</th>
                                         <th>Companhia</th>
@@ -161,11 +146,11 @@
                                     {
                                         <tr class="@FlightStatusHelper.GetRowClass(f.Status)">
                                             <td><strong class="text-white">@f.FlightNumber</strong></td>
-                                            <td>@f.AirlineName</td>
+                                            <td class="text-muted">@f.AirlineName</td>
                                             <td>
-                                                <span class="badge bg-secondary">@f.OriginCode</span>
-                                                <i class="bi bi-arrow-right mx-1 small"></i>
-                                                <span class="badge bg-secondary">@f.DestinationCode</span>
+                                                <span class="ed-badge-code">@f.OriginCode</span>
+                                                <i class="bi bi-arrow-right mx-1 small text-lime"></i>
+                                                <span class="ed-badge-code">@f.DestinationCode</span>
                                             </td>
                                             <td>
                                                 @if (f.DelayedDepartureTime.HasValue && f.Status == "Delayed")
@@ -180,16 +165,16 @@
                                                 }
                                                 else
                                                 {
-                                                    @f.DepartureTime.ToString("HH:mm")
+                                                    <span class="text-white">@f.DepartureTime.ToString("HH:mm")</span>
                                                 }
                                             </td>
-                                            <td>@(f.GateNumber ?? "—")</td>
+                                            <td class="text-white">@(f.GateNumber ?? "—")</td>
                                             <td>
                                                 <span class="badge @FlightStatusHelper.GetBadgeClass(f.Status)">
                                                     @FlightStatusHelper.GetStatusText(f.Status)
                                                 </span>
                                             </td>
-                                            <td class="text-center">@f.PassengerCount</td>
+                                            <td class="text-center text-white">@f.PassengerCount</td>
                                             <td class="text-center">
                                                 @if (f.PendingCheckInCount > 0)
                                                 {
@@ -208,65 +193,66 @@
                     }
                     else
                     {
-                        <div class="text-center py-5 text-muted">
-                            <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
-                            Não existem voos programados para hoje.
+                        <div class="ed-empty">
+                            <i class="bi bi-calendar-x"></i>
+                            <p class="mb-0">Não existem voos programados para hoje.</p>
                         </div>
                     }
                 </div>
             </div>
         </div>
 
-        <!-- Gráfico + Notificações -->
+        <!-- ═══ GRÁFICO + NOTIFICAÇÕES ═══ -->
         <div class="col-lg-4">
-            <div class="card shadow-sm border-0 mb-3">
-                <div class="card-body">
-                    <h6 class="fw-bold card-title mb-3 text-white">Distribuição por Estado</h6>
-                    <div style="max-height: 220px;" class="d-flex justify-content-center">
+
+            <!-- Gráfico -->
+            <div class="ed-card mb-3">
+                <div class="ed-card-body">
+                    <h6 class="ed-card-title mb-3">Distribuição por Estado</h6>
+                    <div class="ed-chart-wrapper">
                         <canvas id="chartStatus"></canvas>
                     </div>
                 </div>
             </div>
 
-            <div class="card shadow-sm border-0">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center border-bottom-0">
-                    <h6 class="fw-bold mb-0 text-white">
+            <!-- Notificações -->
+            <div class="ed-card">
+                <div class="ed-card-header ed-card-header-flex">
+                    <h6 class="ed-card-title mb-0">
                         <i class="bi bi-bell-fill text-warning me-2"></i>Alertas do Turno
                         @if (Model.UnreadCount > 0)
                         {
                             <span class="badge bg-danger rounded-pill ms-1">@Model.UnreadCount novos</span>
                         }
                     </h6>
-                    <a asp-controller="Notification" asp-action="Index" class="btn btn-sm btn-outline-secondary">
+                    <a asp-controller="Notification" asp-action="Index" class="btn btn-sm btn-outline-lime">
                         Ver todas
                     </a>
                 </div>
-                <div class="card-body p-0">
+                <div class="ed-card-body p-0">
                     @if (Model.RecentNotifications.Any())
                     {
-                        <div class="list-group list-group-flush">
+                        <div class="ed-notif-list">
                             @foreach (var notification in Model.RecentNotifications)
                             {
-                                <div class="list-group-item d-flex gap-3 py-3 align-items-start @(notification.IsRead ? "opacity-75" : "")">
-                                    <div class="flex-shrink-0">
-                                        <div class="rounded-circle d-flex align-items-center justify-content-center mt-1 notification-icon-circle">
-                                            <i class="bi @notification.Icon @notification.ColorClass fs-5"></i>
-                                        </div>
+                                <div class="ed-notif-item @(notification.IsRead ? "opacity-75" : "")">
+                                    <div class="ed-notif-icon">
+                                        <i class="bi @notification.Icon @notification.ColorClass"></i>
                                     </div>
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h6 class="mb-1 @(notification.IsRead ? "" : "fw-bold") small text-white">
+                                    <div class="ed-notif-body">
+                                        <div class="ed-notif-header">
+                                            <h6 class="ed-notif-title @(notification.IsRead ? "" : "fw-bold")">
                                                 @if (!notification.IsRead)
                                                 {
                                                     <span class="badge bg-primary me-1">NOVO</span>
                                                 }
                                                 @notification.Title
                                             </h6>
-                                            <span class="text-muted" style="font-size: 0.7rem;">
+                                            <span class="ed-notif-time">
                                                 @notification.CreatedAt.ToString("HH:mm")
                                             </span>
                                         </div>
-                                        <p class="mb-0 small text-muted">@notification.Message</p>
+                                        <p class="ed-notif-message">@notification.Message</p>
                                     </div>
                                 </div>
                             }
@@ -274,9 +260,9 @@
                     }
                     else
                     {
-                        <div class="text-center py-5 text-muted">
-                            <i class="bi bi-check-circle text-success fs-1 d-block mb-2"></i>
-                            Sem alertas pendentes para o seu turno.
+                        <div class="ed-empty">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <p class="mb-0">Sem alertas pendentes para o seu turno.</p>
                         </div>
                     }
                 </div>
@@ -288,7 +274,7 @@
 @section Scripts {
     <script>
         var statusData = @Html.Raw(JsonSerializer.Serialize(
-                            Model.FlightsByStatus.Select(x => new { label = x.Label, count = x.Count })
+                    Model.FlightsByStatus.Select(x => new { label = x.Label, count = x.Count })
             ));
 
     new Chart(document.getElementById('chartStatus'), {
@@ -297,7 +283,9 @@
             labels: statusData.map(x => x.label),
             datasets: [{
                 data: statusData.map(x => x.count),
-                backgroundColor: ['#0d6efd', '#0dcaf0', '#198754', '#6c757d', '#ffc107', '#dc3545']
+                backgroundColor: ['#60a5fa', '#0dcaf0', '#86efac', '#c084fc', '#fde047', '#fca5a5'],
+                borderColor: '#111827',
+                borderWidth: 2
             }]
         },
         options: {
@@ -306,7 +294,11 @@
             plugins: {
                 legend: {
                     position: 'bottom',
-                    labels: { color: '#e2e8f0' }
+                    labels: {
+                        color: '#e2e8f0',
+                        padding: 12,
+                        font: { size: 11 }
+                    }
                 }
             }
         }

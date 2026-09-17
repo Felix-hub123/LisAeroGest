@@ -1,174 +1,329 @@
-﻿@inject LisAeroGest.Helpers.IConverterHelper ConverterHelper
+﻿@model LisAeroGest.Models.PassengerDashboardViewModel
 @{
     ViewData["Title"] = "O Meu Dashboard";
-    var passenger = ViewBag.Passenger as LisAeroGest.Data.Entities.Passenger;
-    var upcoming = ViewBag.UpcomingTickets as IEnumerable<LisAeroGest.Data.Entities.Ticket>;
-    var past = ViewBag.PastTickets as IEnumerable<LisAeroGest.Data.Entities.Ticket>;
 }
 
-<div class="container py-4">
+@section Styles {
+    <link rel="stylesheet" href="~/css/passengerDashboard.css" asp-append-version="true" />
+}
 
-    <!-- Cabeçalho -->
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-        <h1 class="mb-0 text-white">
-            <i class="bi bi-person-circle me-2"></i>O Meu Dashboard
-        </h1>
-        <a asp-controller="Shop" asp-action="Index" class="btn btn-primary">
+<div class="container py-4 mb-5">
+
+    <!-- ═══ CABEÇALHO ═══ -->
+    <div class="pd-header">
+        <div>
+            <h1 class="pd-title">
+                <i class="bi bi-person-circle me-2"></i>Olá, @Model.Passenger.FirstName!
+            </h1>
+            <p class="pd-subtitle">
+                <i class="bi bi-person-vcard me-1"></i>
+                @Model.Passenger.DocumentType · @Model.Passenger.DocumentNumber
+                <span class="mx-2">·</span>
+                <i class="bi bi-calendar-check me-1"></i>
+                Membro desde @Model.Passenger.RegistrationDate.ToString("dd/MM/yyyy")
+            </p>
+        </div>
+        <a asp-controller="Shop" asp-action="Index" class="btn btn-lime">
             <i class="bi bi-cart-plus me-1"></i>Comprar Bilhete
         </a>
     </div>
 
-    <!-- Boas-vindas -->
-    <div class="card shadow-sm mb-4 border-0">
-        <div class="card-body">
-            <h5 class="mb-1 text-white">Bem-vindo, @passenger?.FirstName!</h5>
-            <p class="text-muted mb-0">
-                <i class="bi bi-person-vcard me-1"></i>
-                Documento: <strong class="text-white">@passenger?.DocumentType</strong> — @passenger?.DocumentNumber
-            </p>
-        </div>
-    </div>
-
-    <!-- KPIs -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm text-center py-3"
-                 style="background: linear-gradient(135deg, #0d3d6b, #1F5C99);">
-                <div class="card-body text-white">
-                    <i class="bi bi-ticket-perforated fs-1"></i>
-                    <h3 class="fw-bold mt-2">@upcoming?.Count()</h3>
-                    <small>Próximos Voos</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm text-center py-3"
-                 style="background: linear-gradient(135deg, #3d1a6b, #6f42c1);">
-                <div class="card-body text-white">
-                    <i class="bi bi-clock-history fs-1"></i>
-                    <h3 class="fw-bold mt-2">@past?.Count()</h3>
-                    <small>Voos Realizados</small>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Próximos Voos -->
-    @if (upcoming != null && upcoming.Any())
+    <!-- ═══ ALERTA: RESERVAS PENDENTES ═══ -->
+    @if (Model.PendingCount > 0)
     {
-        <h5 class="mb-3 text-white">
-            <i class="bi bi-airplane-engines me-1"></i>Próximos Voos
-        </h5>
+        var firstPending = Model.PendingReservations.First();
+        <div class="pd-alert-pending">
+            <div class="pd-alert-icon">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div class="pd-alert-content">
+                <div class="pd-alert-title">
+                    Tem @Model.PendingCount reserva(s) pendente(s) de pagamento
+                </div>
+                <div class="pd-alert-desc">
+                    Reserva #@firstPending.TicketId.ToString("D6") —
+                    @firstPending.FlightNumber (@firstPending.OriginCode → @firstPending.DestinationCode)
+                </div>
+            </div>
+            <a asp-controller="Shop" asp-action="Cart" class="btn btn-warning">
+                <i class="bi bi-credit-card me-1"></i>Pagar Agora
+            </a>
+        </div>
+    }
 
-        <div class="row g-3 mb-4">
-            @foreach (var ticket in upcoming)
-            {
-                var podeCheckIn = ConverterHelper.CanCheckInOnline(ticket);
+    <!-- ═══ KPIs ═══ -->
+    <div class="pd-kpis">
+        <div class="pd-kpi pd-kpi-blue">
+            <i class="bi bi-airplane-engines"></i>
+            <div class="pd-kpi-value">@Model.UpcomingCount</div>
+            <div class="pd-kpi-label">Próximos Voos</div>
+        </div>
+        <div class="pd-kpi pd-kpi-orange">
+            <i class="bi bi-clock-history"></i>
+            <div class="pd-kpi-value">@Model.PendingCount</div>
+            <div class="pd-kpi-label">Reservas Pendentes</div>
+        </div>
+        <div class="pd-kpi pd-kpi-purple">
+            <i class="bi bi-check-circle"></i>
+            <div class="pd-kpi-value">@Model.PastCount</div>
+            <div class="pd-kpi-label">Voos Realizados</div>
+        </div>
+        <div class="pd-kpi pd-kpi-green">
+            <i class="bi bi-cash-stack"></i>
+            <div class="pd-kpi-value">@Model.TotalSpent.ToString("C0")</div>
+            <div class="pd-kpi-label">Total Gasto</div>
+        </div>
+    </div>
 
-                <div class="col-12">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col-md-2 text-center">
-                                    <div class="fs-2 fw-bold text-primary">
-                                        @ticket.Flight?.DepartureTime.ToString("HH:mm")
-                                    </div>
-                                    <small class="text-muted text-uppercase">
-                                        @ticket.Flight?.DepartureTime.ToString("dd MMM")
-                                    </small>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="d-flex align-items-center gap-2 mb-1">
-                                        <strong class="text-primary">@ticket.Flight?.FlightNumber</strong>
-                                        <span class="badge bg-light text-dark">
-                                            @ticket.Flight?.Airline?.Name
-                                        </span>
-                                    </div>
-                                    <div class="fs-5 text-white">
-                                        <strong>@ticket.Flight?.OriginAirport?.IATACode</strong>
-                                        <i class="bi bi-arrow-right mx-2 text-muted"></i>
-                                        <strong>@ticket.Flight?.DestinationAirport?.IATACode</strong>
-                                    </div>
-                                    <small class="text-muted">
-                                        <i class="bi bi-geo-alt me-1"></i>
-                                        @ticket.Flight?.OriginAirport?.City →
-                                        @ticket.Flight?.DestinationAirport?.City
-                                        <span class="ms-2">
-                                            <i class="bi bi-door-open me-1"></i>
-                                            Gate @ticket.Flight?.Gate?.GateNumber
-                                        </span>
-                                        <span class="ms-2">
-                                            <i class="bi bi-person me-1"></i>
-                                            Lugar @ticket.Seat?.Code
-                                        </span>
-                                    </small>
-                                </div>
-                                <div class="col-md-4 text-end">
-                                    <span class="badge @(ticket.Status == "CheckedIn" ? "bg-success" : "bg-warning text-dark") mb-2">
-                                        @ticket.Status
-                                    </span>
-                                    <div class="btn-group-vertical btn-group-sm w-100" role="group">
-                                        @if (ticket.Status == "CheckedIn")
-                                        {
-                                            <a asp-controller="CheckIn" asp-action="ConfirmationByTicket"
-                                               asp-route-ticketId="@ticket.Id"
-                                               class="btn btn-outline-primary">
-                                                <i class="bi bi-eye me-1"></i>Cartão de Embarque
-                                            </a>
-                                        }
-                                        @if (podeCheckIn)
-                                        {
-                                            <a asp-controller="CheckIn" asp-action="Index"
-                                               class="btn btn-success">
-                                                <i class="bi bi-check-circle me-1"></i>Fazer Check-in
-                                            </a>
-                                        }
-                                    </div>
-                                </div>
+    <!-- ═══ PRÓXIMO VOO (destaque) ═══ -->
+    @if (Model.NextFlight != null)
+    {
+        var next = Model.NextFlight;
+        <section class="pd-section">
+            <div class="pd-section-header">
+                <h2 class="pd-section-title">
+                    <i class="bi bi-airplane-fill text-lime me-2"></i>Próximo Voo
+                </h2>
+            </div>
+
+            <div class="pd-next-flight">
+                <div class="pd-next-left">
+                    <div class="pd-next-flight-num">
+                        <span class="pd-badge-flight">@next.FlightNumber</span>
+                        <span class="pd-airline">@next.AirlineName</span>
+                    </div>
+                    <div class="pd-next-route">
+                        <span class="pd-code">@next.OriginCode</span>
+                        <i class="bi bi-arrow-right pd-arrow"></i>
+                        <span class="pd-code">@next.DestinationCode</span>
+                    </div>
+                    <div class="pd-next-cities">
+                        @next.OriginCity → @next.DestinationCity
+                    </div>
+                </div>
+
+                <div class="pd-next-info">
+                    <div class="pd-info-item">
+                        <i class="bi bi-calendar3"></i>
+                        <div>
+                            <small>Partida</small>
+                            <strong>@next.DepartureTime.ToString("dd/MM/yyyy HH:mm")</strong>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(next.GateNumber))
+                    {
+                        <div class="pd-info-item">
+                            <i class="bi bi-door-open"></i>
+                            <div>
+                                <small>Gate</small>
+                                <strong>@next.GateNumber</strong>
+                            </div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(next.SeatNumber))
+                    {
+                        <div class="pd-info-item">
+                            <i class="bi bi-grid-3x3-gap"></i>
+                            <div>
+                                <small>Lugar</small>
+                                <strong>@next.SeatNumber</strong>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="pd-next-actions">
+                    <a asp-controller="Shop" asp-action="DownloadTicketPdf"
+                       asp-route-ticketId="@next.TicketId"
+                       class="btn btn-outline-lime">
+                        <i class="bi bi-download me-1"></i>PDF
+                    </a>
+                    @if (next.CanCheckIn)
+                    {
+                        <a asp-controller="CheckIn" asp-action="Index"
+                           class="btn btn-lime">
+                            <i class="bi bi-check-circle me-1"></i>Check-in
+                        </a>
+                    }
+                    @if (next.HasBoardingPass)
+                    {
+                        <a asp-controller="CheckIn" asp-action="ConfirmationByTicket"
+                           asp-route-ticketId="@next.TicketId"
+                           class="btn btn-lime">
+                            <i class="bi bi-ticket-perforated me-1"></i>Cartão
+                        </a>
+                    }
+                </div>
+            </div>
+        </section>
+    }
+
+    <!-- ═══ NOTIFICAÇÕES ═══ -->
+    @if (Model.RecentNotifications.Any())
+    {
+        <section class="pd-section">
+            <div class="pd-section-header">
+                <h2 class="pd-section-title">
+                    <i class="bi bi-bell-fill text-lime me-2"></i>Notificações Recentes
+                    @if (Model.UnreadNotificationsCount > 0)
+                    {
+                        <span class="badge bg-danger ms-2">@Model.UnreadNotificationsCount</span>
+                    }
+                </h2>
+                <a asp-controller="Notification" asp-action="Index" class="pd-link">
+                    Ver todas <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="pd-notif-list">
+                @foreach (var n in Model.RecentNotifications)
+                {
+                    <div class="pd-notif-item @(n.IsRead ? "" : "pd-notif-unread")">
+                        <div class="pd-notif-icon">
+                            <i class="bi @(string.IsNullOrEmpty(n.Icon) ? "bi-bell" : n.Icon) @(n.ColorClass ?? "text-primary")"></i>
+                        </div>
+                        <div class="pd-notif-body">
+                            <div class="pd-notif-title">@n.Title</div>
+                            <div class="pd-notif-desc">@n.Message</div>
+                            <div class="pd-notif-time">
+                                <i class="bi bi-clock me-1"></i>
+                                @n.CreatedAt.ToString("dd/MM/yyyy HH:mm")
                             </div>
                         </div>
                     </div>
+                }
+            </div>
+        </section>
+    }
+
+    <!-- ═══ LIS AERO POINTS ═══ -->
+    <section class="pd-section">
+        <div class="pd-loyalty">
+            <div class="pd-loyalty-left">
+                <div class="pd-loyalty-label">LisAeroPoints</div>
+                <div class="pd-loyalty-points">
+                    <span class="pd-points-value">@Model.LoyaltyPoints</span>
+                    <span class="pd-points-unit">pontos</span>
                 </div>
-            }
+                <div class="pd-loyalty-tier">
+                    Nível: <strong>@Model.LoyaltyTier</strong>
+                </div>
+                <div class="pd-loyalty-progress">
+                    <div class="pd-progress-bar" style="width: @Model.LoyaltyProgressPercent%;"></div>
+                </div>
+                @if (Model.PointsToNextTier > 0)
+                {
+                    <div class="pd-loyalty-hint">
+                        Faltam <strong>@Model.PointsToNextTier</strong> pontos para o próximo nível!
+                    </div>
+                }
+                else
+                {
+                    <div class="pd-loyalty-hint">
+                        🎉 Já está no nível máximo!
+                    </div>
+                }
+            </div>
+            <div class="pd-loyalty-right">
+                <a asp-controller="Home" asp-action="Loyalty" class="btn btn-outline-lime">
+                    <i class="bi bi-gift me-1"></i>Ver Benefícios
+                </a>
+            </div>
         </div>
-    }
-    else
+    </section>
+
+    <!-- ═══ PRÓXIMOS VOOS (lista) ═══ -->
+    @if (Model.UpcomingTickets.Any())
     {
-        <div class="alert alert-info">
-            <i class="bi bi-info-circle me-1"></i>
-            Não tens próximos voos. Que tal
-            <a asp-controller="Shop" asp-action="Index" class="alert-link">comprar um bilhete</a>?
+        <section class="pd-section">
+            <div class="pd-section-header">
+                <h2 class="pd-section-title">
+                    <i class="bi bi-calendar-event text-lime me-2"></i>Todos os Próximos Voos
+                </h2>
+            </div>
+
+            <div class="pd-flights-list">
+                @foreach (var t in Model.UpcomingTickets)
+                {
+                    <div class="pd-flight-card">
+                        <div class="pd-flight-info">
+                            <span class="pd-badge-flight">@t.FlightNumber</span>
+                            <span class="pd-airline">@t.AirlineName</span>
+                            <div class="pd-flight-route">
+                                <strong>@t.OriginCode</strong>
+                                <i class="bi bi-arrow-right mx-2"></i>
+                                <strong>@t.DestinationCode</strong>
+                            </div>
+                            <small class="text-muted">
+                                @t.DepartureTime.ToString("dd/MM/yyyy HH:mm")
+                                @if (!string.IsNullOrEmpty(t.SeatNumber))
+                                {
+                                    <span class="ms-2">· Lugar @t.SeatNumber</span>
+                                }
+                            </small>
+                        </div>
+                        <div class="pd-flight-actions">
+                            <a asp-controller="Shop" asp-action="DownloadTicketPdf"
+                               asp-route-ticketId="@t.TicketId"
+                               class="btn btn-sm btn-outline-lime">
+                                <i class="bi bi-download"></i>
+                            </a>
+                            @if (t.CanCheckIn)
+                            {
+                                <a asp-controller="CheckIn" asp-action="Index"
+                                   class="btn btn-sm btn-lime">
+                                    <i class="bi bi-check-circle"></i>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+    else if (!Model.PendingReservations.Any())
+    {
+        <div class="pd-empty">
+            <i class="bi bi-airplane-engines display-3 d-block mb-3"></i>
+            <h4 class="text-white">Ainda não tem voos agendados</h4>
+            <p class="text-muted">Pesquise voos e comece a sua próxima viagem!</p>
+            <a asp-controller="Shop" asp-action="Index" class="btn btn-lime">
+                <i class="bi bi-search me-1"></i>Pesquisar Voos
+            </a>
         </div>
     }
 
-    <!-- Histórico -->
-    @if (past != null && past.Any())
+    <!-- ═══ HISTÓRICO ═══ -->
+    @if (Model.PastTickets.Any())
     {
-        <h5 class="mb-3 text-white">
-            <i class="bi bi-clock-history me-1"></i>Histórico de Voos
-        </h5>
+        <section class="pd-section">
+            <div class="pd-section-header">
+                <h2 class="pd-section-title">
+                    <i class="bi bi-clock-history text-lime me-2"></i>Histórico de Voos
+                </h2>
+            </div>
 
-        <div class="list-group mb-4">
-            @foreach (var ticket in past)
-            {
-                <div class="list-group-item">
-                    <div class="d-flex justify-content-between">
+            <div class="pd-history-list">
+                @foreach (var t in Model.PastTickets.Take(5))
+                {
+                    <div class="pd-history-item">
                         <div>
-                            <strong class="text-white">@ticket.Flight?.FlightNumber</strong>
-                            <span class="text-muted">
-                                — @ticket.Flight?.OriginAirport?.IATACode →
-                                @ticket.Flight?.DestinationAirport?.IATACode
-                            </span>
+                            <strong class="text-white">@t.FlightNumber</strong>
+                            <span class="text-muted mx-2">·</span>
+                            <span class="text-muted">@t.OriginCode → @t.DestinationCode</span>
                             <br />
                             <small class="text-muted">
                                 <i class="bi bi-calendar3 me-1"></i>
-                                @ticket.Flight?.DepartureTime.ToString("dd/MM/yyyy HH:mm")
+                                @t.DepartureTime.ToString("dd/MM/yyyy HH:mm")
                             </small>
                         </div>
-                        <span class="badge bg-secondary align-self-center">@ticket.Status</span>
+                        <span class="pd-status-badge @(t.TicketStatus == "CheckedIn" ? "pd-status-checked" : t.TicketStatus == "Cancelled" ? "pd-status-cancelled" : "pd-status-default")">
+                            @t.TicketStatus
+                        </span>
                     </div>
-                </div>
-            }
-        </div>
+                }
+            </div>
+        </section>
     }
+
 </div>

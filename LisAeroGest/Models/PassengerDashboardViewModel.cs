@@ -9,46 +9,61 @@ namespace LisAeroGest.Models
     /// </summary>
     public class PassengerDashboardViewModel
     {
-        /// <summary>
-        /// Dados do perfil do passageiro.
-        /// </summary>
-        [Display(Name = "Passageiro")]
+        // ═══════════════════════════════════════════════════
+        // PERFIL
+        // ═══════════════════════════════════════════════════
+
         public Passenger Passenger { get; set; } = null!;
 
-        /// <summary>
-        /// Nome completo do passageiro.
-        /// </summary>
-        [Display(Name = "Nome Completo")]
         public string FullName { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Bilhetes de viagens futuras.
-        /// </summary>
-        [Display(Name = "Próximos Voos")]
+        public string? ImageUrl { get; set; }
+
+        // ═══════════════════════════════════════════════════
+        // VOOS
+        // ═══════════════════════════════════════════════════
+
         public List<PassengerTicketItemViewModel> UpcomingTickets { get; set; } = new();
 
-        /// <summary>
-        /// Bilhetes de viagens já realizadas ou canceladas.
-        /// </summary>
-        [Display(Name = "Histórico de Voos")]
         public List<PassengerTicketItemViewModel> PastTickets { get; set; } = new();
 
         /// <summary>
-        /// Próxima viagem em destaque (primeiro da lista de upcoming).
+        /// Reservas pendentes (Status = "Reserved" e ainda válidas).
         /// </summary>
-        [Display(Name = "Próxima Viagem")]
+        public List<PassengerTicketItemViewModel> PendingReservations { get; set; } = new();
+
         public PassengerTicketItemViewModel? NextFlight { get; set; }
 
-        /// <summary>
-        /// Quantidade de voos futuros.
-        /// </summary>
-        [Display(Name = "Nº de Próximos Voos")]
+        // ═══════════════════════════════════════════════════
+        // KPIs
+        // ═══════════════════════════════════════════════════
+
         public int UpcomingCount { get; set; }
 
-        /// <summary>
-        /// Quantidade de voos no histórico.
-        /// </summary>
-        [Display(Name = "Nº de Voos Realizados")]
         public int PastCount { get; set; }
+
+        public int PendingCount { get; set; }
+
+        public decimal TotalSpent { get; set; }
+
+        // ═══════════════════════════════════════════════════
+        // NOTIFICAÇÕES
+        // ═══════════════════════════════════════════════════
+
+        public List<Notification> RecentNotifications { get; set; } = new();
+
+        public int UnreadNotificationsCount { get; set; }
+
+        // ═══════════════════════════════════════════════════
+        // LIS AERO POINTS (fidelização)
+        // ═══════════════════════════════════════════════════
+
+        public int LoyaltyPoints { get; set; }
+
+        public string LoyaltyTier { get; set; } = "Bronze";
+
+        public int PointsToNextTier { get; set; }
+
+        public int LoyaltyProgressPercent { get; set; }  // 0-100
     }
 }

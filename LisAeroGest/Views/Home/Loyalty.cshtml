@@ -1,53 +1,194 @@
 ﻿@{
     ViewData["Title"] = "Programa LisAeroPoints";
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+    var isPassenger = User.IsInRole("Passenger");
+    var isAdminOrEmployee = User.IsInRole("Admin") || User.IsInRole("Employee");
 }
 
 <div class="container mt-5 mb-5">
-    <div class="p-4 p-md-5 rounded-4 shadow-sm text-center lis-loyalty-box">
-        <h1 class="display-5 fw-bold text-white">LisAeroPoints</h1>
-        <p class="lead mt-3 text-white">
-            Programa de fidelidade da LisAeroGest. Acumule pontos nas viagens
-            e utilize-os em reservas futuras.
-        </p>
 
-        <hr class="my-4" />
+    <div class="p-4 p-md-5 rounded-4 shadow-sm lis-loyalty-box">
 
-        <h3 class="h5 text-primary fw-bold">Como funciona</h3>
-        <ul class="list-unstyled lead text-start mx-auto" style="max-width: 640px;">
-            <li class="mb-2 text-white">
-                <i class="bi bi-plus-circle me-2 text-primary"></i>
-                Acumule pontos em cada reserva paga na plataforma.
-            </li>
-            <li class="mb-2 text-white">
-                <i class="bi bi-arrow-left-right me-2 text-primary"></i>
-                Troque pontos por desconto em novas viagens (quando o programa estiver ativo na conta).
-            </li>
-            <li class="mb-2 text-white">
-                <i class="bi bi-star me-2 text-primary"></i>
-                Níveis Silver, Gold e Platinum com benefícios adicionais.
-            </li>
-            <li class="text-white">
-                <i class="bi bi-person-plus me-2 text-primary"></i>
-                A adesão faz-se com a criação de conta de passageiro.
-            </li>
-        </ul>
+        <!-- ═══ CABEÇALHO ═══ -->
+        <div class="text-center">
+            <div class="loyalty-hero-icon">
+                <i class="bi bi-gem"></i>
+            </div>
+            <h1 class="display-5 fw-bold text-white mb-2">LisAeroPoints</h1>
+            <p class="lead text-muted">
+                Programa de fidelidade da LisAeroGest. Acumule pontos em cada viagem
+                e troque por descontos em reservas futuras.
+            </p>
+        </div>
 
-        <hr class="my-4" />
+        <hr class="my-5 border-secondary" />
 
-        @if (User.Identity?.IsAuthenticated != true)
-        {
-            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-lg mt-2">
-                <i class="bi bi-person-plus me-1"></i>Criar conta
-            </a>
-        }
-        else
-        {
-            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-primary btn-lg mt-2">
-                <i class="bi bi-person me-1"></i>Ir para o dashboard
-            </a>
-        }
-        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-lg mt-2 ms-md-2">
-            <i class="bi bi-arrow-left me-1"></i>Voltar ao início
-        </a>
+        <!-- ═══ COMO FUNCIONA ═══ -->
+        <h3 class="loyalty-section-title">
+            <i class="bi bi-info-circle me-2"></i>Como funciona
+        </h3>
+
+        <div class="row g-3 mb-5">
+            <div class="col-md-6">
+                <div class="loyalty-step">
+                    <div class="loyalty-step-icon">
+                        <i class="bi bi-cash-coin"></i>
+                    </div>
+                    <div>
+                        <div class="loyalty-step-title">Ganhe pontos</div>
+                        <div class="loyalty-step-desc">
+                            Por cada <strong>1€</strong> gasto numa reserva paga,
+                            recebe <strong class="text-lime">10 pontos</strong>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="loyalty-step">
+                    <div class="loyalty-step-icon">
+                        <i class="bi bi-arrow-left-right"></i>
+                    </div>
+                    <div>
+                        <div class="loyalty-step-title">Troque por descontos</div>
+                        <div class="loyalty-step-desc">
+                            Use os pontos acumulados para reduzir o preço
+                            das suas próximas reservas.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="loyalty-step">
+                    <div class="loyalty-step-icon">
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <div>
+                        <div class="loyalty-step-title">Suba de nível</div>
+                        <div class="loyalty-step-desc">
+                            Desbloqueie <strong>Bronze, Prata, Ouro e Platina</strong>
+                            com benefícios exclusivos.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="loyalty-step">
+                    <div class="loyalty-step-icon">
+                        <i class="bi bi-person-plus-fill"></i>
+                    </div>
+                    <div>
+                        <div class="loyalty-step-title">Aderência grátis</div>
+                        <div class="loyalty-step-desc">
+                            Basta <strong>criar conta de passageiro</strong> —
+                            os pontos começam a acumular automaticamente.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-5 border-secondary" />
+
+        <!-- ═══ NÍVEIS ═══ -->
+        <h3 class="loyalty-section-title mb-4">
+            <i class="bi bi-trophy me-2"></i>Níveis e benefícios
+        </h3>
+
+        <div class="row g-3 mb-5">
+
+            <!-- BRONZE -->
+            <div class="col-6 col-lg-3">
+                <div class="loyalty-tier loyalty-tier-bronze">
+                    <div class="loyalty-tier-icon">
+                        <i class="bi bi-award"></i>
+                    </div>
+                    <div class="loyalty-tier-name">Bronze</div>
+                    <div class="loyalty-tier-range">0 — 499 pts</div>
+                    <ul class="loyalty-tier-perks">
+                        <li><i class="bi bi-check-circle-fill"></i>Acumular pontos</li>
+                        <li><i class="bi bi-check-circle-fill"></i>Ofertas por email</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- PRATA -->
+            <div class="col-6 col-lg-3">
+                <div class="loyalty-tier loyalty-tier-prata">
+                    <div class="loyalty-tier-icon">
+                        <i class="bi bi-award-fill"></i>
+                    </div>
+                    <div class="loyalty-tier-name">Prata</div>
+                    <div class="loyalty-tier-range">500 — 1499 pts</div>
+                    <ul class="loyalty-tier-perks">
+                        <li><i class="bi bi-check-circle-fill"></i>Check-in prioritário</li>
+                        <li><i class="bi bi-check-circle-fill"></i>5% desconto</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- OURO -->
+            <div class="col-6 col-lg-3">
+                <div class="loyalty-tier loyalty-tier-ouro">
+                    <div class="loyalty-tier-icon">
+                        <i class="bi bi-trophy-fill"></i>
+                    </div>
+                    <div class="loyalty-tier-name">Ouro</div>
+                    <div class="loyalty-tier-range">1500 — 2999 pts</div>
+                    <ul class="loyalty-tier-perks">
+                        <li><i class="bi bi-check-circle-fill"></i>Embarque prioritário</li>
+                        <li><i class="bi bi-check-circle-fill"></i>10% desconto</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- PLATINA -->
+            <div class="col-6 col-lg-3">
+                <div class="loyalty-tier loyalty-tier-platina">
+                    <div class="loyalty-tier-icon">
+                        <i class="bi bi-gem"></i>
+                    </div>
+                    <div class="loyalty-tier-name">Platina</div>
+                    <div class="loyalty-tier-range">3000+ pts</div>
+                    <ul class="loyalty-tier-perks">
+                        <li><i class="bi bi-check-circle-fill"></i>Acesso à sala VIP</li>
+                        <li><i class="bi bi-check-circle-fill"></i>15% desconto</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+        <hr class="my-5 border-secondary" />
+
+        <!-- ═══ CTA FINAL ═══ -->
+        <div class="text-center">
+
+            @if (!isAuthenticated)
+            {
+                <a asp-controller="Account" asp-action="Register" class="btn btn-lime btn-lg">
+                    <i class="bi bi-person-plus me-1"></i>Criar conta e aderir
+                </a>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-lg ms-md-2">
+                    <i class="bi bi-arrow-left me-1"></i>Voltar ao início
+                </a>
+            }
+            else if (isPassenger)
+            {
+                <a asp-controller="Dashboard" asp-action="PassengerDashboard" class="btn btn-lime btn-lg">
+                    <i class="bi bi-speedometer2 me-1"></i>Voltar ao Dashboard
+                </a>
+            }
+            else if (isAdminOrEmployee)
+            {
+                <a asp-controller="Dashboard" asp-action="Index" class="btn btn-lime btn-lg">
+                    <i class="bi bi-speedometer2 me-1"></i>Voltar ao Dashboard
+                </a>
+            }
+
+        </div>
+
     </div>
 </div>

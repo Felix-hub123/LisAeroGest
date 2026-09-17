@@ -53,10 +53,12 @@ namespace LisAeroGest.Controllers
             }
 
             var user = await _userManager.GetUserAsync(User);
-            if (user == null) return RedirectToAction("Login", "Account");
+            if (user == null)
+                return RedirectToAction("Login", "Account");
 
             var passenger = await _passengerRepository.GetByUserIdAsync(user.Id);
-            if (passenger == null) return RedirectToAction(nameof(Create));
+            if (passenger == null)
+                return RedirectToAction(nameof(Create));
 
             return RedirectToAction(nameof(Details), new { id = passenger.Id });
         }
@@ -71,12 +73,14 @@ namespace LisAeroGest.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var passenger = await _passengerRepository.GetWithTicketsAndFlightsAsync(id);
-            if (passenger == null) return NotFound();
+            if (passenger == null)
+                return NotFound();
 
             if (!User.IsInRole("Admin") && !User.IsInRole("Employee"))
             {
                 var user = await _userManager.GetUserAsync(User);
-                if (user == null || passenger.UserId != user.Id) return Forbid();
+                if (user == null || passenger.UserId != user.Id)
+                    return Forbid();
             }
 
             return View(passenger);
@@ -91,7 +95,8 @@ namespace LisAeroGest.Controllers
         public async Task<IActionResult> Create()
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null) return RedirectToAction("Login", "Account");
+            if (user == null)
+                return RedirectToAction("Login", "Account");
 
             // Se já tem perfil, redireciona para editar
             var existing = await _passengerRepository.GetByUserIdAsync(user.Id);
@@ -153,12 +158,14 @@ namespace LisAeroGest.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             var passenger = await _passengerRepository.GetByIdAsync(id);
-            if (passenger == null) return NotFound();
+            if (passenger == null)
+                return NotFound();
 
             if (!User.IsInRole("Admin") && !User.IsInRole("Employee"))
             {
                 var user = await _userManager.GetUserAsync(User);
-                if (user == null || passenger.UserId != user.Id) return Forbid();
+                if (user == null || passenger.UserId != user.Id)
+                    return Forbid();
             }
 
             var vm = _converterHelper.ToPassengerViewModel(passenger);
@@ -179,7 +186,8 @@ namespace LisAeroGest.Controllers
             }
 
             var passenger = await _passengerRepository.GetByIdAsync(viewModel.Id);
-            if (passenger == null) return NotFound();
+            if (passenger == null)
+                return NotFound();
 
             if (viewModel.ImageFile != null)
             {
@@ -210,7 +218,8 @@ namespace LisAeroGest.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var passenger = await _passengerRepository.GetByIdAsync(id);
-            if (passenger == null) return NotFound();
+            if (passenger == null)
+                return NotFound();
 
             return View(passenger);
         }
@@ -224,7 +233,8 @@ namespace LisAeroGest.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var passenger = await _passengerRepository.GetByIdAsync(id);
-            if (passenger == null) return NotFound();
+            if (passenger == null)
+                return NotFound();
 
             // Impede eliminar um passageiro com bilhetes: o nome do passageiro
             // desapareceria dos bilhetes/cartões de embarque já emitidos.

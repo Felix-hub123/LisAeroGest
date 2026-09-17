@@ -18,6 +18,16 @@ namespace LisAeroGest.Data.Entities
         /// </summary>
         public string? Gate { get; set; } = "TBA";
 
+        /// <summary>
+        /// ID do utilizador que emitiu o cartão (para auditoria).
+        /// </summary>
+        public string? IssuedByUserId { get; set; }
+
+        /// <summary>
+        /// Nome/email do utilizador que emitiu o cartão.
+        /// </summary>
+        public string? IssuedByName { get; set; }
+
         public DateTime IssuedAt { get; set; } = DateTime.UtcNow;
 
         [Required]

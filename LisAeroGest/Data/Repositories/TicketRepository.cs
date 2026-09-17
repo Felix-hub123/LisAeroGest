@@ -87,34 +87,42 @@ namespace LisAeroGest.Data.Repositories
                 .OrderByDescending(t => t.PurchaseDate)
                 .ToListAsync();
 
-        public async Task<IEnumerable<Ticket>> SearchForCheckInAsync(string searchCriteria)
+        /// <summary>
+        /// Pesquisa bilhetes para check-in presencial por vários campos:
+        /// ID, documento, email, telefone, nome ou número do voo.
+        /// </summary>
+        public async Task<List<Ticket>> SearchForCheckInAsync(string searchTerm)
         {
-            if (string.IsNullOrWhiteSpace(searchCriteria))
-            {
-                return Enumerable.Empty<Ticket>();
-            }
+            if (string.IsNullOrWhiteSpace(searchTerm))
+                return new List<Ticket>();
 
-            var term = searchCriteria.Trim().ToLower();
+            var term = searchTerm.Trim();
+            int.TryParse(term, out int numericTerm);
 
-            return await _context.Tickets
-                .Include(t => t.Flight)
-                    .ThenInclude(f => f!.OriginAirport)
-                .Include(t => t.Flight)
-                    .ThenInclude(f => f!.DestinationAirport)
+            var query = _context.Tickets
                 .Include(t => t.Passenger)
-                    .ThenInclude(p => p!.User)
+                .Include(t => t.Flight).ThenInclude(f => f!.OriginAirport)
+                .Include(t => t.Flight).ThenInclude(f => f!.DestinationAirport)
+                .Include(t => t.Flight).ThenInclude(f => f!.Gate)
+                .Include(t => t.Flight).ThenInclude(f => f!.Airline)
                 .Include(t => t.Seat)
-                .Where(t =>
-                    // Pesquisa por ID do bilhete (se for número)
-                    t.Id.ToString() == term ||
-                    // Pesquisa por Nome Completo do passageiro
-                    (t.Passenger != null && t.Passenger.User != null && t.Passenger.User.FullName.ToLower().Contains(term)) ||
-                    // Pesquisa por E-mail do passageiro
-                    (t.Passenger != null && t.Passenger.User != null && t.Passenger.User.Email!.ToLower().Contains(term)) ||
-                    // Pesquisa por Número do Voo
-                    (t.Flight != null && t.Flight.FlightNumber!.ToLower().Contains(term))
-                )
-                .OrderByDescending(t => t.PurchaseDate)
+                .Where(t => !t.WasDeleted);
+
+            query = query.Where(t =>
+                (numericTerm > 0 && t.Id == numericTerm)
+                || (t.Passenger != null && t.Passenger.DocumentNumber == term)
+                || (t.Passenger != null && t.Passenger.Email == term)
+                || (t.Passenger != null && t.Passenger.PhoneNumber == term)
+                || (t.Flight != null && t.Flight.FlightNumber == term)
+                || (t.Passenger != null && (
+                    EF.Functions.Like(t.Passenger.FirstName, $"%{term}%") ||
+                    EF.Functions.Like(t.Passenger.LastName, $"%{term}%")
+                ))
+            );
+
+            return await query
+                .OrderByDescending(t => t.Flight!.DepartureTime)
+                .Take(20)
                 .ToListAsync();
         }
 
@@ -145,6 +153,8 @@ namespace LisAeroGest.Data.Repositories
                 .Where(t => t.FlightId == flightId)
                 .ToListAsync();
         }
+
+
 
     }
 }
