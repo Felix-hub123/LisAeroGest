@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LisAeroGest.Mobile.Views.OperationsCenterPage"
+             Title="Operações"
+             Background="{StaticResource AppBackgroundGradientBrush}">
+    <ScrollView>
+        <VerticalStackLayout Padding="24,32,24,28" Spacing="18">
+            <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="CENTRO DE OPERAÇÕES" FontFamily="OpenSansSemibold" FontSize="14" TextColor="{StaticResource TextSecondaryDark}" /><Label Text="Turno em Lisboa" Style="{StaticResource TitleStyle}" /></VerticalStackLayout><Label Grid.Column="1" Text="● ONLINE" FontSize="12" TextColor="{StaticResource AccentDark}" VerticalOptions="Center" /></Grid>
+            <Border Style="{StaticResource CardElevatedStyle}"><VerticalStackLayout Spacing="8"><Label Text="Operação do dia" Style="{StaticResource Title2Style}" /><Label Text="Acompanha partidas, passageiros, portas e comunicações a partir de um único centro." Style="{StaticResource CaptionStyle}" /></VerticalStackLayout></Border>
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+                <Button Text="✈  Voos em operação" Clicked="OnFlightsClicked" />
+                <Button Grid.Column="1" Text="👥  Passageiros" Style="{StaticResource SecondaryButtonStyle}" Clicked="OnPassengersClicked" />
+                <Button Grid.Row="1" Text="🚪  Portas" Style="{StaticResource SecondaryButtonStyle}" Clicked="OnGatesClicked" />
+                <Button Grid.Row="1" Grid.Column="1" Text="📢  Comunicações" Style="{StaticResource SecondaryButtonStyle}" Clicked="OnCommunicationsClicked" />
+            </Grid>
+            <Border Style="{StaticResource CardStyle}"><Grid ColumnDefinitions="Auto,*"><Label Text="✓" FontSize="22" TextColor="{StaticResource AccentDark}" /><VerticalStackLayout Grid.Column="1" Margin="12,0,0,0"><Label Text="Balcão de check-in" Style="{StaticResource BodyEmphasisStyle}" /><Label Text="Pesquisa o passageiro por nome, documento, email, voo ou bilhete e confirma o check-in manualmente." Style="{StaticResource CaptionStyle}" /><Button Text="Abrir balcão" Style="{StaticResource TextButtonStyle}" Clicked="OnDeskClicked" HorizontalOptions="Start" /></VerticalStackLayout></Grid></Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

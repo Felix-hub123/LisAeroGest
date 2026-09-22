@@ -20,6 +20,9 @@ namespace LisAeroGest.Mobile.Views
 
             System.Diagnostics.Debug.WriteLine(
                 "[FlightBoardPage] ONAPPEARING EXECUTADO");
+
+            if (BindingContext is FlightBoardViewModel vm)
+                await vm.LoadDeparturesCommand.ExecuteAsync(null);
         }
 
       

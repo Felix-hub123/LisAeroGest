@@ -256,5 +256,60 @@ namespace LisAeroGest.Mobile.Services
                 };
             }
         }
+
+        public Task<ApiResult<List<EmployeeCheckInDto>>> SearchEmployeeTicketsAsync(string query)
+            => GetAsync<List<EmployeeCheckInDto>>(
+                $"api/employee/checkin/search?query={Uri.EscapeDataString(query)}");
+
+        public async Task<EmployeeCheckInResultDto> EmployeeCheckInAsync(int ticketId)
+        {
+            if (!HasInternet())
+                return new EmployeeCheckInResultDto { Success = false, ErrorMessage = "Sem ligação à Internet." };
+
+            try
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+                var response = await _httpClient.PostAsJsonAsync(
+                    "api/employee/checkin",
+                    new EmployeeCheckInRequestDto { TicketId = ticketId },
+                    cts.Token);
+
+                if (response.IsSuccessStatusCode)
+                    return await response.Content.ReadFromJsonAsync<EmployeeCheckInResultDto>(cancellationToken: cts.Token)
+                        ?? new EmployeeCheckInResultDto { Success = false, ErrorMessage = "Resposta vazia do servidor." };
+
+                var error = await response.Content.ReadFromJsonAsync<ErrorResponseDto>(cancellationToken: cts.Token);
+                return new EmployeeCheckInResultDto { Success = false, ErrorMessage = error?.Message ?? "Não foi possível concluir o check-in." };
+            }
+            catch (TaskCanceledException)
+            {
+                return new EmployeeCheckInResultDto { Success = false, ErrorMessage = "O servidor demorou demasiado tempo a responder." };
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ApiService] Employee check-in: {ex.Message}");
+                return new EmployeeCheckInResultDto { Success = false, ErrorMessage = "Erro de ligação ao servidor." };
+            }
+        }
+
+        public Task<ApiResult<List<NotificationDto>>> GetNotificationsAsync()
+            => GetAsync<List<NotificationDto>>("api/notifications");
+
+        public async Task<ApiResult<bool>> MarkNotificationReadAsync(int id)
+        {
+            if (!HasInternet()) return ApiResult<bool>.Fail("Sem ligação à Internet.");
+            try
+            {
+                using var response = await _httpClient.PostAsync($"api/notifications/{id}/read", null);
+                return response.IsSuccessStatusCode
+                    ? ApiResult<bool>.Ok(true)
+                    : ApiResult<bool>.Fail("Não foi possível atualizar a notificação.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ApiService] Mark notification: {ex.Message}");
+                return ApiResult<bool>.Fail("Erro de ligação ao servidor.");
+            }
+        }
     }
 }

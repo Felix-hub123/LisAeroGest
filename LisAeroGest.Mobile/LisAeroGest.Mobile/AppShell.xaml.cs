@@ -1,4 +1,4 @@
-﻿using LisAeroGest.Mobile.Services;
+using LisAeroGest.Mobile.Services;
 using LisAeroGest.Mobile.Views;
 
 namespace LisAeroGest.Mobile
@@ -28,6 +28,11 @@ namespace LisAeroGest.Mobile
             Routing.RegisterRoute(
                 nameof(PaymentPage),
                 typeof(PaymentPage));
+
+
+            Routing.RegisterRoute(nameof(OperationsPassengersPage), typeof(OperationsPassengersPage));
+            Routing.RegisterRoute(nameof(OperationsGatesPage), typeof(OperationsGatesPage));
+            Routing.RegisterRoute(nameof(OperationsCommunicationsPage), typeof(OperationsCommunicationsPage));
         }
 
         public async Task ConfigurarAutenticacaoAsync()
@@ -52,58 +57,42 @@ namespace LisAeroGest.Mobile
 
         private void MostrarMenuNaoAutenticado()
         {
-            // Login e Registo
             LoginItem.IsVisible = true;
-            RegisterItem.IsVisible = true;
-
-            // Menu autenticado
-            VoosItem.IsVisible = false;
-            BilhetesItem.IsVisible = false;
-            LerQrItem.IsVisible = false;
-
-            // Logout
-            LogoutButton.IsVisible = false;
+            CurrentItem = LoginItem;
+            PassengerTabs.IsVisible = false;
+            EmployeeTabs.IsVisible = false;
         }
 
         private void MostrarMenuAutenticado(string? role)
         {
-            // Login e Registo
-            LoginItem.IsVisible = false;
-            RegisterItem.IsVisible = false;
-
-            // Voos
-            VoosItem.IsVisible = true;
-
-            // Logout
-            LogoutButton.IsVisible = true;
-
-            if (role == "Employee")
+            if (role is "Employee" or "Admin")
             {
-                // Funcionário
-                VoosItem.Title = "Voos";
-
-                BilhetesItem.IsVisible = false;
-                LerQrItem.IsVisible = true;
+                EmployeeTabs.IsVisible = true;
+                CurrentItem = EmployeeTabs;
+                LoginItem.IsVisible = false;
+                PassengerTabs.IsVisible = false;
             }
             else
             {
-                // Passageiro
-                VoosItem.Title = "Partidas";
-
-                BilhetesItem.IsVisible = true;
-                LerQrItem.IsVisible = false;
+                PassengerTabs.IsVisible = true;
+                CurrentItem = PassengerTabs;
+                LoginItem.IsVisible = false;
+                EmployeeTabs.IsVisible = false;
             }
         }
 
-        private async void OnLogoutClicked(
-            object sender,
-            EventArgs e)
+        /// <summary>
+        /// Termina a sessão e repõe a Shell para o estado não autenticado.
+        /// Chamado por qualquer ViewModel que precise de terminar sessão
+        /// (ex.: Perfil, Bilhetes) — um único caminho de logout.
+        /// </summary>
+        public Task LogoutAsync()
         {
             _authService.Logout();
 
             MostrarMenuNaoAutenticado();
 
-            await GoToAsync("//LoginPage");
+            return Task.CompletedTask;
         }
     }
 }

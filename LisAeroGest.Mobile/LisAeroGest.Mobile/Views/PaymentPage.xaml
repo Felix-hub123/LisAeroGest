@@ -4,18 +4,17 @@
              xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
              x:Class="LisAeroGest.Mobile.Views.PaymentPage"
              x:DataType="vm:PaymentViewModel"
-             Title="Pagamento">
+             Title="Pagamento"
+             Background="{StaticResource AppBackgroundGradientBrush}">
     <VerticalStackLayout Padding="24" Spacing="20">
         <Label Text="Resumo da reserva" FontSize="22" FontAttributes="Bold" />
-        <Label Text="{Binding FlightNumber}" FontSize="20" TextColor="#1565C0" />
+        <Label Text="{Binding FlightNumber}" FontSize="20" TextColor="{StaticResource AccentDark}" />
         <Label Text="{Binding SeatCode, StringFormat='Lugar {0}'}" FontSize="18" />
         <Label Text="{Binding Price}" FontSize="24" FontAttributes="Bold" />
 
         <Button Text="Pagar"
                 Command="{Binding PayCommand}"
                 IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
-                BackgroundColor="#1565C0"
-                TextColor="White"
                 HeightRequest="48"
                 CornerRadius="10" />
     </VerticalStackLayout>

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+		<TargetFrameworks>net8.0-android;net8.0-ios;net8.0-windows10.0.19041.0</TargetFrameworks>
 		<OutputType>Exe</OutputType>
 		<RootNamespace>LisAeroGest.Mobile</RootNamespace>
 		<UseMaui>true</UseMaui>
@@ -57,7 +57,6 @@
 
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.22.0" />
 
-		<PackageReference Include="ZXing.Net.Maui.Controls" Version="0.4.0" />
 
 		<PackageReference Include="Plugin.Maui.Calendar" Version="1.2.6" />
 
@@ -79,14 +78,6 @@
 		</MauiXaml>
 
 		<MauiXaml Update="Views\PaymentPage.xaml">
-		  <Generator>MSBuild:Compile</Generator>
-		</MauiXaml>
-
-		<MauiXaml Update="Views\RegisterPage.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</MauiXaml>
-
-		<MauiXaml Update="Views\ScanTicketPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 

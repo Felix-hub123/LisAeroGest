@@ -1,87 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<Shell x:Class="LisAeroGest.Mobile.AppShell"
+       xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:views="clr-namespace:LisAeroGest.Mobile.Views"
+       Title="LisAeroGest"
+       FlyoutBehavior="Disabled"
+       Shell.BackgroundColor="{StaticResource BackgroundDark}"
+       Shell.ForegroundColor="{StaticResource TextPrimaryDark}"
+       Shell.TitleColor="{StaticResource TextPrimaryDark}"
+       Shell.TabBarBackgroundColor="{StaticResource SurfaceDark}"
+       Shell.TabBarForegroundColor="{StaticResource AccentDark}"
+       Shell.TabBarUnselectedColor="{StaticResource TextSecondaryDark}"
+       Shell.TabBarIsVisible="True">
 
-<Shell
-    x:Class="LisAeroGest.Mobile.AppShell"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:views="clr-namespace:LisAeroGest.Mobile.Views"
-    Title="LisAeroGest"
-    FlyoutBehavior="Flyout">
+    <ShellContent x:Name="LoginItem" Title="Iniciar sessão" ContentTemplate="{DataTemplate views:LoginPage}" Route="LoginPage" />
+    <TabBar x:Name="PassengerTabs" IsVisible="False">
+        <ShellContent Title="Início" Icon="nav_home.svg" ContentTemplate="{DataTemplate views:HomePage}" Route="HomePage" />
+        <ShellContent Title="Viagem" Icon="nav_trip.svg" ContentTemplate="{DataTemplate views:MyTripPage}" Route="MyTripPage" />
+        <ShellContent Title="Carteira" Icon="nav_tickets.svg" ContentTemplate="{DataTemplate views:TicketsPage}" Route="TicketsPage" />
+        <ShellContent Title="Alertas" Icon="nav_notifications.svg" ContentTemplate="{DataTemplate views:NotificationsPage}" Route="NotificationsPage" />
+        <ShellContent Title="Perfil" Icon="nav_profile.svg" ContentTemplate="{DataTemplate views:ProfilePage}" Route="PassengerProfilePage" />
+    </TabBar>
 
-    <!-- NÃO AUTENTICADO -->
-
-    <FlyoutItem
-        x:Name="LoginItem"
-        Title="Iniciar sessão">
-
-        <ShellContent
-            ContentTemplate="{DataTemplate views:LoginPage}"
-            Route="LoginPage" />
-
-    </FlyoutItem>
-
-    <FlyoutItem
-        x:Name="RegisterItem"
-        Title="Registar">
-
-        <ShellContent
-            ContentTemplate="{DataTemplate views:RegisterPage}"
-            Route="RegisterPage" />
-
-    </FlyoutItem>
-
-
-    <!-- PASSAGEIRO / FUNCIONÁRIO -->
-
-    <FlyoutItem
-        x:Name="VoosItem"
-        Title="Partidas"
-        IsVisible="False">
-
-        <ShellContent
-            ContentTemplate="{DataTemplate views:FlightBoardPage}"
-            Route="FlightBoardPage" />
-
-    </FlyoutItem>
-
-    <FlyoutItem
-        x:Name="BilhetesItem"
-        Title="Bilhetes"
-        IsVisible="False">
-
-        <ShellContent
-            ContentTemplate="{DataTemplate views:TicketsPage}"
-            Route="TicketsPage" />
-
-    </FlyoutItem>
-
-    <FlyoutItem
-        x:Name="LerQrItem"
-        Title="Ler QR"
-        IsVisible="False">
-
-        <ShellContent
-            ContentTemplate="{DataTemplate views:ScanTicketPage}"
-            Route="ScanTicketPage" />
-
-    </FlyoutItem>
-
-
-    <!-- BOTÃO TERMINAR SESSÃO -->
-
-    <Shell.FlyoutFooter>
-
-        <VerticalStackLayout Padding="20">
-
-            <Button
-                x:Name="LogoutButton"
-                Text="Terminar sessão"
-                IsVisible="False"
-                Clicked="OnLogoutClicked"
-                HeightRequest="50" />
-
-        </VerticalStackLayout>
-
-    </Shell.FlyoutFooter>
-
+    <TabBar x:Name="EmployeeTabs" IsVisible="False">
+        <ShellContent Title="Operações" Icon="nav_home.svg" ContentTemplate="{DataTemplate views:OperationsCenterPage}" Route="OperationsCenterPage" />
+        <ShellContent Title="Voos" Icon="nav_trip.svg" ContentTemplate="{DataTemplate views:FlightBoardPage}" Route="FlightBoardPage" />
+        <ShellContent Title="Passageiros" Icon="nav_profile.svg" ContentTemplate="{DataTemplate views:OperationsPassengersPage}" Route="OperationsPassengersPage" />
+        <ShellContent Title="Portas" Icon="nav_tickets.svg" ContentTemplate="{DataTemplate views:OperationsGatesPage}" Route="OperationsGatesPage" />
+        <ShellContent Title="Comunicações" Icon="nav_notifications.svg" ContentTemplate="{DataTemplate views:OperationsCommunicationsPage}" Route="OperationsCommunicationsPage" />
+        <ShellContent Title="Perfil" Icon="nav_profile.svg" ContentTemplate="{DataTemplate views:ProfilePage}" Route="EmployeeProfilePage" />
+    </TabBar>
 </Shell>

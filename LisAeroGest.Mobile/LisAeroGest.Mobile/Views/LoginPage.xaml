@@ -5,53 +5,29 @@
              x:Class="LisAeroGest.Mobile.Views.LoginPage"
              x:DataType="vm:LoginViewModel"
              Title="LisAeroGest"
-             Shell.NavBarIsVisible="False">
+             Shell.NavBarIsVisible="False"
+             Background="{StaticResource AppBackgroundGradientBrush}">
     <ScrollView>
-        <VerticalStackLayout Padding="30" Spacing="20" VerticalOptions="Center">
-
-            <VerticalStackLayout Spacing="8" Margin="0,40,0,20">
-                <Label Text="✈️" FontSize="60" HorizontalOptions="Center" />
-                <Label Text="LisAeroGest" FontSize="32" FontAttributes="Bold" HorizontalOptions="Center" TextColor="#1F5C99" />
-                <Label Text="Aeroporto de Lisboa" FontSize="14" HorizontalOptions="Center" TextColor="Gray" />
+        <VerticalStackLayout Padding="28,64,28,32" Spacing="20">
+            <VerticalStackLayout Spacing="3" Margin="0,0,0,14">
+                <Label Text="LisAeroGest" FontFamily="OpenSansSemibold" FontSize="36" TextColor="{StaticResource AccentDark}" />
+                <Label Text="Lisbon Airport Portal" Style="{StaticResource CaptionStyle}" />
             </VerticalStackLayout>
-
-            <Frame IsVisible="{Binding HasError}" BackgroundColor="#FDECEA" BorderColor="#E53935" CornerRadius="8" Padding="12">
-                <Label Text="{Binding ErrorMessage}" TextColor="#E53935" FontSize="14" />
-            </Frame>
-
-            <VerticalStackLayout Spacing="6">
-                <Label Text="Email" FontAttributes="Bold" FontSize="14" />
-                <Border Stroke="#CCCCCC" StrokeThickness="1" StrokeShape="RoundRectangle 8">
-                    <Entry Placeholder="email@exemplo.com" Text="{Binding Email}" Keyboard="Email" ReturnType="Next" Margin="10,0" />
-                </Border>
+            <Border Style="{StaticResource CardElevatedStyle}">
+                <VerticalStackLayout Spacing="16">
+                    <Label Text="Bem-vindo de volta" Style="{StaticResource TitleStyle}" />
+                    <Label Text="Entra para veres os teus voos, bilhetes e alertas." Style="{StaticResource CaptionStyle}" />
+                    <Border IsVisible="{Binding HasError}" Style="{StaticResource StatusBadgeStyle}" Stroke="{StaticResource ErrorDark}"><Label Text="{Binding ErrorMessage}" TextColor="{StaticResource ErrorDark}" FontSize="14" /></Border>
+                    <VerticalStackLayout Spacing="6"><Label Text="Email" Style="{StaticResource BodyEmphasisStyle}" /><Border Style="{StaticResource InputCardStyle}"><Entry Placeholder="email@exemplo.com" Text="{Binding Email}" Keyboard="Email" ReturnType="Next" /></Border></VerticalStackLayout>
+                    <VerticalStackLayout Spacing="6"><Label Text="Password" Style="{StaticResource BodyEmphasisStyle}" /><Border Style="{StaticResource InputCardStyle}"><Entry Placeholder="Password" Text="{Binding Password}" IsPassword="True" ReturnType="Done" ReturnCommand="{Binding LoginCommand}" /></Border></VerticalStackLayout>
+                    <Button Text="Entrar" Command="{Binding LoginCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
+                    <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{StaticResource AccentDark}" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Border>
+            <VerticalStackLayout Spacing="4">
+                <Label Text="A criação de conta é feita no portal web." Style="{StaticResource CaptionStyle}" HorizontalTextAlignment="Center" />
+                <Button Text="Abrir portal web" Clicked="OnPortalClicked" Style="{StaticResource TextButtonStyle}" />
             </VerticalStackLayout>
-
-            <VerticalStackLayout Spacing="6">
-                <Label Text="Password" FontAttributes="Bold" FontSize="14" />
-                <Border Stroke="#CCCCCC" StrokeThickness="1" StrokeShape="RoundRectangle 8">
-                    <Entry Placeholder="Password" Text="{Binding Password}" IsPassword="True" ReturnType="Done" ReturnCommand="{Binding LoginCommand}" Margin="10,0" />
-                </Border>
-            </VerticalStackLayout>
-
-            <Button Text="Entrar"
-                    Command="{Binding LoginCommand}"
-                    IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
-                    BackgroundColor="#1F5C99"
-                    TextColor="White"
-                    CornerRadius="8"
-                    HeightRequest="50"
-                    FontAttributes="Bold"
-                    FontSize="16" />
-
-            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="#1F5C99" HorizontalOptions="Center" />
-
-            <Button Text="Ainda não tem conta? Criar conta"
-            Clicked="OnRegisterClicked"
-            BackgroundColor="Transparent"
-            TextColor="#1F5C99"
-            FontSize="14"
-            Margin="0,20,0,0" />
-            
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

@@ -2,7 +2,6 @@
 using LisAeroGest.Mobile.ViewModels;
 using LisAeroGest.Mobile.Views;
 using Microsoft.Extensions.Logging;
-using ZXing.Net.Maui.Controls;
 
 namespace LisAeroGest.Mobile
 {
@@ -14,7 +13,6 @@ namespace LisAeroGest.Mobile
 
             builder
                 .UseMauiApp<App>()
-                .UseBarcodeReader()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -36,34 +34,13 @@ namespace LisAeroGest.Mobile
 
                 client.Timeout = TimeSpan.FromSeconds(30);
             })
-              .ConfigurePrimaryHttpMessageHandler(() =>
-              {
-                  var handler = new HttpClientHandler();
-
-            #if DEBUG
-                  handler.ServerCertificateCustomValidationCallback =
-                      (message, cert, chain, errors) => true;
-            #endif
-
-                  return handler;
-              });
+            .AddHttpMessageHandler<AuthTokenHandler>();
 
             builder.Services.AddHttpClient<AuthService>(client =>
             {
                 client.BaseAddress = new Uri(
                     "https://lisaerogest.onrender.com/");
                 client.Timeout = TimeSpan.FromSeconds(15);
-            })
-            .ConfigurePrimaryHttpMessageHandler(() =>
-            {
-                var handler = new HttpClientHandler();
-
-#if DEBUG
-                handler.ServerCertificateCustomValidationCallback =
-                    (message, cert, chain, errors) => true;
-#endif
-
-                return handler;
             });
 
             // ── ViewModels ─────────────────────────────────────────────────
@@ -72,9 +49,9 @@ namespace LisAeroGest.Mobile
             builder.Services.AddTransient<FlightDetailsViewModel>();
             builder.Services.AddTransient<TicketsViewModel>();
             builder.Services.AddTransient<CheckInViewModel>();
-            builder.Services.AddTransient<RegisterViewModel>();
             builder.Services.AddTransient<SelectSeatViewModel>();
             builder.Services.AddTransient<PaymentViewModel>();
+            builder.Services.AddTransient<ProfileViewModel>();
 
             // ── Views ──────────────────────────────────────────────────────
             builder.Services.AddTransient<AppShell>();
@@ -83,10 +60,16 @@ namespace LisAeroGest.Mobile
             builder.Services.AddTransient<FlightBoardPage>();
             builder.Services.AddTransient<FlightDetailsPage>();
             builder.Services.AddTransient<TicketsPage>();
-            builder.Services.AddTransient<RegisterPage>();
             builder.Services.AddTransient<SelectSeatPage>();
             builder.Services.AddTransient<PaymentPage>();
-            builder.Services.AddTransient<ScanTicketPage>();
+            builder.Services.AddTransient<HomePage>();
+            builder.Services.AddTransient<MyTripPage>();
+            builder.Services.AddTransient<NotificationsPage>();
+            builder.Services.AddTransient<ProfilePage>();
+            builder.Services.AddTransient<OperationsCenterPage>();
+            builder.Services.AddTransient<OperationsPassengersPage>();
+            builder.Services.AddTransient<OperationsGatesPage>();
+            builder.Services.AddTransient<OperationsCommunicationsPage>();
 
             return builder.Build();
         }

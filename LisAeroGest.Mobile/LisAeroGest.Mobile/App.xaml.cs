@@ -17,6 +17,11 @@ namespace LisAeroGest.Mobile
             _authService = authService;
             _serviceProvider = serviceProvider;
 
+            // Escuro/glassmorphism é o tema principal da app — não segue
+            // o tema do sistema, para a identidade visual ser consistente
+            // em qualquer dispositivo.
+            UserAppTheme = AppTheme.Dark;
+
             MainPage =
                 _serviceProvider.GetRequiredService<AppShell>();
         }

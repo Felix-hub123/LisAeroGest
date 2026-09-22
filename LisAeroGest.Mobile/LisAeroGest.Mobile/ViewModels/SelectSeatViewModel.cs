@@ -99,7 +99,7 @@ namespace LisAeroGest.Mobile.ViewModels
 
             await Shell.Current.DisplayAlert(
                 "Reserva",
-                "A compra é feita no site LisAeroGest.\nO lugar escolhido fica registado só neste ecrã para a demo.",
+                "A compra é feita no portal web LisAeroGest.\nO lugar selecionado será confirmado após o pagamento.",
                 "OK");
 
             await Shell.Current.GoToAsync("//TicketsPage");

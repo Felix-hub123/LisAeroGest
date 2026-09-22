@@ -69,8 +69,7 @@ namespace LisAeroGest.Mobile.ViewModels
                 if (result == null)
                 {
                     Debug.WriteLine("[FlightBoard] RESULTADO = NULL");
-
-                    ErrorMessage = "A API devolveu NULL.";
+                    ErrorMessage = "A API devolveu uma resposta vazia.";
                     HasError = true;
                     return;
                 }

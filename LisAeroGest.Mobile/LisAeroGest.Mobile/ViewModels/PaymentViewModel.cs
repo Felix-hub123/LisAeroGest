@@ -46,11 +46,9 @@ namespace LisAeroGest.Mobile.ViewModels
             IsBusy = true;
             try
             {
-                // Próximo passo: chamar a API de reserva.
-                // Por agora confirma o fluxo na defesa.
                 await Shell.Current.DisplayAlert(
                     "Pagamento",
-                    $"Reserva {FlightNumber}, lugar {SeatCode}, {Price}.\n(API de pagamento no passo seguinte)",
+                    $"Reserva {FlightNumber}, lugar {SeatCode}, {Price}.\nO pagamento deve ser concluído no portal web.",
                     "OK");
 
                 await Shell.Current.GoToAsync("//TicketsPage");

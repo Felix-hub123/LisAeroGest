@@ -1,15 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LisAeroGest.Mobile.Services;
-using LisAeroGest.Mobile.Views;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace LisAeroGest.Mobile.ViewModels
 {
     public partial class LoginViewModel : ObservableObject
     {
         private readonly AuthService _authService;
-        private readonly IServiceProvider _serviceProvider;
 
         [ObservableProperty]
         private string _email = string.Empty;
@@ -26,12 +23,9 @@ namespace LisAeroGest.Mobile.ViewModels
         [ObservableProperty]
         private bool _hasError;
 
-        public LoginViewModel(
-            AuthService authService,
-            IServiceProvider serviceProvider)
+        public LoginViewModel(AuthService authService)
         {
             _authService = authService;
-            _serviceProvider = serviceProvider;
         }
 
         [RelayCommand]
@@ -70,12 +64,13 @@ namespace LisAeroGest.Mobile.ViewModels
                     return;
                 }
 
-                var shell =
-                    _serviceProvider.GetRequiredService<AppShell>();
-
-                await shell.ConfigurarAutenticacaoAsync();
-
-                await shell.GoToAsync("//FlightBoardPage");
+                // Reconfigura o menu da Shell atual (a que já está a ser
+                // mostrada) em vez de criar uma segunda instância invisível.
+                // Já troca para a TabBar certa (Passageiro/Funcionário).
+                if (Shell.Current is AppShell shell)
+                {
+                    await shell.ConfigurarAutenticacaoAsync();
+                }
             }
             catch (Exception ex)
             {

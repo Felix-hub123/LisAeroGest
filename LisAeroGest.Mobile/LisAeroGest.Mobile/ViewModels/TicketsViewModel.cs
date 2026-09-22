@@ -13,7 +13,6 @@ namespace LisAeroGest.Mobile.ViewModels
     {
         private readonly ApiService _apiService;
         private readonly AuthService _authService;
-        private readonly IServiceProvider _serviceProvider;
 
         [ObservableProperty]
         private bool _isBusy;
@@ -21,18 +20,22 @@ namespace LisAeroGest.Mobile.ViewModels
         public ObservableCollection<TicketDto> Tickets { get; } = new();
         [ObservableProperty] private string _errorMessage = string.Empty;
         [ObservableProperty] private bool _hasError;
-        public TicketsViewModel(ApiService apiService, AuthService authService, IServiceProvider serviceProvider)
+        public TicketsViewModel(ApiService apiService, AuthService authService)
         {
             _apiService = apiService;
             _authService = authService;
-            _serviceProvider = serviceProvider;
         }
 
         [RelayCommand]
         private async Task LogoutAsync()
         {
-            _authService.Logout();
-            Application.Current!.MainPage = _serviceProvider.GetRequiredService<LoginPage>();
+            // Usa o logout da própria Shell (repõe o menu para o estado
+            // não autenticado) em vez de trocar a MainPage por uma
+            // LoginPage solta, o que perdia a Shell para sempre.
+            if (Shell.Current is AppShell shell)
+            {
+                await shell.LogoutAsync();
+            }
         }
 
 
@@ -60,6 +63,7 @@ namespace LisAeroGest.Mobile.ViewModels
 
                 foreach (var ticket in result.Data ?? new List<TicketDto>())
                     Tickets.Add(ticket);
+
             }
             catch (Exception ex)
             {
