@@ -6,32 +6,60 @@ using LisAeroGest.Mobile.Views;
 
 namespace LisAeroGest.Mobile.ViewModels
 {
-    public partial class FlightDetailsViewModel : ObservableObject, IQueryAttributable
+    public partial class FlightDetailsViewModel :
+        ObservableObject,
+        IQueryAttributable
     {
         private readonly ApiService _apiService;
         private readonly FavoritesService _favoritesService;
 
-        [ObservableProperty] private int flightId;
-        [ObservableProperty] private FlightDetailDto? flight;
-        [ObservableProperty] private bool isBusy;
-        [ObservableProperty] private string errorMessage = string.Empty;
-        [ObservableProperty] private bool isFavorite;
+        [ObservableProperty]
+        private int flightId;
 
-        public FlightDetailsViewModel(ApiService apiService, FavoritesService favoritesService)
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasFlight))]
+        private FlightDetailDto? flight;
+
+        [ObservableProperty]
+        private bool isBusy;
+
+        [ObservableProperty]
+        private string errorMessage = string.Empty;
+
+        [ObservableProperty]
+        private bool isFavorite;
+
+        public bool HasFlight => Flight != null;
+
+        public FlightDetailsViewModel(
+            ApiService apiService,
+            FavoritesService favoritesService)
         {
             _apiService = apiService;
             _favoritesService = favoritesService;
         }
 
-        public void ApplyQueryAttributes(IDictionary<string, object> query)
+        public void ApplyQueryAttributes(
+            IDictionary<string, object> query)
         {
-            if (!query.TryGetValue("flightId", out var raw) || raw == null)
+            if (!query.TryGetValue(
+                    "flightId",
+                    out var raw) ||
+                raw == null)
+            {
                 return;
+            }
 
-            if (raw is int i)
-                FlightId = i;
-            else if (int.TryParse(raw.ToString(), out var parsed))
+            if (raw is int value)
+            {
+                FlightId = value;
+            }
+            else if (int.TryParse(
+                         raw.ToString(),
+                         out var parsed))
+            {
                 FlightId = parsed;
+            }
         }
 
         partial void OnFlightIdChanged(int value)
@@ -39,7 +67,8 @@ namespace LisAeroGest.Mobile.ViewModels
             if (value <= 0)
                 return;
 
-            MainThread.BeginInvokeOnMainThread(async () => await LoadAsync());
+            MainThread.BeginInvokeOnMainThread(
+                async () => await LoadAsync());
         }
 
         [RelayCommand]
@@ -53,24 +82,35 @@ namespace LisAeroGest.Mobile.ViewModels
                 IsBusy = true;
                 ErrorMessage = string.Empty;
 
-                var result = await _apiService.GetDetailsAsync(FlightId);
+                var result =
+                    await _apiService.GetDetailsAsync(FlightId);
 
-                if (!result.Success || result.Data == null)
+                if (!result.Success ||
+                    result.Data == null)
                 {
                     Flight = null;
-                    ErrorMessage = result.ErrorMessage
-                        ?? "Não foi possível encontrar os detalhes do voo.";
+
+                    ErrorMessage =
+                        result.ErrorMessage ??
+                        "Não foi possível encontrar os detalhes do voo.";
+
                     return;
                 }
 
                 Flight = result.Data;
-                IsFavorite = _favoritesService.IsFavorite(Flight.Id);
+
+                IsFavorite =
+                    _favoritesService.IsFavorite(Flight.Id);
             }
             catch (Exception ex)
             {
                 Flight = null;
-                ErrorMessage = "Ocorreu um erro ao carregar os detalhes do voo.";
-                System.Diagnostics.Debug.WriteLine($"[FlightDetailsViewModel] {ex}");
+
+                ErrorMessage =
+                    "Ocorreu um erro ao carregar os detalhes do voo.";
+
+                System.Diagnostics.Debug.WriteLine(
+                    $"[FlightDetailsViewModel] {ex}");
             }
             finally
             {
@@ -84,7 +124,8 @@ namespace LisAeroGest.Mobile.ViewModels
             if (Flight == null)
                 return;
 
-            IsFavorite = _favoritesService.Toggle(Flight.Id);
+            IsFavorite =
+                _favoritesService.Toggle(Flight.Id);
         }
 
         [RelayCommand]
@@ -93,7 +134,8 @@ namespace LisAeroGest.Mobile.ViewModels
             if (FlightId <= 0)
                 return;
 
-            await Shell.Current.GoToAsync($"{nameof(SelectSeatPage)}?flightId={FlightId}");
+            await Shell.Current.GoToAsync(
+                $"{nameof(SelectSeatPage)}?flightId={FlightId}");
         }
     }
 }

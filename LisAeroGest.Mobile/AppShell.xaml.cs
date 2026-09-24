@@ -17,7 +17,9 @@ namespace LisAeroGest.Mobile
             _authService = authService;
 
             // Passenger routes
-            Routing.RegisterRoute(nameof(CheckInPage), typeof(CheckInPage));
+            Routing.RegisterRoute(
+     nameof(CheckInPage),
+     new DiRouteFactory<CheckInPage>());
             Routing.RegisterRoute(nameof(FlightDetailsPage), typeof(FlightDetailsPage));
             Routing.RegisterRoute(nameof(SelectSeatPage), typeof(SelectSeatPage));
             Routing.RegisterRoute(nameof(PaymentPage), typeof(PaymentPage));

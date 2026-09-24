@@ -86,6 +86,7 @@ namespace LisAeroGest.Mobile
             builder.Services.AddTransient<HistoryPage>();
             builder.Services.AddTransient<FavoritesPage>();
             builder.Services.AddTransient<PassengerFlightsPage>();
+            builder.Services.AddTransient<CheckInPage>();
 
             return builder.Build();
         }

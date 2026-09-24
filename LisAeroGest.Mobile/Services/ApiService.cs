@@ -245,6 +245,13 @@ namespace LisAeroGest.Mobile.Services
             catch (Exception ex) { Debug.WriteLine($"[ApiService] PayPal capture: {ex.Message}"); return ApiResult<PaymentCaptureResultDto>.Fail("Não foi possível confirmar o pagamento."); }
         }
 
+        /// <summary>
+        /// Obtém o cartão de embarque já existente para um bilhete.
+        /// </summary>
+        public Task<ApiResult<BoardingPassDto>> GetBoardingPassAsync(int ticketId)
+            => GetAsync<BoardingPassDto>($"api/checkin/{ticketId}");
+
+
         // ═══════════════════════════════════════════════════════════
         // CHECK-IN
         // ═══════════════════════════════════════════════════════════
