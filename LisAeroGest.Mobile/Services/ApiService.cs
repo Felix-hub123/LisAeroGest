@@ -494,5 +494,97 @@ namespace LisAeroGest.Mobile.Services
                 return ApiResult<bool>.Fail("Erro de ligação ao servidor.");
             }
         }
+
+
+        public async Task<ApiResult<MbWayPaymentResultDto>>
+    PayWithMbWayAsync(
+        int ticketId,
+        string phoneNumber)
+        {
+            if (!HasInternet())
+            {
+                return ApiResult<MbWayPaymentResultDto>.Fail(
+                    "Sem ligação à Internet.");
+            }
+
+            try
+            {
+                using var cts =
+                    new CancellationTokenSource(
+                        TimeSpan.FromSeconds(15));
+
+                var request = new MbWayPaymentRequestDto
+                {
+                    TicketId = ticketId,
+                    PhoneNumber = phoneNumber
+                };
+
+                var response =
+                    await _httpClient.PostAsJsonAsync(
+                        "api/booking/mbway/pay",
+                        request,
+                        cts.Token);
+
+                var content =
+                    await response.Content.ReadAsStringAsync(
+                        cts.Token);
+
+                Debug.WriteLine(
+                    $"[ApiService] MB WAY status: " +
+                    $"{(int)response.StatusCode}");
+
+                Debug.WriteLine(
+                    $"[ApiService] MB WAY response: {content}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorMessage =
+                      string.IsNullOrWhiteSpace(content)
+                          ? $"Não foi possível efetuar o pagamento. HTTP {(int)response.StatusCode}."
+                          : content;
+
+                    return ApiResult<MbWayPaymentResultDto>
+                        .Fail(errorMessage);
+                }
+
+                if (string.IsNullOrWhiteSpace(content))
+                {
+                    return ApiResult<MbWayPaymentResultDto>
+                        .Fail(
+                            "O servidor não devolveu os dados do pagamento.");
+                }
+
+                var data =
+                    System.Text.Json.JsonSerializer
+                        .Deserialize<MbWayPaymentResultDto>(
+                            content,
+                            new System.Text.Json.JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true
+                            });
+
+                if (data == null)
+                {
+                    return ApiResult<MbWayPaymentResultDto>
+                        .Fail(
+                            "Não foi possível interpretar o pagamento.");
+                }
+
+                return ApiResult<MbWayPaymentResultDto>.Ok(data);
+            }
+            catch (TaskCanceledException)
+            {
+                return ApiResult<MbWayPaymentResultDto>.Fail(
+                    "O servidor demorou demasiado a responder.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(
+                    $"[ApiService] MB WAY error: {ex}");
+
+                return ApiResult<MbWayPaymentResultDto>.Fail(
+                    "Erro de ligação ao servidor.");
+            }
+        }
     }
 }
