@@ -9,39 +9,42 @@ namespace LisAeroGest.Mobile.ViewModels;
 public partial class HomeViewModel : ObservableObject
 {
     private readonly ApiService _apiService;
-    private List<FlightDto> _allDepartures = new();
-
-    // ── Status ────────────────────────────────────────────────────────────────
-    [ObservableProperty]
-    private string _statusLabel = "A carregar dados da tua conta…";
-
-    // ── Voo 1 ─────────────────────────────────────────────────────────────────
-    [ObservableProperty]
-    private string _flightOneNumber = "—";
 
     [ObservableProperty]
-    private string _flightOneDestination = "Sem dados";
+    private bool _isBusy;
 
     [ObservableProperty]
-    private string _flightOneTime = "—";
+    private string _statusLabel = "A carregar a tua viagem…";
+
+    // ─────────────────────────────────────────────
+    // PRÓXIMOS VOOS
+    // ─────────────────────────────────────────────
 
     [ObservableProperty]
-    private string _flightOneGate = "—";
-
-    // ── Voo 2 ─────────────────────────────────────────────────────────────────
-    [ObservableProperty]
-    private string _flightTwoNumber = "—";
+    private bool _hasUpcomingFlights;
 
     [ObservableProperty]
-    private string _flightTwoDestination = "Sem dados";
+    private string _flightOneNumber = string.Empty;
 
     [ObservableProperty]
-    private string _flightTwoTime = "—";
+    private string _flightOneOrigin = string.Empty;
 
     [ObservableProperty]
-    private string _flightTwoGate = "—";
+    private string _flightOneDestination = string.Empty;
 
-    // ── Boarding Summary ───────────────────────────────────────────────────────
+    [ObservableProperty]
+    private string _flightOneDate = string.Empty;
+
+    [ObservableProperty]
+    private string _flightOneTime = string.Empty;
+
+    [ObservableProperty]
+    private string _flightOneGate = string.Empty;
+
+    // ─────────────────────────────────────────────
+    // BOARDING PASS
+    // ─────────────────────────────────────────────
+
     [ObservableProperty]
     private string _boardingFlight = "—";
 
@@ -59,112 +62,181 @@ public partial class HomeViewModel : ObservableObject
         _apiService = apiService;
     }
 
+    // ─────────────────────────────────────────────
+    // CARREGAR HOME
+    // ─────────────────────────────────────────────
+
     [RelayCommand]
     public async Task LoadAsync()
     {
-        StatusLabel = "A carregar dados da tua conta…";
+        if (IsBusy)
+            return;
 
-        var departuresTask = _apiService.GetDeparturesAsync();
-        var ticketsTask = _apiService.GetMyTicketsAsync();
-        await Task.WhenAll(departuresTask, ticketsTask);
-
-        var departures = departuresTask.Result;
-        var tickets = ticketsTask.Result;
-
-        Debug.WriteLine(
-            $"[HomeViewModel] Departures -> Success={departures?.Success}, "
-            + $"Count={departures?.Data?.Count ?? 0}, "
-            + $"Error={departures?.ErrorMessage}");
-
-        Debug.WriteLine(
-            $"[HomeViewModel] Tickets -> Success={tickets?.Success}, "
-            + $"Count={tickets?.Data?.Count ?? 0}, "
-            + $"Error={tickets?.ErrorMessage}");
-
-        if (departures?.Data != null)
+        try
         {
-            foreach (var f in departures.Data.Take(3))
+            IsBusy = true;
+
+            StatusLabel = "A carregar a tua viagem…";
+
+            var departuresTask =
+                _apiService.GetDeparturesAsync();
+
+            var ticketsTask =
+                _apiService.GetMyTicketsAsync();
+
+            await Task.WhenAll(
+                departuresTask,
+                ticketsTask);
+
+            var departures =
+                await departuresTask;
+
+            var tickets =
+                await ticketsTask;
+
+            Debug.WriteLine(
+                $"[HomeViewModel] Departures: " +
+                $"Success={departures.Success}, " +
+                $"Count={departures.Data?.Count ?? 0}");
+
+            Debug.WriteLine(
+                $"[HomeViewModel] Tickets: " +
+                $"Success={tickets.Success}, " +
+                $"Count={tickets.Data?.Count ?? 0}");
+
+            // ─────────────────────────────────────
+            // PRÓXIMO VOO
+            // ─────────────────────────────────────
+
+            var now = DateTime.Now;
+
+            var nextFlight =
+                (departures.Data ?? new List<FlightDto>())
+                .Where(f =>
+                    f.DepartureTime > now &&
+                    !string.Equals(
+                        f.Status,
+                        "Cancelled",
+                        StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(
+                        f.Status,
+                        "Departed",
+                        StringComparison.OrdinalIgnoreCase))
+                .OrderBy(f => f.DepartureTime)
+                .FirstOrDefault();
+
+            SetUpcomingFlight(nextFlight);
+
+            // ─────────────────────────────────────
+            // BOARDING PASS
+            // ─────────────────────────────────────
+
+            var boarding =
+                (tickets.Data ?? new List<TicketDto>())
+                .Where(t =>
+                    string.Equals(
+                        t.Status,
+                        "CheckedIn",
+                        StringComparison.OrdinalIgnoreCase)
+                    ||
+                    t.BoardingPassId.HasValue)
+                .OrderByDescending(t => t.Id)
+                .FirstOrDefault();
+
+            BoardingSummaryIsVisible =
+                boarding != null;
+
+            NoBoardingLabelIsVisible =
+                boarding == null;
+
+            if (boarding != null)
             {
-                Debug.WriteLine(
-                    $"[HomeViewModel] Voo: {f.FlightNumber} | "
-                    + $"{f.Origin}->{f.Destination} | "
-                    + $"Departure={f.DepartureTime:O} | "
-                    + $"Gate={f.Gate} | Status={f.Status}");
+                BoardingFlight =
+                    boarding.FlightNumber;
+
+                BoardingSeat =
+                    string.IsNullOrWhiteSpace(
+                        boarding.SeatCode)
+                    ? "—"
+                    : boarding.SeatCode;
+            }
+            else
+            {
+                BoardingFlight = "—";
+                BoardingSeat = "—";
+            }
+
+            if (!departures.Success &&
+                !tickets.Success)
+            {
+                StatusLabel =
+                    "Não foi possível atualizar os dados.";
+            }
+            else
+            {
+                StatusLabel =
+                    "Tudo pronto para a tua próxima viagem.";
             }
         }
-
-        if (!departures!.Success && !tickets!.Success)
+        catch (Exception ex)
         {
-            StatusLabel = departures.ErrorMessage
-                ?? tickets.ErrorMessage
-                ?? "Não foi possível carregar os dados.";
-            ClearFlight1();
-            ClearFlight2();
-            BoardingSummaryIsVisible = false;
-            NoBoardingLabelIsVisible = true;
+            Debug.WriteLine(
+                $"[HomeViewModel] Erro: {ex}");
+
+            StatusLabel =
+                "Não foi possível carregar os dados.";
+
+            HasUpcomingFlights = false;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void SetUpcomingFlight(
+        FlightDto? flight)
+    {
+        if (flight == null)
+        {
+            HasUpcomingFlights = false;
+
+            FlightOneNumber = string.Empty;
+            FlightOneOrigin = string.Empty;
+            FlightOneDestination = string.Empty;
+            FlightOneDate = string.Empty;
+            FlightOneTime = string.Empty;
+            FlightOneGate = string.Empty;
+
             return;
         }
 
-        // ── Preenche os 2 voos mais próximos ───────────────────────────────
-        var flights = (departures.Data ?? new List<FlightDto>())
-            .OrderBy(f => f.DepartureTime)
-            .Take(2)
-            .ToList();
+        HasUpcomingFlights = true;
 
-        var f1 = flights.ElementAtOrDefault(0);
-        var f2 = flights.ElementAtOrDefault(1);
+        FlightOneNumber =
+            flight.FlightNumber;
 
-        SetFlight1(f1);
-        SetFlight2(f2);
+        FlightOneOrigin =
+      string.IsNullOrWhiteSpace(flight.Origin)
+          ? "Origem"
+          : flight.Origin;
 
-        // ── Boarding pass summary ────────────────────────────────────────────
-        var boarding = (tickets.Data ?? new List<TicketDto>())
-            .FirstOrDefault(t => t.Status == "CheckedIn" || t.BoardingPassId.HasValue);
+        FlightOneDestination =
+            flight.DestinationCode
+            ?? flight.Destination
+            ?? "Destino";
 
-        BoardingSummaryIsVisible = boarding != null;
-        NoBoardingLabelIsVisible = boarding == null;
+        FlightOneDate =
+            flight.DepartureTime
+                .ToString("dd MMM");
 
-        if (boarding != null)
-        {
-            BoardingFlight = boarding.FlightNumber;
-            BoardingSeat = string.IsNullOrWhiteSpace(boarding.SeatCode)
-                ? "—" : boarding.SeatCode;
-        }
+        FlightOneTime =
+            flight.DepartureTime
+                .ToString("HH:mm");
 
-        StatusLabel = "Dados atualizados a partir do servidor.";
-    }
-
-    private void SetFlight1(FlightDto? flight)
-    {
-        if (flight == null) { ClearFlight1(); return; }
-        FlightOneNumber = flight.FlightNumber;
-        FlightOneDestination = $"Para {flight.DestinationCode ?? flight.Destination}";
-        FlightOneTime = $"{flight.DepartureTime:HH:mm} · {flight.Status}";
-        FlightOneGate = string.IsNullOrWhiteSpace(flight.Gate) ? "—" : flight.Gate;
-    }
-
-    private void SetFlight2(FlightDto? flight)
-    {
-        if (flight == null) { ClearFlight2(); return; }
-        FlightTwoNumber = flight.FlightNumber;
-        FlightTwoDestination = $"Para {flight.DestinationCode ?? flight.Destination}";
-        FlightTwoTime = $"{flight.DepartureTime:HH:mm} · {flight.Status}";
-        FlightTwoGate = string.IsNullOrWhiteSpace(flight.Gate) ? "—" : flight.Gate;
-    }
-
-    private void ClearFlight1()
-    {
-        FlightOneNumber = "—";
-        FlightOneDestination = "Sem dados";
-        FlightOneTime = "—";
-        FlightOneGate = "—";
-    }
-
-    private void ClearFlight2()
-    {
-        FlightTwoNumber = "—";
-        FlightTwoDestination = "Sem dados";
-        FlightTwoTime = "—";
-        FlightTwoGate = "—";
+        FlightOneGate =
+            string.IsNullOrWhiteSpace(flight.Gate)
+                ? "Por definir"
+                : flight.Gate;
     }
 }

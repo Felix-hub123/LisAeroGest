@@ -1,6 +1,7 @@
 ﻿using LisAeroGest.Controllers.Api.Entities;
 using LisAeroGest.Data.Entities;
 using LisAeroGest.Data.Interfaces;
+using LisAeroGest.Data.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,15 +19,21 @@ namespace LisAeroGest.Controllers.Api
         private readonly ITicketRepository _ticketRepository;
         private readonly IBoardingPassRepository _boardingPassRepository;
         private readonly IPassengerRepository _passengerRepository;
+        private readonly IFlightRepository _flightRepository;
+        private readonly IGateRepository _gateRepository;
 
         public EmployeeApiController(
             ITicketRepository ticketRepository,
             IBoardingPassRepository boardingPassRepository,
-            IPassengerRepository passengerRepository)
+            IPassengerRepository passengerRepository,
+            IFlightRepository flightRepository,
+            IGateRepository gateRepository)
         {
             _ticketRepository = ticketRepository;
             _boardingPassRepository = boardingPassRepository;
             _passengerRepository = passengerRepository;
+            _flightRepository = flightRepository;
+            _gateRepository = gateRepository;
         }
 
 
@@ -475,6 +482,186 @@ namespace LisAeroGest.Controllers.Api
 
                 qrData =
                     boardingPass.QRCode
+            });
+        }
+
+
+        // ═══════════════════════════════════════════════════════════
+        // GESTÃO OPERACIONAL DE PORTAS
+        // ═══════════════════════════════════════════════════════════
+
+        public class ChangeGateRequest
+        {
+            public int GateId { get; set; }
+        }
+
+
+        /// <summary>
+        /// Lista todas as portas que podem ser utilizadas.
+        /// GET: /api/employee/gates
+        /// </summary>
+        [HttpGet("gates")]
+        public async Task<IActionResult> GetGates()
+        {
+            var gates = await _gateRepository
+                .GetAllQueryable()
+                .Where(g => !g.WasDeleted)
+                .OrderBy(g => g.Terminal)
+                .ThenBy(g => g.GateNumber)
+                .Select(g => new
+                {
+                    g.Id,
+                    g.GateNumber,
+                    g.Terminal,
+                    g.Status
+                })
+                .ToListAsync();
+
+            return Ok(gates);
+        }
+
+
+        /// <summary>
+        /// Altera a porta atribuída a um voo.
+        /// PUT: /api/employee/flights/{flightId}/gate
+        /// </summary>
+        [HttpPut("flights/{flightId:int}/gate")]
+        public async Task<IActionResult> ChangeFlightGate(
+            int flightId,
+            [FromBody] ChangeGateRequest request)
+        {
+            if (request.GateId <= 0)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    errorMessage = "Selecione uma porta válida."
+                });
+            }
+
+            // Procurar voo
+            var flight = await _flightRepository
+                .GetAllQueryable()
+                .Include(f => f.Gate)
+                .FirstOrDefaultAsync(f =>
+                    f.Id == flightId &&
+                    !f.WasDeleted);
+
+            if (flight == null)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    errorMessage = "Voo não encontrado."
+                });
+            }
+
+            // Não permitir alterações em voos terminados
+            if (flight.Status == "Cancelled")
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    errorMessage =
+                        "Não é possível alterar a porta de um voo cancelado."
+                });
+            }
+
+            if (flight.Status == "Departed" ||
+                flight.Status == "Arrived")
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    errorMessage =
+                        "Não é possível alterar a porta de um voo já concluído."
+                });
+            }
+
+            // Procurar nova porta
+            var gate = await _gateRepository
+                .GetAllQueryable()
+                .FirstOrDefaultAsync(g =>
+                    g.Id == request.GateId &&
+                    !g.WasDeleted);
+
+            if (gate == null)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    errorMessage = "Porta não encontrada."
+                });
+            }
+
+            // Porta em manutenção
+            if (gate.Status == "Maintenance")
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    errorMessage =
+                        "Esta porta encontra-se em manutenção."
+                });
+            }
+
+            // Se já é a mesma porta, não há nada para alterar
+            if (flight.GateId == gate.Id)
+            {
+                return Ok(new
+                {
+                    success = true,
+                    message = "O voo já está atribuído a esta porta.",
+                    flightId = flight.Id,
+                    flightNumber = flight.FlightNumber,
+                    gateId = gate.Id,
+                    gateNumber = gate.GateNumber
+                });
+            }
+
+            // Verificar conflito operacional
+            var occupied =
+                await _gateRepository.IsGateOccupiedAsync(
+                    gate.Id,
+                    flight.DepartureTime,
+                    flight.ArrivalTime,
+                    flight.Id);
+
+            if (occupied)
+            {
+                return Conflict(new
+                {
+                    success = false,
+                    errorMessage =
+                        $"A porta {gate.GateNumber} já está ocupada " +
+                        "por outro voo neste período."
+                });
+            }
+
+            var previousGate =
+                flight.Gate?.GateNumber ?? "Sem porta";
+
+            // Alterar porta
+            flight.GateId = gate.Id;
+            flight.Gate = gate;
+
+            await _flightRepository.UpdateAsync(flight);
+
+            return Ok(new
+            {
+                success = true,
+                message =
+                    $"Porta alterada de {previousGate} para {gate.GateNumber}.",
+
+                flightId = flight.Id,
+                flightNumber = flight.FlightNumber,
+
+                previousGate,
+
+                gateId = gate.Id,
+                gateNumber = gate.GateNumber,
+
+                terminal = gate.Terminal
             });
         }
 

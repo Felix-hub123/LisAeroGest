@@ -21,7 +21,7 @@ namespace LisAeroGest.Mobile.ViewModels
         private DateTime _selectedDate = DateTime.Today;
 
         [ObservableProperty]
-        private string _selectedDateLabel = "Hoje";
+        private string _selectedDateLabel = string.Empty;
 
         [ObservableProperty]
         private string _filterOrigin = string.Empty;
@@ -35,16 +35,42 @@ namespace LisAeroGest.Mobile.ViewModels
         [ObservableProperty]
         private bool _hasError;
 
-        public ObservableCollection<FlightDto> Departures { get; } = new();
+        /// <summary>
+        /// Impede a seleção de dias anteriores ao dia atual.
+        /// </summary>
+        public DateTime MinimumDate => DateTime.Today;
+
+        public ObservableCollection<FlightDto> Departures { get; }
+            = new();
 
         public FlightBoardViewModel(ApiService apiService)
         {
             _apiService = apiService;
+
+            UpdateSelectedDateLabel();
         }
 
         partial void OnSelectedDateChanged(DateTime value)
         {
+            // Segurança adicional caso seja recebida
+            // uma data anterior a hoje.
+            if (value.Date < DateTime.Today)
+            {
+                SelectedDate = DateTime.Today;
+                return;
+            }
+
             UpdateSelectedDateLabel();
+            ApplyFilters();
+        }
+
+        partial void OnFilterOriginChanged(string value)
+        {
+            ApplyFilters();
+        }
+
+        partial void OnFilterDestinationChanged(string value)
+        {
             ApplyFilters();
         }
 
@@ -60,64 +86,78 @@ namespace LisAeroGest.Mobile.ViewModels
                 HasError = false;
                 ErrorMessage = string.Empty;
 
-                Debug.WriteLine("[FlightBoard] ANTES da chamada API");
+                Debug.WriteLine(
+                    "[FlightBoard] A carregar voos...");
 
-                var result = await _apiService.GetDeparturesAsync();
-
-                Debug.WriteLine("[FlightBoard] DEPOIS da chamada API");
+                var result =
+                    await _apiService.GetDeparturesAsync();
 
                 if (result == null)
                 {
-                    Debug.WriteLine("[FlightBoard] RESULTADO = NULL");
-                    ErrorMessage = "A API devolveu uma resposta vazia.";
+                    ErrorMessage =
+                        "A API devolveu uma resposta vazia.";
+
                     HasError = true;
                     return;
                 }
-
-                Debug.WriteLine(
-                    $"[FlightBoard] Success={result.Success}");
 
                 if (!result.Success)
                 {
                     ErrorMessage =
-                        result.ErrorMessage ?? "Erro ao carregar voos.";
+                        result.ErrorMessage ??
+                        "Erro ao carregar voos.";
 
                     HasError = true;
                     return;
                 }
 
-                _allDepartures = result.Data ?? new List<FlightDto>();
+                _allDepartures =
+                    result.Data ?? new List<FlightDto>();
 
-                UpdateSelectedDateLabel();
                 ApplyFilters();
 
                 Debug.WriteLine(
-                    $"[FlightBoard] Voos recebidos: {_allDepartures.Count}");
+                    $"[FlightBoard] Voos recebidos: " +
+                    $"{_allDepartures.Count}");
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(
-                    $"[FlightBoard] EXCEÇÃO: {ex}");
+                    $"[FlightBoard] Erro: {ex}");
 
                 ErrorMessage =
-                    $"Erro: {ex.Message}";
+                    "Não foi possível carregar os voos.";
 
                 HasError = true;
             }
             finally
             {
                 IsBusy = false;
-
-                Debug.WriteLine(
-                    "[FlightBoard] LoadDepartures terminou.");
             }
         }
 
         private void ApplyFilters()
         {
-            var query = _allDepartures
-                .Where(f => f.DepartureTime.Date == SelectedDate.Date);
+            var now = DateTime.Now;
 
+            // Primeiro filtra pela data selecionada.
+            var query = _allDepartures
+                .Where(f =>
+                    f.DepartureTime.Date ==
+                    SelectedDate.Date);
+
+            // Não mostrar voos que já partiram.
+            query = query.Where(f =>
+                f.DepartureTime > now);
+
+            // Não mostrar voos cancelados.
+            query = query.Where(f =>
+                !string.Equals(
+                    f.Status,
+                    "Cancelled",
+                    StringComparison.OrdinalIgnoreCase));
+
+            // Filtro de origem.
             if (!string.IsNullOrWhiteSpace(FilterOrigin))
             {
                 var term = FilterOrigin.Trim();
@@ -125,9 +165,11 @@ namespace LisAeroGest.Mobile.ViewModels
                 query = query.Where(f =>
                     f.Origin?.Contains(
                         term,
-                        StringComparison.OrdinalIgnoreCase) == true);
+                        StringComparison.OrdinalIgnoreCase)
+                    == true);
             }
 
+            // Filtro de destino.
             if (!string.IsNullOrWhiteSpace(FilterDestination))
             {
                 var term = FilterDestination.Trim();
@@ -135,7 +177,8 @@ namespace LisAeroGest.Mobile.ViewModels
                 query = query.Where(f =>
                     f.Destination?.Contains(
                         term,
-                        StringComparison.OrdinalIgnoreCase) == true);
+                        StringComparison.OrdinalIgnoreCase)
+                    == true);
             }
 
             var filtered = query
@@ -150,57 +193,20 @@ namespace LisAeroGest.Mobile.ViewModels
             }
         }
 
-        partial void OnFilterOriginChanged(string value)
-        {
-            ApplyFilters();
-        }
-
-        partial void OnFilterDestinationChanged(string value)
-        {
-            ApplyFilters();
-        }
-
-        [RelayCommand]
-        private void SelectDate(DateTime date)
-        {
-            SelectedDate = date;
-            UpdateSelectedDateLabel();
-            ApplyFilters();
-        }
-
-        [RelayCommand]
-        private void PreviousDay()
-        {
-            SelectedDate = SelectedDate.AddDays(-1);
-            UpdateSelectedDateLabel();
-            ApplyFilters();
-        }
-
-        [RelayCommand]
-        private void NextDay()
-        {
-            SelectedDate = SelectedDate.AddDays(1);
-            UpdateSelectedDateLabel();
-            ApplyFilters();
-        }
-
         [RelayCommand]
         private void GoToToday()
         {
             SelectedDate = DateTime.Today;
-            UpdateSelectedDateLabel();
-            ApplyFilters();
         }
 
         [RelayCommand]
-        private async Task SelectFlightAsync(FlightDto? flight)
+        private async Task SelectFlightAsync(
+            FlightDto? flight)
         {
             if (flight == null)
                 return;
 
-            var id = flight.Id;
-
-            if (id <= 0)
+            if (flight.Id <= 0)
             {
                 await Shell.Current.DisplayAlert(
                     "Voo",
@@ -210,35 +216,53 @@ namespace LisAeroGest.Mobile.ViewModels
                 return;
             }
 
+            // Proteção adicional.
+            if (flight.DepartureTime <= DateTime.Now)
+            {
+                await Shell.Current.DisplayAlert(
+                    "Voo indisponível",
+                    "Este voo já partiu.",
+                    "OK");
+
+                return;
+            }
+
             try
             {
                 await Shell.Current.GoToAsync(
-                    $"{nameof(Views.FlightDetailsPage)}?flightId={id}");
+                    $"{nameof(Views.FlightDetailsPage)}" +
+                    $"?flightId={flight.Id}");
             }
             catch (Exception ex)
             {
+                Debug.WriteLine(
+                    $"[FlightBoard] Navegação: {ex.Message}");
+
                 await Shell.Current.DisplayAlert(
                     "Navegação",
-                    ex.Message,
+                    "Não foi possível abrir este voo.",
                     "OK");
             }
         }
 
         private void UpdateSelectedDateLabel()
         {
-            var today = DateTime.Today;
+            var date = SelectedDate.Date;
 
-            var diff =
-                (SelectedDate.Date - today).Days;
-
-            SelectedDateLabel = diff switch
+            if (date == DateTime.Today)
             {
-                0 => "Hoje",
-                -1 => "Ontem",
-                1 => "Amanhã",
-                < -1 => $"Há {-diff} dias",
-                _ => $"Em {diff} dias"
-            };
+                SelectedDateLabel = "Hoje";
+                return;
+            }
+
+            if (date == DateTime.Today.AddDays(1))
+            {
+                SelectedDateLabel = "Amanhã";
+                return;
+            }
+
+            SelectedDateLabel =
+                date.ToString("dd MMMM yyyy");
         }
     }
 }

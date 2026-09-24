@@ -1,22 +1,547 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="LisAeroGest.Mobile.Views.HomePage"
-             Title="Início"
-             Shell.NavBarIsVisible="False"
-             Background="{AppThemeBinding Light={StaticResource AppBackgroundLightBrush}, Dark={StaticResource AppBackgroundGradientBrush}}">
-    <RefreshView x:Name="Refresh" Refreshing="OnRefreshing">
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="LisAeroGest.Mobile.Views.HomePage"
+    Title="Início"
+    Shell.NavBarIsVisible="False"
+    Background="{AppThemeBinding
+        Light={StaticResource AppBackgroundLightBrush},
+        Dark={StaticResource AppBackgroundGradientBrush}}">
+
+    <RefreshView
+        x:Name="Refresh"
+        Refreshing="OnRefreshing">
+
         <ScrollView>
-            <VerticalStackLayout Padding="24,34,24,34" Spacing="20">
-                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto"><VerticalStackLayout Grid.RowSpan="2" Spacing="2"><Label Text="LisAeroGest" FontFamily="OpenSansSemibold" FontSize="30" TextColor="{StaticResource AccentDark}" /><Label Text="Lisbon Airport Portal" Style="{StaticResource CaptionStyle}" /></VerticalStackLayout><Label Text="Lisbon time" Style="{StaticResource FootnoteStyle}" HorizontalTextAlignment="End" /><Label x:Name="DateLabel" Grid.Column="1" Grid.Row="1" Text="—" FontFamily="OpenSansSemibold" FontSize="15" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource TextPrimaryDark}}" HorizontalTextAlignment="End" /></Grid>
-                <Label x:Name="StatusLabel" Text="A carregar dados da tua conta…" Style="{StaticResource FootnoteStyle}" />
-                <Border Style="{StaticResource CardElevatedStyle}" Padding="20,18"><VerticalStackLayout Spacing="14"><Grid ColumnDefinitions="*,Auto"><Label Text="DEPARTURES" FontFamily="OpenSansSemibold" FontSize="15" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource TextPrimaryDark}}" /><Label Text="✈" FontSize="25" TextColor="{StaticResource AccentDark}" /></Grid><Grid ColumnDefinitions="0.8*,1.8*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12"><Label Text="Flight" Style="{StaticResource FootnoteStyle}" /><Label x:Name="FlightOneDestination" Grid.Column="1" Text="—" Style="{StaticResource FootnoteStyle}" /><Label Text="Gate" Grid.Column="2" Style="{StaticResource FootnoteStyle}" HorizontalTextAlignment="End" /><Label x:Name="FlightOneNumber" Grid.Row="1" Text="—" FontFamily="OpenSansSemibold" FontSize="23" /><Label x:Name="FlightOneTime" Grid.Row="1" Grid.Column="1" Text="—" FontFamily="OpenSansSemibold" FontSize="15" /><Label x:Name="FlightOneGate" Grid.Row="1" Grid.Column="2" Text="—" FontFamily="OpenSansSemibold" FontSize="23" TextColor="{StaticResource AccentDark}" HorizontalTextAlignment="End" /></Grid><BoxView HeightRequest="1" BackgroundColor="{AppThemeBinding Light={StaticResource Border}, Dark={StaticResource BorderDark}}" /><Grid ColumnDefinitions="0.8*,1.8*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12"><Label Text="Flight" Style="{StaticResource FootnoteStyle}" /><Label x:Name="FlightTwoDestination" Grid.Column="1" Text="—" Style="{StaticResource FootnoteStyle}" /><Label Text="Gate" Grid.Column="2" Style="{StaticResource FootnoteStyle}" HorizontalTextAlignment="End" /><Label x:Name="FlightTwoNumber" Grid.Row="1" Text="—" FontFamily="OpenSansSemibold" FontSize="23" /><Label x:Name="FlightTwoTime" Grid.Row="1" Grid.Column="1" Text="—" FontFamily="OpenSansSemibold" FontSize="15" /><Label x:Name="FlightTwoGate" Grid.Row="1" Grid.Column="2" Text="—" FontFamily="OpenSansSemibold" FontSize="23" TextColor="{StaticResource AccentDark}" HorizontalTextAlignment="End" /></Grid></VerticalStackLayout></Border>
-                <Grid ColumnDefinitions="1.65*,1*" ColumnSpacing="14"><VerticalStackLayout Grid.Column="0" Spacing="10"><Label Text="LIVE TERMINAL MAP" FontFamily="OpenSansSemibold" FontSize="15" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource TextPrimaryDark}}" /><Border Style="{StaticResource CardStyle}" Padding="0" HeightRequest="170"><Grid ColumnDefinitions="*,66"><Grid Grid.Column="0" BackgroundColor="#101923"><Label Text="Terminal A" FontSize="15" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource TextPrimaryDark}}" HorizontalOptions="Center" VerticalOptions="Center" /><Label Text="●" FontSize="30" TextColor="{StaticResource AccentDark}" HorizontalOptions="Center" VerticalOptions="Center" Margin="0,48,0,0" /><Label Text="Terminal information" Style="{StaticResource FootnoteStyle}" HorizontalOptions="Center" VerticalOptions="Center" Margin="0,95,0,0" /></Grid><Border Grid.Column="1" BackgroundColor="#234C17" Stroke="{StaticResource AccentDark}" StrokeThickness="1" Padding="8"><VerticalStackLayout VerticalOptions="Center"><Label Text="A" FontSize="20" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource TextPrimaryDark}}" HorizontalTextAlignment="Center" /><Label Text="Gates" Style="{StaticResource FootnoteStyle}" HorizontalTextAlignment="Center" /></VerticalStackLayout></Border></Grid></Border></VerticalStackLayout><VerticalStackLayout Grid.Column="1" Spacing="10"><Label Text="AIRPORT INFO" FontFamily="OpenSansSemibold" FontSize="15" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource TextPrimaryDark}}" /><Border Style="{StaticResource CardStyle}" Padding="16,14" HeightRequest="170"><VerticalStackLayout Spacing="7"><Label Text="✦" FontSize="34" TextColor="{StaticResource AccentDark}" /><Label Text="Estado do aeroporto" Style="{StaticResource CaptionStyle}" /><Label Text="Online" FontSize="22" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource TextPrimaryDark}}" /><Label Text="Consulta os detalhes no portal." Style="{StaticResource FootnoteStyle}" /></VerticalStackLayout></Border></VerticalStackLayout></Grid>
-                <Grid ColumnDefinitions="*,Auto"><Label Text="BOARDING PASS" FontFamily="OpenSansSemibold" FontSize="15" TextColor="{AppThemeBinding Light={StaticResource TextPrimary}, Dark={StaticResource TextPrimaryDark}}" VerticalOptions="Center" /><Button Grid.Column="1" Text="VER CARTEIRA" Style="{StaticResource TextButtonStyle}" Clicked="OnVerBilhetesClicked" FontSize="12" Padding="4,2" /></Grid>
-                <Border x:Name="BoardingSummary" Style="{StaticResource CardElevatedStyle}" Stroke="{StaticResource AccentDark}" StrokeThickness="1.5" Padding="18" IsVisible="False"><VerticalStackLayout Spacing="12"><Label Text="CARTÃO DE EMBARQUE DISPONÍVEL" FontFamily="OpenSansSemibold" FontSize="18" TextColor="{StaticResource AccentDark}" /><Grid ColumnDefinitions="*,*,*"><VerticalStackLayout><Label Text="FLIGHT" Style="{StaticResource FootnoteStyle}" /><Label x:Name="BoardingFlight" Text="—" FontFamily="OpenSansSemibold" FontSize="21" /></VerticalStackLayout><VerticalStackLayout Grid.Column="1"><Label Text="STATUS" Style="{StaticResource FootnoteStyle}" /><Label Text="CHECKED-IN" FontFamily="OpenSansSemibold" FontSize="15" TextColor="{StaticResource AccentDark}" /></VerticalStackLayout><VerticalStackLayout Grid.Column="2"><Label Text="SEAT" Style="{StaticResource FootnoteStyle}" /><Label x:Name="BoardingSeat" Text="—" FontFamily="OpenSansSemibold" FontSize="21" /></VerticalStackLayout></Grid><Label Text="Abre a carteira para consultar o cartão e o QR Code emitido pelo servidor." Style="{StaticResource CaptionStyle}" /></VerticalStackLayout></Border>
-                <Label x:Name="NoBoardingLabel" Text="O cartão de embarque ficará disponível depois do check-in." Style="{StaticResource CaptionStyle}" HorizontalTextAlignment="Center" />
-                <Button Text="✈ Pesquisar e comprar voo" Style="{StaticResource SecondaryButtonStyle}" Clicked="OnComprarVooClicked" />
+
+            <VerticalStackLayout
+                Padding="20,32,20,40"
+                Spacing="22">
+
+                <!-- ================================= -->
+                <!-- CABEÇALHO                         -->
+                <!-- ================================= -->
+
+                <Grid ColumnDefinitions="*,Auto">
+
+                    <VerticalStackLayout Spacing="2">
+
+                        <Label
+                            Text="LisAeroGest"
+                            FontFamily="OpenSansSemibold"
+                            FontSize="28"
+                            TextColor="{StaticResource AccentDark}" />
+
+                        <Label
+                            Text="A tua viagem começa aqui"
+                            Style="{StaticResource CaptionStyle}" />
+
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout
+                        Grid.Column="1"
+                        VerticalOptions="Center"
+                        HorizontalOptions="End"
+                        Spacing="1">
+
+                        <Label
+                            Text="Hoje"
+                            Style="{StaticResource FootnoteStyle}"
+                            HorizontalTextAlignment="End" />
+
+                        <Label
+                            x:Name="DateLabel"
+                            Text="—"
+                            FontFamily="OpenSansSemibold"
+                            FontSize="14"
+                            HorizontalTextAlignment="End" />
+
+                    </VerticalStackLayout>
+
+                </Grid>
+
+
+                <!-- ================================= -->
+                <!-- STATUS                            -->
+                <!-- ================================= -->
+
+                <Label
+                    x:Name="StatusLabel"
+                    Text="{Binding StatusLabel}"
+                    Style="{StaticResource FootnoteStyle}" />
+
+
+                <!-- ================================= -->
+                <!-- PESQUISAR VOO                     -->
+                <!-- ================================= -->
+
+                <Border
+                    Style="{StaticResource CardElevatedStyle}"
+                    Padding="20">
+
+                    <VerticalStackLayout Spacing="14">
+
+                        <Grid ColumnDefinitions="*,Auto">
+
+                            <VerticalStackLayout Spacing="3">
+
+                                <Label
+                                    Text="PESQUISAR VOOS"
+                                    FontFamily="OpenSansSemibold"
+                                    FontSize="12"
+                                    TextColor="{StaticResource AccentDark}" />
+
+                                <Label
+                                    Text="Para onde vamos?"
+                                    FontFamily="OpenSansSemibold"
+                                    FontSize="22" />
+
+                            </VerticalStackLayout>
+
+                            <Label
+                                Grid.Column="1"
+                                Text="✈"
+                                FontSize="30"
+                                TextColor="{StaticResource AccentDark}"
+                                VerticalOptions="Center" />
+
+                        </Grid>
+
+                        <Label
+                            Text="Encontra um voo e prepara a tua próxima viagem."
+                            Style="{StaticResource CaptionStyle}" />
+
+                        <Button
+                            Text="Pesquisar voos  →"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Clicked="OnComprarVooClicked" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- ================================= -->
+                <!-- PRÓXIMO VOO                       -->
+                <!-- ================================= -->
+
+                <Label
+                    Text="PRÓXIMO VOO"
+                    FontFamily="OpenSansSemibold"
+                    FontSize="14" />
+
+
+                <!-- Existe um próximo voo -->
+
+                <Border
+                    Style="{StaticResource CardElevatedStyle}"
+                    Padding="20"
+                    IsVisible="{Binding HasUpcomingFlights}">
+
+                    <VerticalStackLayout Spacing="16">
+
+                        <!-- Número do voo + data -->
+
+                        <Grid ColumnDefinitions="*,Auto">
+
+                            <Label
+                                Text="{Binding FlightOneNumber}"
+                                FontFamily="OpenSansSemibold"
+                                FontSize="22"
+                                VerticalOptions="Center" />
+
+                            <Border
+                                Grid.Column="1"
+                                Padding="10,4"
+                                Stroke="{StaticResource AccentDark}"
+                                StrokeThickness="1">
+
+                                <Label
+                                    Text="{Binding FlightOneDate}"
+                                    FontSize="12"
+                                    TextColor="{StaticResource AccentDark}" />
+
+                            </Border>
+
+                        </Grid>
+
+
+                        <!-- Origem -> Destino -->
+
+                        <Grid
+                            ColumnDefinitions="*,Auto,*"
+                            ColumnSpacing="15">
+
+                            <!-- Origem -->
+
+                            <VerticalStackLayout Spacing="2">
+
+                                <Label
+                                    Text="{Binding FlightOneOrigin}"
+                                    FontFamily="OpenSansSemibold"
+                                    FontSize="23" />
+
+                                <Label
+                                    Text="Origem"
+                                    Style="{StaticResource FootnoteStyle}" />
+
+                            </VerticalStackLayout>
+
+
+                            <!-- Seta -->
+
+                            <Label
+                                Grid.Column="1"
+                                Text="→"
+                                FontSize="25"
+                                TextColor="{StaticResource AccentDark}"
+                                VerticalOptions="Center" />
+
+
+                            <!-- Destino -->
+
+                            <VerticalStackLayout
+                                Grid.Column="2"
+                                Spacing="2">
+
+                                <Label
+                                    Text="{Binding FlightOneDestination}"
+                                    FontFamily="OpenSansSemibold"
+                                    FontSize="23"
+                                    HorizontalTextAlignment="End" />
+
+                                <Label
+                                    Text="Destino"
+                                    Style="{StaticResource FootnoteStyle}"
+                                    HorizontalTextAlignment="End" />
+
+                            </VerticalStackLayout>
+
+                        </Grid>
+
+
+                        <!-- Separador -->
+
+                        <BoxView
+                            HeightRequest="1"
+                            BackgroundColor="{AppThemeBinding
+                                Light={StaticResource Border},
+                                Dark={StaticResource BorderDark}}" />
+
+
+                        <!-- Hora + Porta -->
+
+                        <Grid ColumnDefinitions="*,*">
+
+                            <VerticalStackLayout>
+
+                                <Label
+                                    Text="PARTIDA"
+                                    Style="{StaticResource FootnoteStyle}" />
+
+                                <Label
+                                    Text="{Binding FlightOneTime}"
+                                    FontFamily="OpenSansSemibold"
+                                    FontSize="18" />
+
+                            </VerticalStackLayout>
+
+
+                            <VerticalStackLayout
+                                Grid.Column="1">
+
+                                <Label
+                                    Text="PORTA"
+                                    Style="{StaticResource FootnoteStyle}"
+                                    HorizontalTextAlignment="End" />
+
+                                <Label
+                                    Text="{Binding FlightOneGate}"
+                                    FontFamily="OpenSansSemibold"
+                                    FontSize="18"
+                                    TextColor="{StaticResource AccentDark}"
+                                    HorizontalTextAlignment="End" />
+
+                            </VerticalStackLayout>
+
+                        </Grid>
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- ================================= -->
+                <!-- NÃO EXISTE PRÓXIMO VOO            -->
+                <!-- ================================= -->
+
+                <Border
+                    Style="{StaticResource CardStyle}"
+                    Padding="24"
+                    IsVisible="{Binding HasNoUpcomingFlights}">
+
+                    <VerticalStackLayout
+                        Spacing="8"
+                        HorizontalOptions="Center">
+
+                        <Label
+                            Text="✈"
+                            FontSize="34"
+                            TextColor="{StaticResource AccentDark}"
+                            HorizontalOptions="Center" />
+
+                        <Label
+                            Text="Não tens voos próximos"
+                            FontFamily="OpenSansSemibold"
+                            FontSize="17"
+                            HorizontalTextAlignment="Center" />
+
+                        <Label
+                            Text="Pesquisa um voo para começar a tua próxima viagem."
+                            Style="{StaticResource CaptionStyle}"
+                            HorizontalTextAlignment="Center" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- ================================= -->
+                <!-- ACESSO RÁPIDO                     -->
+                <!-- ================================= -->
+
+                <Label
+                    Text="ACESSO RÁPIDO"
+                    FontFamily="OpenSansSemibold"
+                    FontSize="14" />
+
+
+                <Grid
+                    ColumnDefinitions="*,*"
+                    ColumnSpacing="12">
+
+                    <!-- Carteira -->
+
+                    <Border
+                        Style="{StaticResource CardStyle}"
+                        Padding="16">
+
+                        <Border.GestureRecognizers>
+
+                            <TapGestureRecognizer
+                                Tapped="OnVerBilhetesClicked" />
+
+                        </Border.GestureRecognizers>
+
+                        <VerticalStackLayout Spacing="7">
+
+                            <Label
+                                Text="🎫"
+                                FontSize="25" />
+
+                            <Label
+                                Text="Carteira"
+                                FontFamily="OpenSansSemibold"
+                                FontSize="16" />
+
+                            <Label
+                                Text="Bilhetes e check-in"
+                                Style="{StaticResource FootnoteStyle}" />
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+
+                    <!-- Nova viagem -->
+
+                    <Border
+                        Grid.Column="1"
+                        Style="{StaticResource CardStyle}"
+                        Padding="16">
+
+                        <Border.GestureRecognizers>
+
+                            <TapGestureRecognizer
+                                Tapped="OnComprarVooClicked" />
+
+                        </Border.GestureRecognizers>
+
+                        <VerticalStackLayout Spacing="7">
+
+                            <Label
+                                Text="✈"
+                                FontSize="25"
+                                TextColor="{StaticResource AccentDark}" />
+
+                            <Label
+                                Text="Nova viagem"
+                                FontFamily="OpenSansSemibold"
+                                FontSize="16" />
+
+                            <Label
+                                Text="Pesquisar voos"
+                                Style="{StaticResource FootnoteStyle}" />
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+                </Grid>
+
+
+                <!-- ================================= -->
+                <!-- CARTÃO DE EMBARQUE                -->
+                <!-- ================================= -->
+
+                <Grid ColumnDefinitions="*,Auto">
+
+                    <Label
+                        Text="CARTÃO DE EMBARQUE"
+                        FontFamily="OpenSansSemibold"
+                        FontSize="14"
+                        VerticalOptions="Center" />
+
+                    <Button
+                        Grid.Column="1"
+                        Text="VER CARTEIRA"
+                        Style="{StaticResource TextButtonStyle}"
+                        Clicked="OnVerBilhetesClicked"
+                        FontSize="11"
+                        Padding="4,2" />
+
+                </Grid>
+
+
+                <!-- ================================= -->
+                <!-- BOARDING PASS EXISTENTE           -->
+                <!-- ================================= -->
+
+                <Border
+                    x:Name="BoardingSummary"
+                    Style="{StaticResource CardElevatedStyle}"
+                    Stroke="{StaticResource AccentDark}"
+                    StrokeThickness="1.5"
+                    Padding="18"
+                    IsVisible="{Binding BoardingSummaryIsVisible}">
+
+                    <VerticalStackLayout Spacing="14">
+
+                        <Grid ColumnDefinitions="*,Auto">
+
+                            <VerticalStackLayout>
+
+                                <Label
+                                    Text="CHECK-IN CONCLUÍDO"
+                                    FontSize="11"
+                                    FontFamily="OpenSansSemibold"
+                                    TextColor="{StaticResource AccentDark}" />
+
+                                <Label
+                                    x:Name="BoardingFlight"
+                                    Text="{Binding BoardingFlight}"
+                                    FontFamily="OpenSansSemibold"
+                                    FontSize="23" />
+
+                            </VerticalStackLayout>
+
+                            <Label
+                                Grid.Column="1"
+                                Text="✓"
+                                FontSize="28"
+                                TextColor="{StaticResource AccentDark}"
+                                VerticalOptions="Center" />
+
+                        </Grid>
+
+
+                        <Grid ColumnDefinitions="*,*">
+
+                            <!-- Estado -->
+
+                            <VerticalStackLayout>
+
+                                <Label
+                                    Text="ESTADO"
+                                    Style="{StaticResource FootnoteStyle}" />
+
+                                <Label
+                                    Text="Check-in concluído"
+                                    FontFamily="OpenSansSemibold"
+                                    FontSize="15"
+                                    TextColor="{StaticResource AccentDark}" />
+
+                            </VerticalStackLayout>
+
+
+                            <!-- Lugar -->
+
+                            <VerticalStackLayout
+                                Grid.Column="1">
+
+                                <Label
+                                    Text="LUGAR"
+                                    Style="{StaticResource FootnoteStyle}"
+                                    HorizontalTextAlignment="End" />
+
+                                <Label
+                                    x:Name="BoardingSeat"
+                                    Text="{Binding BoardingSeat}"
+                                    FontFamily="OpenSansSemibold"
+                                    FontSize="18"
+                                    HorizontalTextAlignment="End" />
+
+                            </VerticalStackLayout>
+
+                        </Grid>
+
+
+                        <Label
+                            Text="Consulta o cartão de embarque completo na carteira."
+                            Style="{StaticResource CaptionStyle}" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- ================================= -->
+                <!-- SEM BOARDING PASS                 -->
+                <!-- ================================= -->
+
+                <Border
+                    Style="{StaticResource CardStyle}"
+                    Padding="20"
+                    IsVisible="{Binding NoBoardingLabelIsVisible}">
+
+                    <VerticalStackLayout Spacing="8">
+
+                        <Label
+                            Text="Ainda não tens cartão de embarque"
+                            FontFamily="OpenSansSemibold"
+                            FontSize="16" />
+
+                        <Label
+                            Text="Depois de realizares o check-in, o teu cartão aparecerá aqui."
+                            Style="{StaticResource CaptionStyle}" />
+
+                        <Button
+                            Text="Ver carteira"
+                            Style="{StaticResource TextButtonStyle}"
+                            Clicked="OnVerBilhetesClicked"
+                            HorizontalOptions="Start"
+                            Padding="0,4" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
             </VerticalStackLayout>
+
         </ScrollView>
+
     </RefreshView>
+
 </ContentPage>

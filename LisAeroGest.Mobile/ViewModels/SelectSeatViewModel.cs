@@ -52,8 +52,23 @@ namespace LisAeroGest.Mobile.ViewModels
         [RelayCommand]
         private void SelectSeat(SeatDto? seat)
         {
-            if (seat == null || !seat.IsAvailable) return;
+            if (seat == null)
+                return;
+
+            if (!seat.IsAvailable)
+            {
+                ErrorMessage = "Este lugar já está ocupado.";
+                return;
+            }
+
+            foreach (var item in Seats)
+            {
+                item.IsSelected = false;
+            }
+
+            seat.IsSelected = true;
             SelectedSeat = seat;
+
             ErrorMessage = string.Empty;
         }
 

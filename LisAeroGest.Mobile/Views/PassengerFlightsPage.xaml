@@ -1,57 +1,350 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
-             xmlns:models="clr-namespace:LisAeroGest.Mobile.Models"
-             x:Class="LisAeroGest.Mobile.Views.PassengerFlightsPage"
-             x:DataType="vm:FlightBoardViewModel"
-             x:Name="Root"
-             Title="Comprar voo"
-             Background="{AppThemeBinding Light={StaticResource AppBackgroundLightBrush}, Dark={StaticResource AppBackgroundGradientBrush}}">
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
+    xmlns:models="clr-namespace:LisAeroGest.Mobile.Models"
+    x:Class="LisAeroGest.Mobile.Views.PassengerFlightsPage"
+    x:DataType="vm:FlightBoardViewModel"
+    x:Name="Root"
+    Title="Comprar voo"
+    Background="{AppThemeBinding
+        Light={StaticResource AppBackgroundLightBrush},
+        Dark={StaticResource AppBackgroundGradientBrush}}">
+
     <Grid RowDefinitions="Auto,Auto,*">
-        <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="18,24,18,10" Padding="16">
-            <VerticalStackLayout Spacing="12">
-                <Label Text="ESCOLHER VIAGEM" FontFamily="OpenSansSemibold" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource TextSecondaryDark}}" />
-                <Label Text="Encontra o próximo voo" Style="{StaticResource Title2Style}" />
-                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                    <Border Style="{StaticResource InputCardStyle}"><SearchBar Placeholder="Origem" Text="{Binding FilterOrigin}" /></Border>
-                    <Border Grid.Column="1" Style="{StaticResource InputCardStyle}"><SearchBar Placeholder="Destino" Text="{Binding FilterDestination}" /></Border>
-                </Grid>
-                <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="8">
-                    <Button Text="‹" Command="{Binding PreviousDayCommand}" Style="{StaticResource SecondaryButtonStyle}" />
-                    <Button Grid.Column="1" Text="Hoje" Command="{Binding GoToTodayCommand}" />
-                    <Button Grid.Column="2" Text="›" Command="{Binding NextDayCommand}" Style="{StaticResource SecondaryButtonStyle}" />
-                </Grid>
-            </VerticalStackLayout>
-        </Border>
-        <ActivityIndicator Grid.Row="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{StaticResource AccentDark}" />
-        <RefreshView Grid.Row="2" Command="{Binding LoadDeparturesCommand}" IsRefreshing="{Binding IsBusy}">
-            <CollectionView ItemsSource="{Binding Departures}" SelectionMode="None">
-                <CollectionView.EmptyView>
-                    <VerticalStackLayout Padding="24,60" Spacing="10">
-                        <Label Text="✈" FontSize="40" TextColor="{StaticResource AccentDark}" HorizontalOptions="Center" />
-                        <Label Text="Nenhum voo encontrado" Style="{StaticResource Title2Style}" HorizontalTextAlignment="Center" />
-                        <Label Text="Altera a data ou os aeroportos de origem/destino." Style="{StaticResource CaptionStyle}" HorizontalTextAlignment="Center" />
+
+        <!-- ============================== -->
+        <!-- PESQUISA DA VIAGEM             -->
+        <!-- ============================== -->
+
+        <Border
+            Grid.Row="0"
+            Style="{StaticResource CardStyle}"
+            Margin="18,24,18,10"
+            Padding="18">
+
+            <VerticalStackLayout Spacing="16">
+
+                <!-- Cabeçalho -->
+
+                <VerticalStackLayout Spacing="3">
+
+                    <Label
+                        Text="ESCOLHER VIAGEM"
+                        FontFamily="OpenSansSemibold"
+                        FontSize="12"
+                        TextColor="{StaticResource AccentDark}" />
+
+                    <Label
+                        Text="Para onde vais?"
+                        Style="{StaticResource Title2Style}" />
+
+                    <Label
+                        Text="Escolhe a origem, o destino e a data da viagem."
+                        Style="{StaticResource CaptionStyle}" />
+
+                </VerticalStackLayout>
+
+
+                <!-- ORIGEM -->
+
+                <VerticalStackLayout Spacing="6">
+
+                    <Label
+                        Text="Origem"
+                        FontFamily="OpenSansSemibold"
+                        FontSize="13" />
+
+                    <Border Style="{StaticResource InputCardStyle}">
+
+                        <SearchBar
+                            Placeholder="Cidade ou aeroporto de origem"
+                            Text="{Binding FilterOrigin}"
+                            BackgroundColor="Transparent" />
+
+                    </Border>
+
+                </VerticalStackLayout>
+
+
+                <!-- DESTINO -->
+
+                <VerticalStackLayout Spacing="6">
+
+                    <Label
+                        Text="Destino"
+                        FontFamily="OpenSansSemibold"
+                        FontSize="13" />
+
+                    <Border Style="{StaticResource InputCardStyle}">
+
+                        <SearchBar
+                            Placeholder="Cidade ou aeroporto de destino"
+                            Text="{Binding FilterDestination}"
+                            BackgroundColor="Transparent" />
+
+                    </Border>
+
+                </VerticalStackLayout>
+
+
+                <!-- DATA -->
+
+                <VerticalStackLayout Spacing="6">
+
+                    <Label
+                        Text="Data da viagem"
+                        FontFamily="OpenSansSemibold"
+                        FontSize="13" />
+
+                    <Border
+                        Style="{StaticResource InputCardStyle}"
+                        Padding="14,5">
+
+                        <Grid
+                            ColumnDefinitions="Auto,*"
+                            ColumnSpacing="12">
+
+                            <Label
+                                Text="📅"
+                                FontSize="20"
+                                VerticalOptions="Center" />
+
+                            <DatePicker
+                                Grid.Column="1"
+                                Date="{Binding SelectedDate}"
+                                MinimumDate="{Binding MinimumDate}"
+                                Format="dd MMMM yyyy"
+                                BackgroundColor="Transparent"
+                                HorizontalOptions="Fill"
+                                VerticalOptions="Center" />
+
+                        </Grid>
+
+                    </Border>
+
+                </VerticalStackLayout>
+
+
+                <!-- RESUMO DA DATA -->
+
+                <Grid
+                    ColumnDefinitions="*,Auto"
+                    ColumnSpacing="10">
+
+                    <VerticalStackLayout Spacing="2">
+
+                        <Label
+                            Text="Data selecionada"
+                            Style="{StaticResource FootnoteStyle}" />
+
+                        <Label
+                            Text="{Binding SelectedDateLabel}"
+                            FontFamily="OpenSansSemibold"
+                            FontSize="15" />
+
                     </VerticalStackLayout>
+
+                    <Button
+                        Grid.Column="1"
+                        Text="Hoje"
+                        Command="{Binding GoToTodayCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        VerticalOptions="Center" />
+
+                </Grid>
+
+            </VerticalStackLayout>
+
+        </Border>
+
+
+        <!-- ============================== -->
+        <!-- CARREGAMENTO                   -->
+        <!-- ============================== -->
+
+        <ActivityIndicator
+            Grid.Row="1"
+            IsRunning="{Binding IsBusy}"
+            IsVisible="{Binding IsBusy}"
+            Color="{StaticResource AccentDark}"
+            HorizontalOptions="Center"
+            Margin="0,5" />
+
+
+        <!-- ============================== -->
+        <!-- VOOS                           -->
+        <!-- ============================== -->
+
+        <RefreshView
+            Grid.Row="2"
+            Command="{Binding LoadDeparturesCommand}"
+            IsRefreshing="{Binding IsBusy}">
+
+            <CollectionView
+                ItemsSource="{Binding Departures}"
+                SelectionMode="None">
+
+                <!-- Cabeçalho dos resultados -->
+
+                <CollectionView.Header>
+
+                    <Grid
+                        Padding="20,10,20,6"
+                        ColumnDefinitions="*,Auto">
+
+                        <Label
+                            Text="Voos disponíveis"
+                            FontFamily="OpenSansSemibold"
+                            FontSize="17" />
+
+                        <Label
+                            Grid.Column="1"
+                            Text="{Binding Departures.Count,
+                                StringFormat='{}{0} voos'}"
+                            Style="{StaticResource CaptionStyle}"
+                            VerticalOptions="Center" />
+
+                    </Grid>
+
+                </CollectionView.Header>
+
+
+                <!-- Nenhum voo -->
+
+                <CollectionView.EmptyView>
+
+                    <VerticalStackLayout
+                        Padding="24,50"
+                        Spacing="10">
+
+                        <Label
+                            Text="✈"
+                            FontSize="40"
+                            TextColor="{StaticResource AccentDark}"
+                            HorizontalOptions="Center" />
+
+                        <Label
+                            Text="Nenhum voo disponível"
+                            Style="{StaticResource Title2Style}"
+                            HorizontalTextAlignment="Center" />
+
+                        <Label
+                            Text="Experimenta outra data, origem ou destino."
+                            Style="{StaticResource CaptionStyle}"
+                            HorizontalTextAlignment="Center" />
+
+                    </VerticalStackLayout>
+
                 </CollectionView.EmptyView>
+
+
+                <!-- Cartão do voo -->
+
                 <CollectionView.ItemTemplate>
+
                     <DataTemplate x:DataType="models:FlightDto">
-                        <Border Style="{StaticResource CardStyle}" Margin="18,6" Padding="16">
+
+                        <Border
+                            Style="{StaticResource CardStyle}"
+                            Margin="18,6"
+                            Padding="16">
+
                             <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={x:Reference Root}, Path=BindingContext.SelectFlightCommand}" CommandParameter="{Binding .}" />
+
+                                <TapGestureRecognizer
+                                    Command="{Binding
+                                        Source={x:Reference Root},
+                                        Path=BindingContext.SelectFlightCommand}"
+                                    CommandParameter="{Binding .}" />
+
                             </Border.GestureRecognizers>
-                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
-                                <Label Text="{Binding FlightNumber}" FontFamily="OpenSansSemibold" FontSize="20" />
-                                <Label Grid.Column="1" Text="{Binding Status}" Style="{StaticResource FootnoteStyle}" TextColor="{StaticResource AccentDark}" />
-                                <Label Grid.Row="1" Text="{Binding Origin}" Style="{StaticResource CaptionStyle}" />
-                                <Label Grid.Row="1" Grid.Column="1" Text="→" FontSize="20" TextColor="{StaticResource AccentDark}" />
-                                <Label Grid.Row="2" Text="{Binding DepartureTime, StringFormat='Partida {0:HH:mm}'}" Style="{StaticResource FootnoteStyle}" />
-                                <Label Grid.Row="2" Grid.Column="1" Text="{Binding Destination}" Style="{StaticResource CaptionStyle}" HorizontalTextAlignment="End" />
-                            </Grid>
+
+
+                            <VerticalStackLayout Spacing="12">
+
+                                <!-- Número do voo -->
+
+                                <Grid ColumnDefinitions="*,Auto">
+
+                                    <Label
+                                        Text="{Binding FlightNumber}"
+                                        FontFamily="OpenSansSemibold"
+                                        FontSize="20" />
+
+                                    <Label
+                                        Grid.Column="1"
+                                        Text="{Binding Status}"
+                                        Style="{StaticResource FootnoteStyle}"
+                                        TextColor="{StaticResource AccentDark}"
+                                        VerticalOptions="Center" />
+
+                                </Grid>
+
+
+                                <!-- Rota -->
+
+                                <Grid
+                                    ColumnDefinitions="*,Auto,*"
+                                    ColumnSpacing="12">
+
+                                    <!-- Origem -->
+
+                                    <VerticalStackLayout Spacing="2">
+
+                                        <Label
+                                            Text="{Binding Origin}"
+                                            FontFamily="OpenSansSemibold"
+                                            FontSize="16" />
+
+                                        <Label
+                                            Text="{Binding DepartureTime,
+                                                StringFormat='{0:HH:mm}'}"
+                                            Style="{StaticResource CaptionStyle}" />
+
+                                    </VerticalStackLayout>
+
+
+                                    <!-- Seta -->
+
+                                    <Label
+                                        Grid.Column="1"
+                                        Text="→"
+                                        FontSize="22"
+                                        TextColor="{StaticResource AccentDark}"
+                                        VerticalOptions="Center" />
+
+
+                                    <!-- Destino -->
+
+                                    <VerticalStackLayout
+                                        Grid.Column="2"
+                                        Spacing="2">
+
+                                        <Label
+                                            Text="{Binding Destination}"
+                                            FontFamily="OpenSansSemibold"
+                                            FontSize="16"
+                                            HorizontalTextAlignment="End" />
+
+                                    </VerticalStackLayout>
+
+                                </Grid>
+
+                            </VerticalStackLayout>
+
                         </Border>
+
                     </DataTemplate>
+
                 </CollectionView.ItemTemplate>
+
             </CollectionView>
+
         </RefreshView>
+
     </Grid>
+
 </ContentPage>

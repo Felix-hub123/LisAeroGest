@@ -69,6 +69,117 @@ namespace LisAeroGest.Mobile.Services
             }
         }
 
+
+        // ═══════════════════════════════════════════════════════════
+        // GESTÃO DE PORTAS - FUNCIONÁRIO
+        // ═══════════════════════════════════════════════════════════
+
+        public Task<ApiResult<List<GateDto>>> GetEmployeeGatesAsync()
+            => GetAsync<List<GateDto>>("api/employee/gates");
+
+
+        public async Task<ApiResult<ChangeGateResultDto>> ChangeFlightGateAsync(
+            int flightId,
+            int gateId)
+        {
+            if (!HasInternet())
+            {
+                return ApiResult<ChangeGateResultDto>.Fail(
+                    "Sem ligação à Internet.");
+            }
+
+            try
+            {
+                using var cts = new CancellationTokenSource(
+                    TimeSpan.FromSeconds(15));
+
+                var response = await _httpClient.PutAsJsonAsync(
+                    $"api/employee/flights/{flightId}/gate",
+                    new
+                    {
+                        GateId = gateId
+                    },
+                    cts.Token);
+
+                var content = await response.Content.ReadAsStringAsync(
+                    cts.Token);
+
+                Debug.WriteLine(
+                    $"[ApiService] Change gate status: {(int)response.StatusCode}");
+
+                Debug.WriteLine(
+                    $"[ApiService] Change gate response: {content}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    string errorMessage = "Não foi possível alterar a porta.";
+
+                    if (!string.IsNullOrWhiteSpace(content))
+                    {
+                        try
+                        {
+                            var error =
+                                System.Text.Json.JsonSerializer
+                                    .Deserialize<ErrorResponseDto>(
+                                        content,
+                                        new System.Text.Json.JsonSerializerOptions
+                                        {
+                                            PropertyNameCaseInsensitive = true
+                                        });
+
+                            errorMessage =
+                              error?.Message ??
+                              errorMessage;
+                        }
+                        catch
+                        {
+                            // Mantém mensagem padrão.
+                        }
+                    }
+
+                    return ApiResult<ChangeGateResultDto>.Fail(
+                        errorMessage);
+                }
+
+                if (string.IsNullOrWhiteSpace(content))
+                {
+                    return ApiResult<ChangeGateResultDto>.Fail(
+                        "O servidor não devolveu os dados da alteração.");
+                }
+
+                var data =
+                    System.Text.Json.JsonSerializer
+                        .Deserialize<ChangeGateResultDto>(
+                            content,
+                            new System.Text.Json.JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true
+                            });
+
+                if (data == null)
+                {
+                    return ApiResult<ChangeGateResultDto>.Fail(
+                        "Não foi possível interpretar a resposta do servidor.");
+                }
+
+                return ApiResult<ChangeGateResultDto>.Ok(data);
+            }
+            catch (TaskCanceledException)
+            {
+                return ApiResult<ChangeGateResultDto>.Fail(
+                    "O servidor demorou demasiado a responder.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(
+                    $"[ApiService] Change gate error: {ex}");
+
+                return ApiResult<ChangeGateResultDto>.Fail(
+                    "Erro de ligação ao servidor.");
+            }
+        }
+
+
         // ═══════════════════════════════════════════════════════════
         // PARTIDAS
         // ═══════════════════════════════════════════════════════════

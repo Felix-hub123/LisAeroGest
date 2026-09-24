@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
+
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -6,23 +7,105 @@
     xmlns:models="clr-namespace:LisAeroGest.Mobile.Models"
     x:Class="LisAeroGest.Mobile.Views.SelectSeatPage"
     x:DataType="vm:SelectSeatViewModel"
-    Title="Seleccionar lugar"
-             Background="{AppThemeBinding Light={StaticResource AppBackgroundLightBrush}, Dark={StaticResource AppBackgroundGradientBrush}}">
+    Title="Selecionar lugar"
+    Background="{AppThemeBinding
+        Light={StaticResource AppBackgroundLightBrush},
+        Dark={StaticResource AppBackgroundGradientBrush}}">
 
-    <Grid RowDefinitions="Auto,Auto,* ,Auto" Padding="16" RowSpacing="12">
+    <Grid
+        RowDefinitions="Auto,Auto,*,Auto"
+        Padding="16"
+        RowSpacing="12">
 
-        <Label
+        <!-- CABEÇALHO -->
+
+        <VerticalStackLayout
             Grid.Row="0"
-            Text="Seleccione o seu lugar"
-            FontSize="22"
-            FontAttributes="Bold"
-            HorizontalOptions="Center" />
+            Spacing="10">
+
+            <Label
+                Text="Escolhe o teu lugar"
+                FontSize="22"
+                FontFamily="OpenSansSemibold"
+                HorizontalOptions="Center" />
+
+            <!-- LEGENDA -->
+
+            <HorizontalStackLayout
+                HorizontalOptions="Center"
+                Spacing="18">
+
+                <!-- Disponível -->
+
+                <HorizontalStackLayout Spacing="5">
+
+                    <Border
+                        WidthRequest="15"
+                        HeightRequest="15"
+                        BackgroundColor="Transparent"
+                        Stroke="{StaticResource AccentDark}"
+                        StrokeThickness="2"
+                        StrokeShape="RoundRectangle 4" />
+
+                    <Label
+                        Text="Disponível"
+                        FontSize="11"
+                        VerticalOptions="Center" />
+
+                </HorizontalStackLayout>
+
+                <!-- Selecionado -->
+
+                <HorizontalStackLayout Spacing="5">
+
+                    <Border
+                        WidthRequest="15"
+                        HeightRequest="15"
+                        BackgroundColor="{StaticResource AccentDark}"
+                        Stroke="{StaticResource AccentDark}"
+                        StrokeShape="RoundRectangle 4" />
+
+                    <Label
+                        Text="Selecionado"
+                        FontSize="11"
+                        VerticalOptions="Center" />
+
+                </HorizontalStackLayout>
+
+                <!-- Ocupado -->
+
+                <HorizontalStackLayout Spacing="5">
+
+                    <Border
+                        WidthRequest="15"
+                        HeightRequest="15"
+                        BackgroundColor="#34373D"
+                        Stroke="#55585E"
+                        StrokeShape="RoundRectangle 4" />
+
+                    <Label
+                        Text="Ocupado"
+                        FontSize="11"
+                        VerticalOptions="Center" />
+
+                </HorizontalStackLayout>
+
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+
+
+        <!-- LOADING -->
 
         <ActivityIndicator
             Grid.Row="1"
             IsRunning="{Binding IsBusy}"
             IsVisible="{Binding IsBusy}"
+            Color="{StaticResource AccentDark}"
             HorizontalOptions="Center" />
+
+
+        <!-- LUGARES -->
 
         <CollectionView
             Grid.Row="2"
@@ -30,72 +113,219 @@
             SelectionMode="None">
 
             <CollectionView.EmptyView>
-                <Label
-                    Text="Não existem lugares disponíveis."
-                    HorizontalOptions="Center"
-                    VerticalOptions="Center"
-                    TextColor="#607D8B" />
+
+                <VerticalStackLayout
+                    Padding="20,50"
+                    Spacing="8">
+
+                    <Label
+                        Text="✈"
+                        FontSize="35"
+                        HorizontalOptions="Center"
+                        TextColor="{StaticResource AccentDark}" />
+
+                    <Label
+                        Text="Não existem lugares."
+                        HorizontalOptions="Center"
+                        FontFamily="OpenSansSemibold" />
+
+                </VerticalStackLayout>
+
             </CollectionView.EmptyView>
 
+
             <CollectionView.ItemsLayout>
+
                 <GridItemsLayout
                     Orientation="Vertical"
                     Span="3"
                     HorizontalItemSpacing="8"
                     VerticalItemSpacing="8" />
+
             </CollectionView.ItemsLayout>
 
+
             <CollectionView.ItemTemplate>
+
                 <DataTemplate x:DataType="models:SeatDto">
+
                     <Border
                         Padding="8"
-                        Stroke="{AppThemeBinding Light={StaticResource Border}, Dark={StaticResource GlassStrokeDark}}"
-                        StrokeThickness="1"
-                        StrokeShape="RoundRectangle 8">
+                        MinimumHeightRequest="74"
+                        StrokeThickness="1.5"
+                        StrokeShape="RoundRectangle 9">
 
                         <Border.GestureRecognizers>
+
                             <TapGestureRecognizer
-                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:SelectSeatViewModel}}, Path=SelectSeatCommand}"
+                                Command="{Binding
+                                    Source={RelativeSource
+                                    AncestorType={x:Type vm:SelectSeatViewModel}},
+                                    Path=SelectSeatCommand}"
                                 CommandParameter="{Binding .}" />
+
                         </Border.GestureRecognizers>
 
-                        <VerticalStackLayout Spacing="3">
+
+                        <!-- ESTADO VISUAL -->
+
+                        <Border.Triggers>
+
+                            <!-- DISPONÍVEL -->
+
+                            <DataTrigger
+                                TargetType="Border"
+                                Binding="{Binding IsAvailable}"
+                                Value="True">
+
+                                <Setter
+                                    Property="Stroke"
+                                    Value="{StaticResource AccentDark}" />
+
+                                <Setter
+                                    Property="BackgroundColor"
+                                    Value="Transparent" />
+
+                                <Setter
+                                    Property="Opacity"
+                                    Value="1" />
+
+                            </DataTrigger>
+
+
+                            <!-- OCUPADO -->
+
+                            <DataTrigger
+                                TargetType="Border"
+                                Binding="{Binding IsAvailable}"
+                                Value="False">
+
+                                <Setter
+                                    Property="Stroke"
+                                    Value="#55585E" />
+
+                                <Setter
+                                    Property="BackgroundColor"
+                                    Value="#2B2D31" />
+
+                                <Setter
+                                    Property="Opacity"
+                                    Value="0.55" />
+
+                            </DataTrigger>
+
+
+                            <!-- SELECIONADO -->
+
+                            <DataTrigger
+                                TargetType="Border"
+                                Binding="{Binding IsSelected}"
+                                Value="True">
+
+                                <Setter
+                                    Property="Stroke"
+                                    Value="{StaticResource AccentDark}" />
+
+                                <Setter
+                                    Property="BackgroundColor"
+                                    Value="{StaticResource AccentDark}" />
+
+                                <Setter
+                                    Property="Opacity"
+                                    Value="1" />
+
+                            </DataTrigger>
+
+                        </Border.Triggers>
+
+
+                        <VerticalStackLayout
+                            Spacing="3"
+                            VerticalOptions="Center">
+
                             <Label
                                 Text="{Binding Code}"
                                 FontSize="18"
-                                FontAttributes="Bold"
+                                FontFamily="OpenSansSemibold"
                                 HorizontalOptions="Center" />
 
                             <Label
                                 Text="{Binding SeatClass}"
-                                FontSize="11"
+                                FontSize="10"
                                 HorizontalOptions="Center" />
 
                             <Label
                                 Text="{Binding DisplayPrice}"
-                                FontSize="11"
+                                FontSize="10"
                                 HorizontalOptions="Center" />
+
+                            <!-- Indicação de ocupado -->
+
+                            <Label
+                                Text="OCUPADO"
+                                FontSize="9"
+                                FontFamily="OpenSansSemibold"
+                                HorizontalOptions="Center"
+                                IsVisible="False">
+
+                                <Label.Triggers>
+
+                                    <DataTrigger
+                                        TargetType="Label"
+                                        Binding="{Binding IsAvailable}"
+                                        Value="False">
+
+                                        <Setter
+                                            Property="IsVisible"
+                                            Value="True" />
+
+                                    </DataTrigger>
+
+                                </Label.Triggers>
+
+                            </Label>
+
                         </VerticalStackLayout>
+
                     </Border>
+
                 </DataTemplate>
+
             </CollectionView.ItemTemplate>
+
         </CollectionView>
 
-        <VerticalStackLayout Grid.Row="3" Spacing="8">
-            <Label
-                Text="{Binding ErrorMessage}"
-                TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}"
-                HorizontalOptions="Center" />
 
-            <Label
-                Text="{Binding SelectedSeat.Code, StringFormat='Lugar seleccionado: {0}'}"
-                HorizontalOptions="Center"
-                FontAttributes="Bold" />
+        <!-- RODAPÉ -->
 
-            <Button
-                Text="Confirmar lugar"
-                Command="{Binding ConfirmSeatCommand}"
-                />
-        </VerticalStackLayout>
+        <Border
+            Grid.Row="3"
+            Style="{StaticResource CardElevatedStyle}"
+            Padding="14">
+
+            <VerticalStackLayout Spacing="9">
+
+                <Label
+                    Text="{Binding ErrorMessage}"
+                    TextColor="{AppThemeBinding
+                        Light={StaticResource Error},
+                        Dark={StaticResource ErrorDark}}"
+                    HorizontalOptions="Center" />
+
+                <Label
+                    Text="{Binding SelectedSeat.Code,
+                        StringFormat='Lugar selecionado: {0}'}"
+                    HorizontalOptions="Center"
+                    FontFamily="OpenSansSemibold" />
+
+                <Button
+                    Text="Confirmar lugar"
+                    Command="{Binding ConfirmSeatCommand}" />
+
+            </VerticalStackLayout>
+
+        </Border>
+
     </Grid>
+
 </ContentPage>
