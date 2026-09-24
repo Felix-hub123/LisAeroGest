@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
+    x:Class="LisAeroGest.Mobile.Views.FlightDetailsPage"
+    x:DataType="vm:FlightDetailsViewModel"
+    Title="Detalhes do voo"
+             Background="{AppThemeBinding Light={StaticResource AppBackgroundLightBrush}, Dark={StaticResource AppBackgroundGradientBrush}}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <ActivityIndicator
+                IsRunning="{Binding IsBusy}"
+                IsVisible="{Binding IsBusy}"
+                HorizontalOptions="Center" />
+
+            <Label
+                Text="{Binding ErrorMessage}"
+                TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}"
+                HorizontalOptions="Center" />
+
+            <VerticalStackLayout
+                IsVisible="{Binding Flight}"
+                Spacing="14">
+
+                <Label
+                    Text="{Binding Flight.FlightNumber}"
+                    FontSize="28"
+                    FontAttributes="Bold"
+                    HorizontalOptions="Center"
+                    TextColor="{StaticResource AccentDark}" />
+
+                <Label
+                    Text="{Binding Flight.Status}"
+                    FontSize="16"
+                    HorizontalOptions="Center" />
+
+                <Grid
+                    ColumnDefinitions="*,Auto,*"
+                    ColumnSpacing="12">
+
+                    <VerticalStackLayout Grid.Column="0">
+                        <Label Text="Origem" FontSize="12" />
+                        <Label
+                            Text="{Binding Flight.Origin}"
+                            FontAttributes="Bold" />
+                        <Label Text="{Binding Flight.OriginCode}" />
+                    </VerticalStackLayout>
+
+                    <Label
+                        Grid.Column="1"
+                        Text="→"
+                        FontSize="26"
+                        VerticalOptions="Center"
+                        TextColor="{StaticResource AccentDark}" />
+
+                    <VerticalStackLayout Grid.Column="2">
+                        <Label Text="Destino" FontSize="12" />
+                        <Label
+                            Text="{Binding Flight.Destination}"
+                            FontAttributes="Bold" />
+                        <Label Text="{Binding Flight.DestinationCode}" />
+                    </VerticalStackLayout>
+                </Grid>
+
+                <BoxView HeightRequest="1" BackgroundColor="{AppThemeBinding Light={StaticResource Border}, Dark={StaticResource BorderDark}}" />
+
+                <Grid
+                    ColumnDefinitions="*,*"
+                    RowDefinitions="Auto,Auto,Auto,Auto"
+                    ColumnSpacing="12"
+                    RowSpacing="12">
+
+                    <VerticalStackLayout Grid.Row="0" Grid.Column="0">
+                        <Label Text="Partida" FontSize="12" />
+                        <Label
+                            Text="{Binding Flight.DepartureTime, StringFormat='{0:dd/MM/yyyy HH:mm}'}"
+                            FontAttributes="Bold" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Grid.Row="0" Grid.Column="1">
+                        <Label Text="Chegada" FontSize="12" />
+                        <Label
+                            Text="{Binding Flight.ArrivalTime, StringFormat='{0:dd/MM/yyyy HH:mm}'}"
+                            FontAttributes="Bold" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Grid.Row="1" Grid.Column="0">
+                        <Label Text="Companhia" FontSize="12" />
+                        <Label
+                            Text="{Binding Flight.AirlineName}"
+                            FontAttributes="Bold" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Grid.Row="1" Grid.Column="1">
+                        <Label Text="Gate" FontSize="12" />
+                        <Label
+                            Text="{Binding Flight.Gate}"
+                            FontAttributes="Bold" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Grid.Row="2" Grid.Column="0">
+                        <Label Text="Aeronave" FontSize="12" />
+                        <Label
+                            Text="{Binding Flight.AircraftModel}"
+                            FontAttributes="Bold" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Grid.Row="2" Grid.Column="1">
+                        <Label Text="Duração" FontSize="12" />
+                        <Label
+                            Text="{Binding Flight.DurationLabel}"
+                            FontAttributes="Bold" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Grid.Row="3" Grid.Column="0">
+                        <Label Text="Preço base" FontSize="12" />
+                        <Label
+                            Text="{Binding Flight.PriceLabel}"
+                            FontAttributes="Bold"
+                            TextColor="{StaticResource AccentDark}" />
+                    </VerticalStackLayout>
+                </Grid>
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <Button Text="☆ Favorito" Command="{Binding ToggleFavoriteCommand}" Style="{StaticResource SecondaryButtonStyle}" />
+                    <Button Grid.Column="1" Text="Escolher lugar" Command="{Binding SelectSeatCommand}"
+                    Margin="0,10,0,0" />
+                </Grid>
+            </VerticalStackLayout>
+
+            <Button
+                Text="Actualizar"
+                Command="{Binding LoadCommand}"
+                IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

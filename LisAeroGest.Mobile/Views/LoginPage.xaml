@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
+             x:Class="LisAeroGest.Mobile.Views.LoginPage"
+             x:DataType="vm:LoginViewModel"
+             Title="LisAeroGest"
+             Shell.NavBarIsVisible="False"
+             Background="{AppThemeBinding Light={StaticResource AppBackgroundLightBrush}, Dark={StaticResource AppBackgroundGradientBrush}}">
+    <ScrollView>
+        <VerticalStackLayout Padding="28,64,28,32" Spacing="20">
+            <VerticalStackLayout Spacing="3" Margin="0,0,0,14">
+                <Label Text="LisAeroGest" FontFamily="OpenSansSemibold" FontSize="36" TextColor="{StaticResource AccentDark}" />
+                <Label Text="Lisbon Airport Portal" Style="{StaticResource CaptionStyle}" />
+            </VerticalStackLayout>
+            <Border Style="{StaticResource CardElevatedStyle}">
+                <VerticalStackLayout Spacing="16">
+                    <Label Text="Bem-vindo de volta" Style="{StaticResource TitleStyle}" />
+                    <Label Text="Entra para veres os teus voos, bilhetes e alertas." Style="{StaticResource CaptionStyle}" />
+                    <Border IsVisible="{Binding HasError}" Style="{StaticResource StatusBadgeStyle}" Stroke="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}"><Label Text="{Binding ErrorMessage}" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" FontSize="14" /></Border>
+                    <VerticalStackLayout Spacing="6"><Label Text="Email" Style="{StaticResource BodyEmphasisStyle}" /><Border Style="{StaticResource InputCardStyle}"><Entry Placeholder="email@exemplo.com" Text="{Binding Email}" Keyboard="Email" ReturnType="Next" /></Border></VerticalStackLayout>
+                    <VerticalStackLayout Spacing="6"><Label Text="Password" Style="{StaticResource BodyEmphasisStyle}" /><Border Style="{StaticResource InputCardStyle}"><Entry Placeholder="Password" Text="{Binding Password}" IsPassword="True" ReturnType="Done" ReturnCommand="{Binding LoginCommand}" /></Border></VerticalStackLayout>
+                    <Button Text="Entrar" Command="{Binding LoginCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
+                    <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{StaticResource AccentDark}" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </Border>
+            <VerticalStackLayout Spacing="4">
+                <Label Text="A criação de conta é feita no portal web." Style="{StaticResource CaptionStyle}" HorizontalTextAlignment="Center" />
+                <Button Text="Abrir portal web" Clicked="OnPortalClicked" Style="{StaticResource TextButtonStyle}" />
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

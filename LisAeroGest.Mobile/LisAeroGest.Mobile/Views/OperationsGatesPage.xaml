@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="LisAeroGest.Mobile.Views.OperationsGatesPage"
-             Title="Portas"
-             Background="{StaticResource AppBackgroundGradientBrush}">
-    <ScrollView><VerticalStackLayout Padding="24,32,24,28" Spacing="18"><Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="PORTAS" FontFamily="OpenSansSemibold" FontSize="14" TextColor="{StaticResource TextSecondaryDark}" /><Label Text="Mapa operacional" Style="{StaticResource TitleStyle}" /></VerticalStackLayout><Label Grid.Column="1" Text="Terminal A" Style="{StaticResource CaptionStyle}" VerticalOptions="Center" /></Grid><Border Style="{StaticResource CardElevatedStyle}"><VerticalStackLayout Spacing="14"><Grid ColumnDefinitions="*,Auto"><Label Text="A14" FontSize="24" FontFamily="OpenSansSemibold" /><Label Grid.Column="1" Text="EMBARQUE" TextColor="{StaticResource AccentDark}" FontSize="12" VerticalOptions="Center" /></Grid><BoxView HeightRequest="1" BackgroundColor="{StaticResource BorderDark}" /><Label Text="Porta ativa para o próximo voo. Consulte os voos em operação para alterar o estado." Style="{StaticResource CaptionStyle}" /></VerticalStackLayout></Border><Border Style="{StaticResource CardStyle}"><VerticalStackLayout Spacing="10"><Label Text="A17" FontSize="24" FontFamily="OpenSansSemibold" /><Label Text="Pronta · sem voo atribuído" Style="{StaticResource CaptionStyle}" /></VerticalStackLayout></Border></VerticalStackLayout></ScrollView>
-</ContentPage>

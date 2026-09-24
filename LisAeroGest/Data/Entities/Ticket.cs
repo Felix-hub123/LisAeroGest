@@ -42,6 +42,9 @@ namespace LisAeroGest.Data.Entities
 
         public string? CreatedByUserId { get; set; }
 
+        public BoardingPass? BoardingPass { get; set; }
+
+
         #region Propriedades Utilitárias (Não mapeadas na BD)
 
         /// <summary>

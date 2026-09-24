@@ -19,14 +19,15 @@ namespace LisAeroGest.Data.Repositories
                   .FirstOrDefaultAsync(t => t.Id == id);
 
         public async Task<IEnumerable<Ticket>> GetByPassengerAsync(int passengerId)
-            => await _dbSet
-                .Include(t => t.Flight).ThenInclude(f => f!.Airline)
-                .Include(t => t.Flight).ThenInclude(f => f!.OriginAirport)
-                .Include(t => t.Flight).ThenInclude(f => f!.DestinationAirport)
-                .Include(t => t.Seat)
-                .Where(t => t.PassengerId == passengerId)
-                .OrderByDescending(t => t.PurchaseDate)
-                .ToListAsync();
+       => await _dbSet
+           .Include(t => t.Flight).ThenInclude(f => f!.Airline)
+           .Include(t => t.Flight).ThenInclude(f => f!.OriginAirport)
+           .Include(t => t.Flight).ThenInclude(f => f!.DestinationAirport)
+           .Include(t => t.Seat)
+           .Include(t => t.BoardingPass)   
+           .Where(t => t.PassengerId == passengerId)
+           .OrderByDescending(t => t.PurchaseDate)
+           .ToListAsync();
 
         public async Task<IEnumerable<Ticket>> GetByFlightAsync(int flightId)
             => await _dbSet
@@ -77,15 +78,16 @@ namespace LisAeroGest.Data.Repositories
                 .ToListAsync();
 
         public async Task<IEnumerable<Ticket>> GetActiveByPassengerAsync(int passengerId)
-            => await _dbSet
-                .Include(t => t.Flight).ThenInclude(f => f!.Airline)
-                .Include(t => t.Flight).ThenInclude(f => f!.OriginAirport)
-                .Include(t => t.Flight).ThenInclude(f => f!.DestinationAirport)
-                .Include(t => t.Seat)
-                .Where(t => t.PassengerId == passengerId &&
-                            (t.Status == "Paid" || t.Status == "CheckedIn"))
-                .OrderByDescending(t => t.PurchaseDate)
-                .ToListAsync();
+      => await _dbSet
+          .Include(t => t.Flight).ThenInclude(f => f!.Airline)
+          .Include(t => t.Flight).ThenInclude(f => f!.OriginAirport)
+          .Include(t => t.Flight).ThenInclude(f => f!.DestinationAirport)
+          .Include(t => t.Seat)
+          .Include(t => t.BoardingPass)  
+          .Where(t => t.PassengerId == passengerId &&
+                      (t.Status == "Paid" || t.Status == "CheckedIn"))
+          .OrderByDescending(t => t.PurchaseDate)
+          .ToListAsync();
 
         /// <summary>
         /// Pesquisa bilhetes para check-in presencial por vários campos:

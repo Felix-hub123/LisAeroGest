@@ -39,38 +39,36 @@ namespace LisAeroGest.Controllers.Api
         public async Task<IActionResult> GetMyTickets()
         {
             var user = await _userManager.GetUserAsync(User);
-
             if (user == null)
                 return Unauthorized();
 
-            var passenger = await _passengerRepository
-                .GetByUserIdAsync(user.Id);
-
+            var passenger = await _passengerRepository.GetByUserIdAsync(user.Id);
             if (passenger == null)
                 return Ok(Array.Empty<object>());
 
-            var tickets = await _ticketRepository
-                .GetByPassengerAsync(passenger.Id);
+            var tickets = await _ticketRepository.GetByPassengerAsync(passenger.Id);
 
             var result = tickets.Select(t => new
             {
                 id = t.Id,
                 flightNumber = t.Flight?.FlightNumber ?? string.Empty,
                 origin = t.Flight?.OriginAirport?.City
-                         ?? t.Flight?.OriginAirport?.IATACode
-                         ?? string.Empty,
+                ?? t.Flight?.OriginAirport?.IATACode
+                ?? string.Empty,
                 destination = t.Flight?.DestinationAirport?.City
-                              ?? t.Flight?.DestinationAirport?.IATACode
-                              ?? string.Empty,
-                departureTime = t.Flight?.DepartureTime
-                                 ?? DateTime.MinValue,
+                     ?? t.Flight?.DestinationAirport?.IATACode
+                     ?? string.Empty,
+                departureTime = t.Flight?.DepartureTime ?? DateTime.MinValue,
                 seatCode = t.Seat?.Code ?? string.Empty,
                 seatClass = t.Seat?.SeatClass ?? string.Empty,
                 status = t.Status,
                 totalPrice = t.TotalPrice,
                 extraLuggage = t.ExtraLuggage,
                 mealIncluded = t.MealIncluded,
-                boardingPassId = (int?)null
+                boardingPassId = t.BoardingPass != null
+                   ? (int?)t.BoardingPass.Id
+                   : null,
+                        gate = t.Flight?.Gate?.GateNumber
             });
 
             return Ok(result);

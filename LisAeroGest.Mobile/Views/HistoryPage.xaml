@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
+             xmlns:models="clr-namespace:LisAeroGest.Mobile.Models"
+             x:Class="LisAeroGest.Mobile.Views.HistoryPage"
+             x:DataType="vm:HistoryViewModel"
+             Title="Histórico"
+             Background="{AppThemeBinding Light={StaticResource AppBackgroundLightBrush}, Dark={StaticResource AppBackgroundGradientBrush}}">
+    <Grid RowDefinitions="Auto,*">
+        <VerticalStackLayout Padding="24,30,24,16" Spacing="3">
+            <Label Text="HISTÓRICO" FontFamily="OpenSansSemibold" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource TextSecondaryDark}}" />
+            <Label Text="As tuas viagens anteriores" Style="{StaticResource TitleStyle}" />
+        </VerticalStackLayout>
+        <RefreshView Grid.Row="1" Command="{Binding LoadCommand}" IsRefreshing="{Binding IsBusy}">
+            <CollectionView ItemsSource="{Binding Tickets}" EmptyView="Ainda não existem viagens concluídas.">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:TicketDto">
+                        <Border Style="{StaticResource CardStyle}" Margin="24,6" Padding="16">
+                            <VerticalStackLayout Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Text="{Binding FlightNumber}" FontFamily="OpenSansSemibold" FontSize="21" />
+                                    <Label Grid.Column="1" Text="{Binding Status}" Style="{StaticResource FootnoteStyle}" TextColor="{StaticResource AccentDark}" />
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto,*">
+                                    <Label Text="{Binding Origin}" FontSize="18" FontFamily="OpenSansSemibold" />
+                                    <Label Grid.Column="1" Text="→" FontSize="20" TextColor="{StaticResource AccentDark}" />
+                                    <Label Grid.Column="2" Text="{Binding Destination}" FontSize="18" FontFamily="OpenSansSemibold" HorizontalTextAlignment="End" />
+                                </Grid>
+                                <Label Text="{Binding DepartureTime, StringFormat='{0:dd/MM/yyyy HH:mm}'}" Style="{StaticResource CaptionStyle}" />
+                                <Label Text="{Binding SeatCode, StringFormat='Lugar: {0}'}" Style="{StaticResource CaptionStyle}" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

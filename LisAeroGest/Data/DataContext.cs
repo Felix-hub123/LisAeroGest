@@ -214,9 +214,9 @@ namespace LisAeroGest.Data
 
             // Cartão de Embarque — Bilhete
             modelBuilder.Entity<BoardingPass>()
-                .HasOne(bp => bp.Ticket)
-                .WithOne()
-                .HasForeignKey<BoardingPass>(bp => bp.TicketId)
+                  .HasOne(bp => bp.Ticket)
+                  .WithOne(t => t.BoardingPass)
+                  .HasForeignKey<BoardingPass>(bp => bp.TicketId)
                 .IsRequired(false);
             #endregion
         }

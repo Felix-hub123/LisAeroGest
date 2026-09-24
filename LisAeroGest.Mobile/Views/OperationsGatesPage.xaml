@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:LisAeroGest.Mobile.Models"
+             x:Class="LisAeroGest.Mobile.Views.OperationsGatesPage"
+             Title="Portas"
+             Background="{AppThemeBinding Light={StaticResource AppBackgroundLightBrush}, Dark={StaticResource AppBackgroundGradientBrush}}">
+    <RefreshView x:Name="Refresh" Refreshing="OnRefreshing">
+        <Grid RowDefinitions="Auto,Auto,*">
+
+            <VerticalStackLayout Grid.Row="0" Padding="24,32,24,10" Spacing="3">
+                <Label Text="PORTAS" FontFamily="OpenSansSemibold" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource TextSecondaryDark}}" />
+                <Label Text="Portas com voos atribuídos hoje" Style="{StaticResource TitleStyle}" />
+                <Label x:Name="StatusLabel" Text="A carregar…" Style="{StaticResource FootnoteStyle}" />
+            </VerticalStackLayout>
+
+            <ActivityIndicator Grid.Row="1"
+                               x:Name="BusyIndicator"
+                               IsVisible="False"
+                               IsRunning="False"
+                               Color="{StaticResource AccentDark}"
+                               HorizontalOptions="Center" />
+
+            <CollectionView Grid.Row="2"
+                            x:Name="GatesView"
+                            ItemsSource="{Binding GatesFlights}"
+                            Margin="24,10,24,24"
+                            SelectionMode="None">
+                <CollectionView.EmptyViewTemplate>
+                    <DataTemplate>
+                        <VerticalStackLayout Padding="24,60" Spacing="12">
+                            <Border Style="{StaticResource GlassIconBadgeStyle}">
+                                <Label Text="🚪" FontSize="22" TextColor="{StaticResource AccentDark}" HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <Label Text="Sem portas atribuídas" Style="{StaticResource Title2Style}" HorizontalTextAlignment="Center" />
+                            <Label Text="Nenhum voo com porta atribuída de momento." Style="{StaticResource CaptionStyle}" HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </CollectionView.EmptyViewTemplate>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:FlightDto">
+                        <Border Style="{StaticResource CardStyle}" Margin="0,6">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Gate}" FontFamily="OpenSansSemibold" FontSize="24" TextColor="{StaticResource AccentDark}" />
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="1" Margin="14,0,0,0">
+                                    <Label Text="{Binding FlightNumber}" Style="{StaticResource BodyEmphasisStyle}" />
+                                    <Label Style="{StaticResource CaptionStyle}">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding Origin}" />
+                                                <Span Text=" → " />
+                                                <Span Text="{Binding Destination}" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="2">
+                                    <Label Text="{Binding DepartureTime, StringFormat='{0:HH:mm}'}" Style="{StaticResource BodyEmphasisStyle}" HorizontalTextAlignment="End" />
+                                    <Label Text="{Binding Status}" Style="{StaticResource FootnoteStyle}" TextColor="{StaticResource AccentDark}" HorizontalTextAlignment="End" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </Grid>
+    </RefreshView>
+</ContentPage>

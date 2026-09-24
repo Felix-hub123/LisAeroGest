@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="456" height="456" viewBox="0 0 456 456" version="1.1"
+     xmlns="http://www.w3.org/2000/svg">
+
+	<!-- Símbolo: avião estilizado a subir, com "L" de Lisboa -->
+	<g transform="translate(228, 228)">
+
+		<!-- Círculo exterior (glow) -->
+		<circle cx="0" cy="0" r="140" fill="none"
+                stroke="#B9F227" stroke-width="6" opacity="0.35"/>
+		<circle cx="0" cy="0" r="110" fill="none"
+                stroke="#B9F227" stroke-width="3" opacity="0.6"/>
+
+		<!-- Avião estilizado (triângulo alado) -->
+		<path d="M -80 30 L 80 -50 L 30 20 L 60 40 L -20 55 L -10 20 Z"
+              fill="#B9F227" />
+
+		<!-- Linha de horizonte -->
+		<line x1="-120" y1="70" x2="120" y2="70"
+              stroke="#B9F227" stroke-width="4" stroke-linecap="round"/>
+
+	</g>
+</svg>

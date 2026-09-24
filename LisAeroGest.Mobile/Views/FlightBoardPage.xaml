@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
+             xmlns:models="clr-namespace:LisAeroGest.Mobile.Models"
+             x:Class="LisAeroGest.Mobile.Views.FlightBoardPage"
+             x:DataType="vm:FlightBoardViewModel"
+             x:Name="FlightBoardPageRoot"
+             Title="Partidas"
+             Background="{AppThemeBinding Light={StaticResource AppBackgroundLightBrush}, Dark={StaticResource AppBackgroundGradientBrush}}">
+    <Grid RowDefinitions="Auto,Auto,*">
+        <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="18,24,18,10" Padding="16">
+            <VerticalStackLayout Spacing="12">
+                <Grid ColumnDefinitions="*,Auto"><VerticalStackLayout><Label Text="PARTIDAS" FontFamily="OpenSansSemibold" FontSize="15" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource TextSecondaryDark}}" /><Label Text="{Binding SelectedDateLabel}" Style="{StaticResource Title2Style}" /></VerticalStackLayout><Label Grid.Column="1" Text="{Binding SelectedDate, StringFormat='{0:dd MMM}'}" Style="{StaticResource CaptionStyle}" VerticalOptions="Center" /></Grid>
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10"><Border Style="{StaticResource InputCardStyle}"><SearchBar Placeholder="Origem" Text="{Binding FilterOrigin}" BackgroundColor="Transparent" /></Border><Border Grid.Column="1" Style="{StaticResource InputCardStyle}"><SearchBar Placeholder="Destino" Text="{Binding FilterDestination}" BackgroundColor="Transparent" /></Border></Grid>
+                <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="10"><Button Text="‹" Command="{Binding PreviousDayCommand}" Style="{StaticResource SecondaryButtonStyle}" /><Button Grid.Column="1" Text="Hoje" Command="{Binding GoToTodayCommand}" /><Button Grid.Column="2" Text="›" Command="{Binding NextDayCommand}" Style="{StaticResource SecondaryButtonStyle}" /></Grid>
+            </VerticalStackLayout>
+        </Border>
+        <ActivityIndicator Grid.Row="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{StaticResource AccentDark}" HorizontalOptions="Center" />
+        <RefreshView Grid.Row="2" Command="{Binding LoadDeparturesCommand}" IsRefreshing="{Binding IsBusy}">
+            <CollectionView ItemsSource="{Binding Departures}" SelectionMode="None">
+                <CollectionView.EmptyView><VerticalStackLayout Padding="24,60" Spacing="10"><Label Text="✈" FontSize="40" TextColor="{StaticResource AccentDark}" HorizontalOptions="Center" /><Label Text="Nenhum voo encontrado" Style="{StaticResource Title2Style}" HorizontalTextAlignment="Center" /><Label Text="Tenta alterar a data ou limpar os filtros." Style="{StaticResource CaptionStyle}" HorizontalTextAlignment="Center" /></VerticalStackLayout></CollectionView.EmptyView>
+                <CollectionView.ItemTemplate><DataTemplate x:DataType="models:FlightDto"><Border Style="{StaticResource CardStyle}" Margin="18,6" Padding="16"><Border.GestureRecognizers><TapGestureRecognizer Command="{Binding Source={x:Reference FlightBoardPageRoot}, Path=BindingContext.SelectFlightCommand}" CommandParameter="{Binding .}" /></Border.GestureRecognizers><Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto"><Label Text="{Binding FlightNumber}" FontFamily="OpenSansSemibold" FontSize="20" /><Label Grid.Column="1" Text="{Binding Status}" Style="{StaticResource FootnoteStyle}" TextColor="{StaticResource AccentDark}" /><Label Grid.Row="1" Text="{Binding Origin}" Style="{StaticResource CaptionStyle}" /><Label Grid.Row="1" Grid.Column="1" Text="→" FontSize="20" TextColor="{StaticResource AccentDark}" /><Label Grid.Row="2" Text="{Binding DepartureTime, StringFormat='Partida {0:HH:mm}'}" Style="{StaticResource FootnoteStyle}" /><Label Grid.Row="2" Grid.Column="1" Text="{Binding Destination}" Style="{StaticResource CaptionStyle}" HorizontalTextAlignment="End" /></Grid></Border></DataTemplate></CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</ContentPage>
