@@ -21,6 +21,7 @@ public partial class OperationsCenterPage : ContentPage
     private async Task LoadSummaryAsync()
     {
         var result = await _apiService.GetEmployeeOperationsSummaryAsync();
+
         if (!result.Success || result.Data == null)
             return;
 
@@ -29,10 +30,21 @@ public partial class OperationsCenterPage : ContentPage
         PendingCount.Text = result.Data.PendingCheckIns.ToString();
     }
 
-    private Task NavigateAsync(string route) => Shell.Current.GoToAsync(route);
-    private void OnFlightsClicked(object sender, EventArgs e) => _ = NavigateAsync("//FlightBoardPage");
-    private void OnPassengersClicked(object sender, EventArgs e) => _ = NavigateAsync(nameof(OperationsPassengersPage));
-    private void OnGatesClicked(object sender, EventArgs e) => _ = NavigateAsync(nameof(OperationsGatesPage));
-    private void OnCommunicationsClicked(object sender, EventArgs e) => _ = NavigateAsync(nameof(OperationsCommunicationsPage));
-    private void OnDeskClicked(object sender, EventArgs e) => _ = NavigateAsync(nameof(OperationsPassengersPage));
+    private Task NavigateAsync(string route) =>
+        Shell.Current.GoToAsync(route);
+
+    private void OnFlightsClicked(object sender, EventArgs e) =>
+        _ = NavigateAsync("//OperationsFlightsPage");
+
+    private void OnPassengersClicked(object sender, EventArgs e) =>
+        _ = NavigateAsync(nameof(OperationsPassengersPage));
+
+    private void OnGatesClicked(object sender, EventArgs e) =>
+        _ = NavigateAsync(nameof(OperationsGatesPage));
+
+    private void OnCommunicationsClicked(object sender, EventArgs e) =>
+        _ = NavigateAsync(nameof(OperationsCommunicationsPage));
+
+    private void OnDeskClicked(object sender, EventArgs e) =>
+        _ = NavigateAsync(nameof(OperationsPassengersPage));
 }

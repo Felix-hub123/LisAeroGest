@@ -81,6 +81,14 @@
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 
+		<MauiXaml Update="Views\OperationsFlightDetailsPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+
+		<MauiXaml Update="Views\OperationsFlightsPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+
 		<MauiXaml Update="Views\PaymentPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>

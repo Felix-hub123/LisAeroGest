@@ -1,71 +1,407 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:models="clr-namespace:LisAeroGest.Mobile.Models"
-             x:Class="LisAeroGest.Mobile.Views.OperationsGatesPage"
-             Title="Portas"
-             Background="{AppThemeBinding Light={StaticResource AppBackgroundLightBrush}, Dark={StaticResource AppBackgroundGradientBrush}}">
-    <RefreshView x:Name="Refresh" Refreshing="OnRefreshing">
-        <Grid RowDefinitions="Auto,Auto,*">
 
-            <VerticalStackLayout Grid.Row="0" Padding="24,32,24,10" Spacing="3">
-                <Label Text="PORTAS" FontFamily="OpenSansSemibold" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource TextSecondaryDark}}" />
-                <Label Text="Portas com voos atribuídos hoje" Style="{StaticResource TitleStyle}" />
-                <Label x:Name="StatusLabel" Text="A carregar…" Style="{StaticResource FootnoteStyle}" />
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
+    xmlns:models="clr-namespace:LisAeroGest.Mobile.Models"
+    x:Class="LisAeroGest.Mobile.Views.OperationsGatesPage"
+    x:DataType="vm:OperationsGatesViewModel"
+    x:Name="Root"
+    Title="Portas"
+    Background="{AppThemeBinding
+        Light={StaticResource AppBackgroundLightBrush},
+        Dark={StaticResource AppBackgroundGradientBrush}}">
+
+    <Grid>
+
+        <!-- ======================================= -->
+        <!-- CONTEÚDO PRINCIPAL                     -->
+        <!-- ======================================= -->
+
+        <RefreshView
+            x:Name="Refresh"
+            Refreshing="OnRefreshing">
+
+            <Grid RowDefinitions="Auto,Auto,*">
+
+                <!-- CABEÇALHO -->
+
+                <VerticalStackLayout
+                    Grid.Row="0"
+                    Padding="20,28,20,12"
+                    Spacing="5">
+
+                    <Label
+                        Text="OPERAÇÕES"
+                        FontFamily="OpenSansSemibold"
+                        FontSize="12"
+                        TextColor="{StaticResource AccentDark}" />
+
+                    <Label
+                        Text="Portas de embarque"
+                        Style="{StaticResource TitleStyle}" />
+
+                    <Label
+                        Text="Consulta e altera as portas atribuídas aos voos."
+                        Style="{StaticResource CaptionStyle}" />
+
+                    <Label
+                        Text="{Binding StatusLabel}"
+                        Style="{StaticResource FootnoteStyle}"
+                        Margin="0,5,0,0" />
+
+                    <!-- ERRO -->
+
+                    <Border
+                        IsVisible="{Binding HasError}"
+                        BackgroundColor="#33C62828"
+                        Stroke="#C62828"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 8"
+                        Padding="12"
+                        Margin="0,6,0,0">
+
+                        <Label
+                            Text="{Binding ErrorMessage}"
+                            FontSize="12"
+                            TextColor="{AppThemeBinding
+                                Light=#B71C1C,
+                                Dark=#FF8A80}" />
+
+                    </Border>
+
+                </VerticalStackLayout>
+
+
+                <!-- LOADING -->
+
+                <ActivityIndicator
+                    Grid.Row="1"
+                    IsRunning="{Binding IsBusy}"
+                    IsVisible="{Binding IsBusy}"
+                    Color="{StaticResource AccentDark}"
+                    HorizontalOptions="Center"
+                    Margin="0,5" />
+
+
+                <!-- VOOS -->
+
+                <CollectionView
+                    Grid.Row="2"
+                    ItemsSource="{Binding GatesFlights}"
+                    SelectionMode="None"
+                    Margin="20,6,20,24">
+
+                    <CollectionView.EmptyView>
+
+                        <VerticalStackLayout
+                            Padding="20,60"
+                            Spacing="10">
+
+                            <Label
+                                Text="🚪"
+                                FontSize="38"
+                                HorizontalOptions="Center" />
+
+                            <Label
+                                Text="Sem portas atribuídas"
+                                Style="{StaticResource Title2Style}"
+                                HorizontalTextAlignment="Center" />
+
+                            <Label
+                                Text="Não existem voos com porta atribuída neste momento."
+                                Style="{StaticResource CaptionStyle}"
+                                HorizontalTextAlignment="Center" />
+
+                        </VerticalStackLayout>
+
+                    </CollectionView.EmptyView>
+
+
+                    <CollectionView.ItemTemplate>
+
+                        <DataTemplate x:DataType="models:FlightDto">
+
+                            <Border
+                                Style="{StaticResource CardStyle}"
+                                Margin="0,6"
+                                Padding="17">
+
+                                <VerticalStackLayout Spacing="13">
+
+                                    <!-- PORTA + HORA -->
+
+                                    <Grid ColumnDefinitions="*,Auto">
+
+                                        <VerticalStackLayout Spacing="1">
+
+                                            <Label
+                                                Text="PORTA ATUAL"
+                                                Style="{StaticResource FootnoteStyle}" />
+
+                                            <Label
+                                                Text="{Binding Gate}"
+                                                FontFamily="OpenSansSemibold"
+                                                FontSize="26"
+                                                TextColor="{StaticResource AccentDark}" />
+
+                                        </VerticalStackLayout>
+
+                                        <VerticalStackLayout
+                                            Grid.Column="1"
+                                            HorizontalOptions="End">
+
+                                            <Label
+                                                Text="PARTIDA"
+                                                Style="{StaticResource FootnoteStyle}"
+                                                HorizontalTextAlignment="End" />
+
+                                            <Label
+                                                Text="{Binding DepartureTime,
+                                                    StringFormat='{0:HH:mm}'}"
+                                                FontFamily="OpenSansSemibold"
+                                                FontSize="19"
+                                                HorizontalTextAlignment="End" />
+
+                                        </VerticalStackLayout>
+
+                                    </Grid>
+
+
+                                    <BoxView
+                                        HeightRequest="1"
+                                        BackgroundColor="{AppThemeBinding
+                                            Light={StaticResource Border},
+                                            Dark={StaticResource BorderDark}}" />
+
+
+                                    <!-- VOO -->
+
+                                    <Grid ColumnDefinitions="*,Auto">
+
+                                        <VerticalStackLayout Spacing="3">
+
+                                            <Label
+                                                Text="{Binding FlightNumber}"
+                                                FontFamily="OpenSansSemibold"
+                                                FontSize="19" />
+
+                                            <Label
+                                                Style="{StaticResource CaptionStyle}">
+
+                                                <Label.FormattedText>
+
+                                                    <FormattedString>
+
+                                                        <Span
+                                                            Text="{Binding Origin}" />
+
+                                                        <Span Text="  →  " />
+
+                                                        <Span
+                                                            Text="{Binding Destination}" />
+
+                                                    </FormattedString>
+
+                                                </Label.FormattedText>
+
+                                            </Label>
+
+                                        </VerticalStackLayout>
+
+
+                                        <!-- ESTADO -->
+
+                                        <Border
+                                            Grid.Column="1"
+                                            Style="{StaticResource StatusBadgeStyle}"
+                                            Padding="9,5"
+                                            VerticalOptions="Center">
+
+                                            <Label
+                                                Text="{Binding Status}"
+                                                FontSize="10"
+                                                TextColor="{StaticResource AccentDark}" />
+
+                                        </Border>
+
+                                    </Grid>
+
+
+                                    <!-- AÇÃO -->
+
+                                    <Button
+                                        Text="Alterar porta"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        Command="{Binding
+                                            Source={x:Reference Root},
+                                            Path=BindingContext.OpenGateEditorCommand}"
+                                        CommandParameter="{Binding .}" />
+
+                                </VerticalStackLayout>
+
+                            </Border>
+
+                        </DataTemplate>
+
+                    </CollectionView.ItemTemplate>
+
+                </CollectionView>
+
+            </Grid>
+
+        </RefreshView>
+
+
+        <!-- ======================================= -->
+        <!-- FUNDO ESCURECIDO DO EDITOR              -->
+        <!-- ======================================= -->
+
+        <BoxView
+            IsVisible="{Binding IsGateEditorVisible}"
+            BackgroundColor="#99000000"
+            InputTransparent="False" />
+
+
+        <!-- ======================================= -->
+        <!-- EDITOR DE PORTA                         -->
+        <!-- ======================================= -->
+
+        <Border
+            IsVisible="{Binding IsGateEditorVisible}"
+            VerticalOptions="End"
+            Margin="16,0,16,20"
+            Padding="20"
+            Stroke="{StaticResource AccentDark}"
+            StrokeThickness="1"
+            StrokeShape="RoundRectangle 18"
+            BackgroundColor="{AppThemeBinding
+                Light=#FFFFFF,
+                Dark=#17191D}">
+
+            <VerticalStackLayout Spacing="16">
+
+                <!-- CABEÇALHO -->
+
+                <Grid ColumnDefinitions="*,Auto">
+
+                    <VerticalStackLayout Spacing="2">
+
+                        <Label
+                            Text="ALTERAR PORTA"
+                            FontFamily="OpenSansSemibold"
+                            FontSize="11"
+                            TextColor="{StaticResource AccentDark}" />
+
+                        <Label
+                            Text="{Binding SelectedFlightTitle}"
+                            FontFamily="OpenSansSemibold"
+                            FontSize="19" />
+
+                    </VerticalStackLayout>
+
+                    <Button
+                        Grid.Column="1"
+                        Text="✕"
+                        Command="{Binding CancelGateChangeCommand}"
+                        Style="{StaticResource TextButtonStyle}"
+                        FontSize="18"
+                        Padding="10,2" />
+
+                </Grid>
+
+
+                <!-- PORTA ATUAL -->
+
+                <Border
+                    Style="{StaticResource InputCardStyle}"
+                    Padding="13">
+
+                    <Grid ColumnDefinitions="*,Auto">
+
+                        <VerticalStackLayout>
+
+                            <Label
+                                Text="Porta atual"
+                                Style="{StaticResource FootnoteStyle}" />
+
+                            <Label
+                                Text="{Binding CurrentGate}"
+                                FontFamily="OpenSansSemibold"
+                                FontSize="20"
+                                TextColor="{StaticResource AccentDark}" />
+
+                        </VerticalStackLayout>
+
+                        <Label
+                            Grid.Column="1"
+                            Text="🚪"
+                            FontSize="24"
+                            VerticalOptions="Center" />
+
+                    </Grid>
+
+                </Border>
+
+
+                <!-- NOVA PORTA -->
+
+                <VerticalStackLayout Spacing="7">
+
+                    <Label
+                        Text="Nova porta"
+                        FontFamily="OpenSansSemibold"
+                        FontSize="14" />
+
+                    <Border
+                        Style="{StaticResource InputCardStyle}"
+                        Padding="5">
+
+                        <Picker
+                            Title="Selecionar porta"
+                            ItemsSource="{Binding AvailableGates}"
+                            SelectedItem="{Binding SelectedGate}"
+                            ItemDisplayBinding="{Binding DisplayName}" />
+
+                    </Border>
+
+                </VerticalStackLayout>
+
+
+                <!-- ERRO -->
+
+                <Label
+                    Text="{Binding ErrorMessage}"
+                    IsVisible="{Binding HasError}"
+                    TextColor="{AppThemeBinding
+                        Light={StaticResource Error},
+                        Dark={StaticResource ErrorDark}}"
+                    FontSize="12" />
+
+
+                <!-- BOTÕES -->
+
+                <Grid
+                    ColumnDefinitions="*,*"
+                    ColumnSpacing="10">
+
+                    <Button
+                        Text="Cancelar"
+                        Command="{Binding CancelGateChangeCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+
+                    <Button
+                        Grid.Column="1"
+                        Text="Confirmar"
+                        Command="{Binding ConfirmGateChangeCommand}" />
+
+                </Grid>
+
             </VerticalStackLayout>
 
-            <ActivityIndicator Grid.Row="1"
-                               x:Name="BusyIndicator"
-                               IsVisible="False"
-                               IsRunning="False"
-                               Color="{StaticResource AccentDark}"
-                               HorizontalOptions="Center" />
+        </Border>
 
-            <CollectionView Grid.Row="2"
-                            x:Name="GatesView"
-                            ItemsSource="{Binding GatesFlights}"
-                            Margin="24,10,24,24"
-                            SelectionMode="None">
-                <CollectionView.EmptyViewTemplate>
-                    <DataTemplate>
-                        <VerticalStackLayout Padding="24,60" Spacing="12">
-                            <Border Style="{StaticResource GlassIconBadgeStyle}">
-                                <Label Text="🚪" FontSize="22" TextColor="{StaticResource AccentDark}" HorizontalOptions="Center" VerticalOptions="Center" />
-                            </Border>
-                            <Label Text="Sem portas atribuídas" Style="{StaticResource Title2Style}" HorizontalTextAlignment="Center" />
-                            <Label Text="Nenhum voo com porta atribuída de momento." Style="{StaticResource CaptionStyle}" HorizontalTextAlignment="Center" />
-                        </VerticalStackLayout>
-                    </DataTemplate>
-                </CollectionView.EmptyViewTemplate>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:FlightDto">
-                        <Border Style="{StaticResource CardStyle}" Margin="0,6">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                <VerticalStackLayout>
-                                    <Label Text="{Binding Gate}" FontFamily="OpenSansSemibold" FontSize="24" TextColor="{StaticResource AccentDark}" />
-                                </VerticalStackLayout>
-                                <VerticalStackLayout Grid.Column="1" Margin="14,0,0,0">
-                                    <Label Text="{Binding FlightNumber}" Style="{StaticResource BodyEmphasisStyle}" />
-                                    <Label Style="{StaticResource CaptionStyle}">
-                                        <Label.FormattedText>
-                                            <FormattedString>
-                                                <Span Text="{Binding Origin}" />
-                                                <Span Text=" → " />
-                                                <Span Text="{Binding Destination}" />
-                                            </FormattedString>
-                                        </Label.FormattedText>
-                                    </Label>
-                                </VerticalStackLayout>
-                                <VerticalStackLayout Grid.Column="2">
-                                    <Label Text="{Binding DepartureTime, StringFormat='{0:HH:mm}'}" Style="{StaticResource BodyEmphasisStyle}" HorizontalTextAlignment="End" />
-                                    <Label Text="{Binding Status}" Style="{StaticResource FootnoteStyle}" TextColor="{StaticResource AccentDark}" HorizontalTextAlignment="End" />
-                                </VerticalStackLayout>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+    </Grid>
 
-        </Grid>
-    </RefreshView>
 </ContentPage>

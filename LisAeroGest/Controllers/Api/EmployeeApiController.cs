@@ -666,5 +666,91 @@ namespace LisAeroGest.Controllers.Api
         }
 
 
+
+        // ═══════════════════════════════════════════════════════════
+        // DETALHES OPERACIONAIS DO VOO
+        // GET: /api/employee/flights/{flightId}/operation
+        // ═══════════════════════════════════════════════════════════
+
+        [HttpGet("flights/{flightId:int}/operation")]
+        public async Task<IActionResult> GetFlightOperation(int flightId)
+        {
+            var flight = await _flightRepository
+                .GetAllQueryable()
+                .Include(f => f.OriginAirport)
+                .Include(f => f.DestinationAirport)
+                .Include(f => f.Gate)
+                .FirstOrDefaultAsync(f =>
+                    f.Id == flightId &&
+                    !f.WasDeleted);
+
+            if (flight == null)
+            {
+                return NotFound(new
+                {
+                    message = "Voo não encontrado."
+                });
+            }
+
+            var tickets = await _ticketRepository
+                .GetAllQueryable()
+                .Include(t => t.Passenger)
+                .Include(t => t.Seat)
+                .Where(t =>
+                    !t.WasDeleted &&
+                    t.FlightId == flightId &&
+                    t.Status != "Cancelled")
+                .OrderBy(t => t.Passenger!.FirstName)
+                .ThenBy(t => t.Passenger!.LastName)
+                .ToListAsync();
+
+            var totalPassengers = tickets.Count;
+
+            var checkedIn = tickets.Count(t =>
+                t.Status == "CheckedIn");
+
+            var pendingCheckIns = tickets.Count(t =>
+                t.Status == "Paid");
+
+            var passengers = tickets.Select(t => new
+            {
+                ticketId = t.Id,
+
+                passengerName = t.Passenger != null
+                    ? $"{t.Passenger.FirstName} {t.Passenger.LastName}".Trim()
+                    : "Passageiro",
+
+                documentNumber = t.Passenger?.DocumentNumber ?? "",
+
+                seat = t.Seat?.Code ?? "—",
+
+                status = t.Status,
+
+                checkedIn = t.Status == "CheckedIn"
+            })
+            .ToList();
+
+            return Ok(new
+            {
+                flightId = flight.Id,
+                flightNumber = flight.FlightNumber,
+
+                origin = flight.OriginAirport?.City ?? "—",
+                destination = flight.DestinationAirport?.City ?? "—",
+
+                departureTime = flight.DepartureTime,
+
+                gate = flight.Gate?.GateNumber ?? "TBA",
+
+                status = flight.Status,
+
+                totalPassengers,
+                checkedIn,
+                pendingCheckIns,
+
+                passengers
+            });
+        }
+
     }
 }

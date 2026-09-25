@@ -24,7 +24,10 @@
 
     <TabBar x:Name="EmployeeTabs" IsVisible="False">
         <ShellContent Title="Operações" Icon="nav_home.svg" ContentTemplate="{DataTemplate views:OperationsCenterPage}" Route="OperationsCenterPage" />
-        <ShellContent Title="Voos" Icon="nav_trip.svg" ContentTemplate="{DataTemplate views:FlightBoardPage}" Route="FlightBoardPage" />
+        <ShellContent Title="Voos"
+              Icon="nav_trip.svg"
+              ContentTemplate="{DataTemplate views:OperationsFlightsPage}"
+              Route="OperationsFlightsPage" />
         <ShellContent Title="Passageiros" Icon="nav_profile.svg" ContentTemplate="{DataTemplate views:OperationsPassengersPage}" Route="OperationsPassengersPage" />
         <ShellContent Title="Portas" Icon="nav_tickets.svg" ContentTemplate="{DataTemplate views:OperationsGatesPage}" Route="OperationsGatesPage" />
         <ShellContent Title="Comunicações" Icon="nav_notifications.svg" ContentTemplate="{DataTemplate views:OperationsCommunicationsPage}" Route="OperationsCommunicationsPage" />

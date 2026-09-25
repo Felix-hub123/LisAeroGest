@@ -559,6 +559,14 @@ namespace LisAeroGest.Mobile.Services
         public Task<ApiResult<EmployeeOperationsSummaryDto>> GetEmployeeOperationsSummaryAsync()
             => GetAsync<EmployeeOperationsSummaryDto>("api/employee/summary");
 
+
+        public Task<ApiResult<EmployeeFlightOperationDto>>
+             GetEmployeeFlightOperationAsync(int flightId)
+        {
+            return GetAsync<EmployeeFlightOperationDto>(
+                $"api/employee/flights/{flightId}/operation");
+        }
+
         public async Task<EmployeeCheckInResultDto> EmployeeCheckInAsync(int ticketId)
         {
             if (!HasInternet())
@@ -615,9 +623,9 @@ namespace LisAeroGest.Mobile.Services
 
 
         public async Task<ApiResult<MbWayPaymentResultDto>>
-    PayWithMbWayAsync(
-        int ticketId,
-        string phoneNumber)
+            PayWithMbWayAsync(
+                int ticketId,
+                string phoneNumber)
         {
             if (!HasInternet())
             {

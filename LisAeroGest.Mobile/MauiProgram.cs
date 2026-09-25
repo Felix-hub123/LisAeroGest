@@ -66,6 +66,8 @@ namespace LisAeroGest.Mobile
             builder.Services.AddTransient<SettingsViewModel>();
             builder.Services.AddTransient<HistoryViewModel>();
             builder.Services.AddTransient<FavoritesViewModel>();
+            builder.Services.AddTransient<OperationsFlightsViewModel>();
+            builder.Services.AddTransient<OperationsFlightDetailsViewModel>();
 
             // ── Views ──────────────────────────────────────────────────────
             builder.Services.AddTransient<AppShell>();
@@ -89,6 +91,8 @@ namespace LisAeroGest.Mobile
             builder.Services.AddTransient<FavoritesPage>();
             builder.Services.AddTransient<PassengerFlightsPage>();
             builder.Services.AddTransient<CheckInPage>();
+            builder.Services.AddTransient<OperationsFlightsPage>();
+            builder.Services.AddTransient<OperationsFlightDetailsPage>();
 
             return builder.Build();
         }

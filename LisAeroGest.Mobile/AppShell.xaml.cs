@@ -18,8 +18,8 @@ namespace LisAeroGest.Mobile
 
             // Passenger routes
             Routing.RegisterRoute(
-     nameof(CheckInPage),
-     new DiRouteFactory<CheckInPage>());
+             nameof(CheckInPage),
+             new DiRouteFactory<CheckInPage>());
             Routing.RegisterRoute(nameof(FlightDetailsPage), typeof(FlightDetailsPage));
             Routing.RegisterRoute(nameof(SelectSeatPage), typeof(SelectSeatPage));
             Routing.RegisterRoute(nameof(PaymentPage), typeof(PaymentPage));
@@ -40,6 +40,10 @@ namespace LisAeroGest.Mobile
             Routing.RegisterRoute(
                 nameof(OperationsCommunicationsPage),
                 typeof(OperationsCommunicationsPage));
+
+            Routing.RegisterRoute(
+                nameof(OperationsFlightDetailsPage),
+                new DiRouteFactory<OperationsFlightDetailsPage>());
 
             // Listen for HTTP 401 responses
             AuthTokenHandler.UnauthorizedDetected += OnUnauthorizedDetected;
