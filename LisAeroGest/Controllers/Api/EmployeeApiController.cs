@@ -21,19 +21,22 @@ namespace LisAeroGest.Controllers.Api
         private readonly IPassengerRepository _passengerRepository;
         private readonly IFlightRepository _flightRepository;
         private readonly IGateRepository _gateRepository;
+        private readonly INotificationRepository _notificationRepository;
 
         public EmployeeApiController(
             ITicketRepository ticketRepository,
             IBoardingPassRepository boardingPassRepository,
             IPassengerRepository passengerRepository,
             IFlightRepository flightRepository,
-            IGateRepository gateRepository)
+            IGateRepository gateRepository,
+            INotificationRepository notificationRepository)
         {
             _ticketRepository = ticketRepository;
             _boardingPassRepository = boardingPassRepository;
             _passengerRepository = passengerRepository;
             _flightRepository = flightRepository;
             _gateRepository = gateRepository;
+            _notificationRepository = notificationRepository;
         }
 
 
@@ -750,6 +753,149 @@ namespace LisAeroGest.Controllers.Api
 
                 passengers
             });
+        }
+
+
+        // =============================================================
+        // COMUNICAÇÃO PARA PASSAGEIROS DE UM VOO
+        // POST: /api/employee/flights/{flightId}/communications
+        // =============================================================
+
+        [HttpPost("flights/{flightId:int}/communications")]
+        public async Task<IActionResult> SendFlightCommunication(
+            int flightId,
+            [FromBody] FlightCommunicationRequest request)
+        {
+            if (flightId <= 0)
+            {
+                return BadRequest(new
+                {
+                    message = "Voo inválido."
+                });
+            }
+
+            if (request == null ||
+                string.IsNullOrWhiteSpace(request.Message))
+            {
+                return BadRequest(new
+                {
+                    message = "A mensagem é obrigatória."
+                });
+            }
+
+            var message = request.Message.Trim();
+
+            if (message.Length > 500)
+            {
+                return BadRequest(new
+                {
+                    message = "A mensagem não pode exceder 500 caracteres."
+                });
+            }
+
+            var flight = await _flightRepository
+                .GetAllQueryable()
+                .FirstOrDefaultAsync(f =>
+                    f.Id == flightId &&
+                    !f.WasDeleted);
+
+            if (flight == null)
+            {
+                return NotFound(new
+                {
+                    message = "Voo não encontrado."
+                });
+            }
+
+            var tickets = await _ticketRepository
+                .GetAllQueryable()
+                .Include(t => t.Passenger)
+                .Where(t =>
+                    t.FlightId == flightId &&
+                    !t.WasDeleted &&
+                    t.Status != "Cancelled" &&
+                    t.Status != "Expired")
+                .ToListAsync();
+
+            var userIds = tickets
+                .Where(t =>
+                    t.Passenger != null &&
+                    !t.Passenger.WasDeleted &&
+                    !string.IsNullOrWhiteSpace(
+                        t.Passenger.UserId))
+                .Select(t => t.Passenger!.UserId!)
+                .Distinct()
+                .ToList();
+
+            if (userIds.Count == 0)
+            {
+                return BadRequest(new
+                {
+                    message =
+                        "Este voo não possui passageiros disponíveis para receber a comunicação."
+                });
+            }
+
+            var type = string.IsNullOrWhiteSpace(request.Type)
+                ? "Info"
+                : request.Type.Trim();
+
+            var title = type switch
+            {
+                "Gate" => $"Porta de embarque · {flight.FlightNumber}",
+                "Boarding" => $"Embarque · {flight.FlightNumber}",
+                "Delay" => $"Informação do voo · {flight.FlightNumber}",
+                _ => $"Informação · {flight.FlightNumber}"
+            };
+
+            foreach (var userId in userIds)
+            {
+                var notification = new Notification
+                {
+                    UserId = userId,
+
+                    Title = title,
+
+                    Message = message,
+
+                    Type = type,
+
+                    Icon = "bi-megaphone",
+
+                    ColorClass = "text-primary",
+
+                    Link = null,
+
+                    IsRead = false,
+
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _notificationRepository
+                    .AddAsync(notification);
+            }
+
+            await _notificationRepository.SaveAsync();
+
+            return Ok(new
+            {
+                success = true,
+                recipients = userIds.Count,
+                message =
+                    $"Comunicação enviada a {userIds.Count} passageiro(s)."
+            });
+        }
+
+
+        // =============================================================
+        // REQUEST
+        // =============================================================
+
+        public class FlightCommunicationRequest
+        {
+            public string Type { get; set; } = "Info";
+
+            public string Message { get; set; } = string.Empty;
         }
 
     }

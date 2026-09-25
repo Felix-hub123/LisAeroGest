@@ -712,5 +712,133 @@ namespace LisAeroGest.Mobile.Services
                     "Erro de ligação ao servidor.");
             }
         }
+
+
+        // ═══════════════════════════════════════════════════════════
+        // COMUNICAÇÕES DO VOO - FUNCIONÁRIO
+        // ═══════════════════════════════════════════════════════════
+
+        public async Task<ApiResult<FlightCommunicationResultDto>>
+            SendFlightCommunicationAsync(
+                int flightId,
+                FlightCommunicationRequestDto request)
+        {
+            if (!HasInternet())
+            {
+                return ApiResult<FlightCommunicationResultDto>.Fail(
+                    "Sem ligação à Internet.");
+            }
+
+            try
+            {
+                using var cts =
+                    new CancellationTokenSource(
+                        TimeSpan.FromSeconds(15));
+
+                var response =
+                    await _httpClient.PostAsJsonAsync(
+                        $"api/employee/flights/{flightId}/communications",
+                        request,
+                        cts.Token);
+
+                var content =
+                    await response.Content.ReadAsStringAsync(
+                        cts.Token);
+
+                Debug.WriteLine(
+                    $"[ApiService] Communication status: " +
+                    $"{(int)response.StatusCode}");
+
+                Debug.WriteLine(
+                    $"[ApiService] Communication response: " +
+                    $"{content}");
+
+                // ERRO DO BACKEND
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorMessage =
+                        "Não foi possível enviar a comunicação.";
+
+                    if (!string.IsNullOrWhiteSpace(content))
+                    {
+                        try
+                        {
+                            var error =
+                                System.Text.Json.JsonSerializer
+                                    .Deserialize<ErrorResponseDto>(
+                                        content,
+                                        new System.Text.Json.JsonSerializerOptions
+                                        {
+                                            PropertyNameCaseInsensitive = true
+                                        });
+
+                            errorMessage =
+                                error?.Message ??
+                                errorMessage;
+                        }
+                        catch
+                        {
+                            // Mantém a mensagem padrão.
+                        }
+                    }
+
+                    return ApiResult<FlightCommunicationResultDto>
+                        .Fail(errorMessage);
+                }
+
+                // RESPOSTA VAZIA
+                if (string.IsNullOrWhiteSpace(content))
+                {
+                    return ApiResult<FlightCommunicationResultDto>
+                        .Fail(
+                            "O servidor não devolveu o resultado da comunicação.");
+                }
+
+                // CONVERTER JSON
+                var data =
+                    System.Text.Json.JsonSerializer
+                        .Deserialize<FlightCommunicationResultDto>(
+                            content,
+                            new System.Text.Json.JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true
+                            });
+
+                if (data == null)
+                {
+                    return ApiResult<FlightCommunicationResultDto>
+                        .Fail(
+                            "Não foi possível interpretar a resposta do servidor.");
+                }
+
+                return ApiResult<FlightCommunicationResultDto>
+                    .Ok(data);
+            }
+            catch (TaskCanceledException)
+            {
+                return ApiResult<FlightCommunicationResultDto>
+                    .Fail(
+                        "O servidor demorou demasiado tempo a responder.");
+            }
+            catch (HttpRequestException ex)
+            {
+                Debug.WriteLine(
+                    $"[ApiService] Communication HTTP error: " +
+                    $"{ex.Message}");
+
+                return ApiResult<FlightCommunicationResultDto>
+                    .Fail(
+                        "Erro de ligação ao servidor.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(
+                    $"[ApiService] Communication error: {ex}");
+
+                return ApiResult<FlightCommunicationResultDto>
+                    .Fail(
+                        "Ocorreu um erro ao enviar a comunicação.");
+            }
+        }
     }
 }

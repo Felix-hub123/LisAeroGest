@@ -13,4 +13,16 @@ public class EmployeeFlightPassengerDto
     public string Status { get; set; } = string.Empty;
 
     public bool CheckedIn { get; set; }
+
+    public bool CanCheckIn =>
+        !CheckedIn &&
+        string.Equals(
+            Status,
+            "Paid",
+            StringComparison.OrdinalIgnoreCase);
+
+    public string CheckInButtonText =>
+        CheckedIn
+            ? "✓ Concluído"
+            : "Fazer check-in";
 }

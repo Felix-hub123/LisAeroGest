@@ -2,9 +2,8 @@
 using CommunityToolkit.Mvvm.Input;
 using LisAeroGest.Mobile.Models;
 using LisAeroGest.Mobile.Services;
-using System.Collections.ObjectModel;
 using LisAeroGest.Mobile.Views;
-
+using System.Collections.ObjectModel;
 
 namespace LisAeroGest.Mobile.ViewModels;
 
@@ -25,9 +24,8 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
     [ObservableProperty]
     private EmployeeFlightOperationDto? _operation;
 
-    public ObservableCollection<EmployeeFlightPassengerDto>
-        Passengers
-    { get; } = new();
+    public ObservableCollection<EmployeeFlightPassengerDto> Passengers { get; }
+        = new();
 
     public bool HasError =>
         !string.IsNullOrWhiteSpace(ErrorMessage);
@@ -35,9 +33,22 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
     public bool HasOperation =>
         Operation != null;
 
-    public OperationsFlightDetailsViewModel(ApiService apiService)
+    public bool HasPassengers =>
+        Passengers.Count > 0;
+
+    public bool HasNoPassengers =>
+        Passengers.Count == 0;
+
+    public OperationsFlightDetailsViewModel(
+        ApiService apiService)
     {
         _apiService = apiService;
+
+        Passengers.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasPassengers));
+            OnPropertyChanged(nameof(HasNoPassengers));
+        };
     }
 
     partial void OnErrorMessageChanged(string value)
@@ -45,10 +56,15 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
         OnPropertyChanged(nameof(HasError));
     }
 
-    partial void OnOperationChanged(EmployeeFlightOperationDto? value)
+    partial void OnOperationChanged(
+        EmployeeFlightOperationDto? value)
     {
         OnPropertyChanged(nameof(HasOperation));
     }
+
+    // =========================================================
+    // CARREGAR OPERAÇÃO
+    // =========================================================
 
     [RelayCommand]
     public async Task LoadAsync()
@@ -62,10 +78,12 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
             ErrorMessage = string.Empty;
 
             var result =
-                await _apiService.GetEmployeeFlightOperationAsync(
-                    FlightId);
+                await _apiService
+                    .GetEmployeeFlightOperationAsync(
+                        FlightId);
 
-            if (!result.Success || result.Data == null)
+            if (!result.Success ||
+                result.Data == null)
             {
                 ErrorMessage =
                     result.ErrorMessage ??
@@ -78,10 +96,16 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
 
             Passengers.Clear();
 
-            foreach (var passenger in result.Data.Passengers)
+            foreach (var passenger
+                     in result.Data.Passengers)
             {
                 Passengers.Add(passenger);
             }
+        }
+        catch (Exception)
+        {
+            ErrorMessage =
+                "Ocorreu um erro ao carregar a operação.";
         }
         finally
         {
@@ -89,20 +113,90 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
         }
     }
 
+    // =========================================================
+    // CHECK-IN DO PASSAGEIRO
+    // =========================================================
+
     [RelayCommand]
-    private async Task OpenPassengersAsync()
+    private async Task CheckInPassengerAsync(
+        EmployeeFlightPassengerDto? passenger)
+    {
+        if (passenger == null)
+            return;
+
+        if (!passenger.CanCheckIn)
+        {
+            await Shell.Current.DisplayAlert(
+                "Check-in",
+                "Este passageiro não está disponível para check-in.",
+                "OK");
+
+            return;
+        }
+
+        var confirmed =
+            await Shell.Current.DisplayAlert(
+                "Confirmar check-in",
+                $"Fazer check-in de {passenger.PassengerName}?",
+                "Confirmar",
+                "Cancelar");
+
+        if (!confirmed)
+            return;
+
+        try
+        {
+            IsBusy = true;
+
+            var result =
+                await _apiService.EmployeeCheckInAsync(
+                    passenger.TicketId);
+
+            if (!result.Success)
+            {
+                await Shell.Current.DisplayAlert(
+                    "Erro",
+                    result.ErrorMessage ??
+                    "Não foi possível realizar o check-in.",
+                    "OK");
+
+                return;
+            }
+
+            await Shell.Current.DisplayAlert(
+                "Check-in concluído",
+                $"Check-in de {passenger.PassengerName} " +
+                "realizado com sucesso.",
+                "OK");
+        }
+        catch (Exception)
+        {
+            await Shell.Current.DisplayAlert(
+                "Erro",
+                "Ocorreu um erro ao realizar o check-in.",
+                "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+
+        // Atualizar dados depois do check-in.
+        await LoadAsync();
+    }
+
+    // =========================================================
+    // GERIR PORTA DESTE VOO
+    // =========================================================
+
+    [RelayCommand]
+    private async Task OpenGatesAsync()
     {
         if (Operation == null)
             return;
 
         await Shell.Current.GoToAsync(
-            nameof(OperationsPassengersPage));
-    }
-
-    [RelayCommand]
-    private async Task OpenGatesAsync()
-    {
-        await Shell.Current.GoToAsync(
-            nameof(OperationsGatesPage));
+            $"{nameof(OperationsGatesPage)}" +
+            $"?flightId={Operation.FlightId}");
     }
 }

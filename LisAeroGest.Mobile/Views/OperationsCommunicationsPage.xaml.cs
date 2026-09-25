@@ -2,19 +2,45 @@ using LisAeroGest.Mobile.ViewModels;
 
 namespace LisAeroGest.Mobile.Views;
 
-public partial class OperationsCommunicationsPage : ContentPage
+public partial class OperationsCommunicationsPage :
+    ContentPage,
+    IQueryAttributable
 {
     private readonly OperationsCommunicationsViewModel _viewModel;
 
-    public OperationsCommunicationsPage(OperationsCommunicationsViewModel viewModel)
+    private bool _hasLoaded;
+
+    public OperationsCommunicationsPage(
+        OperationsCommunicationsViewModel viewModel)
     {
         InitializeComponent();
+
         _viewModel = viewModel;
         BindingContext = _viewModel;
     }
 
-    private async void OnAlertsClicked(object sender, EventArgs e)
+    public void ApplyQueryAttributes(
+        IDictionary<string, object> query)
     {
-        await Shell.Current.GoToAsync("//NotificationsPage");
+        if (query.TryGetValue("flightId", out var value) &&
+            int.TryParse(value?.ToString(), out var flightId))
+        {
+            _viewModel.FlightId = flightId;
+            _hasLoaded = false;
+        }
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+
+        if (!_hasLoaded)
+        {
+            _hasLoaded = true;
+
+            await _viewModel
+                .LoadCommand
+                .ExecuteAsync(null);
+        }
     }
 }

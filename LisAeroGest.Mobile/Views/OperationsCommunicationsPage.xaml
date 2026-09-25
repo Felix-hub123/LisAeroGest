@@ -1,8 +1,169 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="LisAeroGest.Mobile.Views.OperationsCommunicationsPage"
-             Title="Comunicações"
-             Background="{AppThemeBinding Light={StaticResource AppBackgroundLightBrush}, Dark={StaticResource AppBackgroundGradientBrush}}">
-    <ScrollView><VerticalStackLayout Padding="24,32,24,28" Spacing="18"><Label Text="COMUNICAÇÕES" FontFamily="OpenSansSemibold" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource TextSecondaryDark}}" /><Label Text="Avisos da equipa" Style="{StaticResource TitleStyle}" /><Border Style="{StaticResource CardElevatedStyle}"><VerticalStackLayout Spacing="12"><Border Style="{StaticResource GlassIconBadgeStyle}"><Label Text="!" FontSize="24" TextColor="{StaticResource AccentDark}" HorizontalOptions="Center" VerticalOptions="Center" /></Border><Label Text="Canal operacional" Style="{StaticResource Title2Style}" HorizontalTextAlignment="Center" /><Label Text="As comunicações e alertas do turno aparecem aqui, alinhados com as notificações do portal web." Style="{StaticResource CaptionStyle}" HorizontalTextAlignment="Center" /></VerticalStackLayout></Border><Button Text="Ver alertas do turno" Clicked="OnAlertsClicked" /></VerticalStackLayout></ScrollView>
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
+    x:Class="LisAeroGest.Mobile.Views.OperationsCommunicationsPage"
+    x:DataType="vm:OperationsCommunicationsViewModel"
+    Title="Comunicações"
+    Background="{AppThemeBinding
+        Light={StaticResource AppBackgroundLightBrush},
+        Dark={StaticResource AppBackgroundGradientBrush}}">
+
+    <ScrollView>
+
+        <VerticalStackLayout
+            Padding="24,28,24,35"
+            Spacing="18">
+
+            <!-- CABEÇALHO -->
+
+            <VerticalStackLayout Spacing="5">
+
+                <Label
+                    Text="CENTRO DE OPERAÇÕES"
+                    FontFamily="OpenSansSemibold"
+                    FontSize="12"
+                    TextColor="{StaticResource AccentDark}" />
+
+                <Label
+                    Text="Comunicações"
+                    Style="{StaticResource TitleStyle}" />
+
+                <Label
+                    Text="Envia avisos operacionais aos passageiros de um voo."
+                    Style="{StaticResource CaptionStyle}" />
+
+            </VerticalStackLayout>
+
+
+            <!-- CARREGAMENTO -->
+
+            <ActivityIndicator
+                IsRunning="{Binding IsBusy}"
+                IsVisible="{Binding IsBusy}"
+                Color="{StaticResource AccentDark}" />
+
+
+            <!-- ERRO -->
+
+            <Border
+                IsVisible="{Binding HasError}"
+                BackgroundColor="#33C62828"
+                Stroke="#C62828"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 10"
+                Padding="12">
+
+                <Label
+                    Text="{Binding ErrorMessage}"
+                    FontSize="12"
+                    TextColor="{AppThemeBinding
+                        Light=#B71C1C,
+                        Dark=#FF8A80}" />
+
+            </Border>
+
+
+            <!-- SELECIONAR VOO -->
+
+            <Border Style="{StaticResource CardElevatedStyle}">
+
+                <VerticalStackLayout Spacing="12">
+
+                    <Label
+                        Text="VOO"
+                        Style="{StaticResource FootnoteStyle}" />
+
+                    <Picker
+                        Title="Selecionar voo"
+                        ItemsSource="{Binding Flights}"
+                        SelectedItem="{Binding SelectedFlight}"
+                        ItemDisplayBinding="{Binding FlightNumber}" />
+
+                    <Label
+                        Text="{Binding SelectedFlightTitle}"
+                        FontFamily="OpenSansSemibold"
+                        FontSize="17" />
+
+                </VerticalStackLayout>
+
+            </Border>
+
+
+            <!-- COMUNICAÇÃO -->
+
+            <Border Style="{StaticResource CardStyle}">
+
+                <VerticalStackLayout Spacing="14">
+
+                    <Label
+                        Text="Nova comunicação"
+                        Style="{StaticResource Title2Style}" />
+
+
+                    <!-- TIPO -->
+
+                    <VerticalStackLayout Spacing="6">
+
+                        <Label
+                            Text="Tipo"
+                            Style="{StaticResource FootnoteStyle}" />
+
+                        <Picker
+                            Title="Tipo de comunicação"
+                            ItemsSource="{Binding CommunicationTypes}"
+                            SelectedItem="{Binding SelectedType}" />
+
+                    </VerticalStackLayout>
+
+
+                    <!-- MENSAGEM -->
+
+                    <VerticalStackLayout Spacing="6">
+
+                        <Label
+                            Text="Mensagem"
+                            Style="{StaticResource FootnoteStyle}" />
+
+                        <Editor
+                            Text="{Binding Message}"
+                            Placeholder="Escreva o aviso para os passageiros..."
+                            AutoSize="TextChanges"
+                            MinimumHeightRequest="120"
+                            MaxLength="500" />
+
+                        <Label
+                            Text="Máximo de 500 caracteres."
+                            Style="{StaticResource CaptionStyle}" />
+
+                    </VerticalStackLayout>
+
+                </VerticalStackLayout>
+
+            </Border>
+
+
+            <!-- RESULTADO -->
+
+            <Label
+                Text="{Binding StatusLabel}"
+                FontFamily="OpenSansSemibold"
+                FontSize="13"
+                TextColor="{StaticResource AccentDark}"
+                HorizontalTextAlignment="Center" />
+
+
+            <!-- ENVIAR -->
+
+            <Button
+                Text="📢  Enviar aos passageiros"
+                Command="{Binding SendCommand}"
+                IsEnabled="{Binding HasSelectedFlight}" />
+
+        </VerticalStackLayout>
+
+    </ScrollView>
+
 </ContentPage>

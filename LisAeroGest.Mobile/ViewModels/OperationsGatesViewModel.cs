@@ -11,6 +11,10 @@ public partial class OperationsGatesViewModel : ObservableObject
 {
     private readonly ApiService _apiService;
 
+    // ID recebido através da página de operação.
+    [ObservableProperty]
+    private int _flightId;
+
     [ObservableProperty]
     private string _statusLabel = "A carregar…";
 
@@ -32,29 +36,39 @@ public partial class OperationsGatesViewModel : ObservableObject
     [ObservableProperty]
     private bool _hasError;
 
-    public ObservableCollection<FlightDto> GatesFlights { get; } = new();
+    public ObservableCollection<FlightDto> GatesFlights { get; }
+        = new();
 
-    public ObservableCollection<GateDto> AvailableGates { get; } = new();
+    public ObservableCollection<GateDto> AvailableGates { get; }
+        = new();
 
     public string SelectedFlightTitle =>
         SelectedFlight == null
             ? string.Empty
-            : $"{SelectedFlight.FlightNumber} · {SelectedFlight.Origin} → {SelectedFlight.Destination}";
+            : $"{SelectedFlight.FlightNumber} · " +
+              $"{SelectedFlight.Origin} → " +
+              $"{SelectedFlight.Destination}";
 
     public string CurrentGate =>
-        string.IsNullOrWhiteSpace(SelectedFlight?.Gate)
+        string.IsNullOrWhiteSpace(
+            SelectedFlight?.Gate)
             ? "Sem porta"
             : SelectedFlight.Gate;
 
-    public OperationsGatesViewModel(ApiService apiService)
+    public OperationsGatesViewModel(
+        ApiService apiService)
     {
         _apiService = apiService;
     }
 
-    partial void OnSelectedFlightChanged(FlightDto? value)
+    partial void OnSelectedFlightChanged(
+        FlightDto? value)
     {
-        OnPropertyChanged(nameof(SelectedFlightTitle));
-        OnPropertyChanged(nameof(CurrentGate));
+        OnPropertyChanged(
+            nameof(SelectedFlightTitle));
+
+        OnPropertyChanged(
+            nameof(CurrentGate));
     }
 
     // =========================================================
@@ -70,11 +84,14 @@ public partial class OperationsGatesViewModel : ObservableObject
         try
         {
             IsBusy = true;
+
             HasError = false;
             ErrorMessage = string.Empty;
+
             StatusLabel = "A carregar…";
 
-            var result = await _apiService.GetDeparturesAsync();
+            var result =
+                await _apiService.GetDeparturesAsync();
 
             if (!result.Success)
             {
@@ -87,9 +104,10 @@ public partial class OperationsGatesViewModel : ObservableObject
                 return;
             }
 
-            var flights = (result.Data ?? new List<FlightDto>())
+            var flights =
+                (result.Data ??
+                 new List<FlightDto>())
                 .Where(f =>
-                    !string.IsNullOrWhiteSpace(f.Gate) &&
                     !string.Equals(
                         f.Status,
                         "Cancelled",
@@ -106,10 +124,39 @@ public partial class OperationsGatesViewModel : ObservableObject
 
             StatusLabel = flights.Count switch
             {
-                0 => "Nenhum voo com porta atribuída.",
-                1 => "1 voo com porta atribuída.",
-                _ => $"{flights.Count} voos com porta atribuída."
+                0 => "Nenhum voo disponível.",
+                1 => "1 voo disponível.",
+                _ => $"{flights.Count} voos disponíveis."
             };
+
+            // -------------------------------------------------
+            // Se veio da operação de um voo,
+            // abre diretamente esse voo.
+            // -------------------------------------------------
+
+            if (FlightId > 0)
+            {
+                var selectedFlight =
+                    GatesFlights.FirstOrDefault(
+                        f => f.Id == FlightId);
+
+                // Limpar para não voltar a abrir
+                // automaticamente num refresh.
+                FlightId = 0;
+
+                if (selectedFlight != null)
+                {
+                    await LoadGateEditorAsync(
+                        selectedFlight);
+                }
+                else
+                {
+                    ErrorMessage =
+                        "O voo selecionado não foi encontrado.";
+
+                    HasError = true;
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -133,11 +180,72 @@ public partial class OperationsGatesViewModel : ObservableObject
     }
 
     // =========================================================
-    // ABRIR ALTERAÇÃO DE PORTA
+    // CARREGAR EDITOR
+    // =========================================================
+
+    private async Task LoadGateEditorAsync(
+        FlightDto flight)
+    {
+        HasError = false;
+        ErrorMessage = string.Empty;
+
+        SelectedFlight = flight;
+        SelectedGate = null;
+
+        var result =
+            await _apiService
+                .GetEmployeeGatesAsync();
+
+        if (!result.Success)
+        {
+            ErrorMessage =
+                result.ErrorMessage ??
+                "Não foi possível carregar as portas.";
+
+            HasError = true;
+
+            return;
+        }
+
+        AvailableGates.Clear();
+
+        var gates =
+            (result.Data ??
+             new List<GateDto>())
+            .Where(g =>
+                !string.Equals(
+                    g.Status,
+                    "Maintenance",
+                    StringComparison.OrdinalIgnoreCase))
+            .OrderBy(g => g.Terminal)
+            .ThenBy(g => g.GateNumber)
+            .ToList();
+
+        foreach (var gate in gates)
+        {
+            AvailableGates.Add(gate);
+        }
+
+        // Selecionar automaticamente
+        // a porta atual do voo.
+        SelectedGate =
+            AvailableGates.FirstOrDefault(
+                g =>
+                    string.Equals(
+                        g.GateNumber,
+                        flight.Gate,
+                        StringComparison.OrdinalIgnoreCase));
+
+        IsGateEditorVisible = true;
+    }
+
+    // =========================================================
+    // ABRIR EDITOR MANUALMENTE
     // =========================================================
 
     [RelayCommand]
-    private async Task OpenGateEditorAsync(FlightDto? flight)
+    private async Task OpenGateEditorAsync(
+        FlightDto? flight)
     {
         if (flight == null || IsBusy)
             return;
@@ -146,52 +254,7 @@ public partial class OperationsGatesViewModel : ObservableObject
         {
             IsBusy = true;
 
-            HasError = false;
-            ErrorMessage = string.Empty;
-
-            SelectedFlight = flight;
-            SelectedGate = null;
-
-            var result =
-                await _apiService.GetEmployeeGatesAsync();
-
-            if (!result.Success)
-            {
-                ErrorMessage =
-                    result.ErrorMessage ??
-                    "Não foi possível carregar as portas.";
-
-                HasError = true;
-                return;
-            }
-
-            AvailableGates.Clear();
-
-            var gates = (result.Data ?? new List<GateDto>())
-                .Where(g =>
-                    !string.Equals(
-                        g.Status,
-                        "Maintenance",
-                        StringComparison.OrdinalIgnoreCase))
-                .OrderBy(g => g.Terminal)
-                .ThenBy(g => g.GateNumber)
-                .ToList();
-
-            foreach (var gate in gates)
-            {
-                AvailableGates.Add(gate);
-            }
-
-            // Se encontrarmos a porta atual na lista,
-            // mostramos essa porta inicialmente no Picker.
-            SelectedGate = AvailableGates
-                .FirstOrDefault(g =>
-                    string.Equals(
-                        g.GateNumber,
-                        flight.Gate,
-                        StringComparison.OrdinalIgnoreCase));
-
-            IsGateEditorVisible = true;
+            await LoadGateEditorAsync(flight);
         }
         catch (Exception ex)
         {
@@ -210,7 +273,7 @@ public partial class OperationsGatesViewModel : ObservableObject
     }
 
     // =========================================================
-    // CANCELAR
+    // CANCELAR ALTERAÇÃO
     // =========================================================
 
     [RelayCommand]
@@ -237,19 +300,25 @@ public partial class OperationsGatesViewModel : ObservableObject
 
         if (SelectedFlight == null)
         {
-            ErrorMessage = "Nenhum voo foi selecionado.";
+            ErrorMessage =
+                "Nenhum voo foi selecionado.";
+
             HasError = true;
+
             return;
         }
 
         if (SelectedGate == null)
         {
-            ErrorMessage = "Selecione a nova porta.";
+            ErrorMessage =
+                "Selecione a nova porta.";
+
             HasError = true;
+
             return;
         }
 
-        // Evita pedido desnecessário
+        // Não permite escolher a mesma porta.
         if (string.Equals(
             SelectedFlight.Gate,
             SelectedGate.GateNumber,
@@ -259,15 +328,17 @@ public partial class OperationsGatesViewModel : ObservableObject
                 "Esta já é a porta atribuída ao voo.";
 
             HasError = true;
+
             return;
         }
 
         var confirmed =
             await Shell.Current.DisplayAlert(
                 "Alterar porta",
-                $"Alterar o voo {SelectedFlight.FlightNumber} " +
-                $"da porta {CurrentGate} para " +
-                $"{SelectedGate.GateNumber}?",
+                $"Alterar o voo " +
+                $"{SelectedFlight.FlightNumber} " +
+                $"da porta {CurrentGate} " +
+                $"para {SelectedGate.GateNumber}?",
                 "Alterar",
                 "Cancelar");
 
@@ -281,21 +352,27 @@ public partial class OperationsGatesViewModel : ObservableObject
             HasError = false;
             ErrorMessage = string.Empty;
 
-            var flightId = SelectedFlight.Id;
-            var newGate = SelectedGate.GateNumber;
+            var flightNumber =
+                SelectedFlight.FlightNumber;
+
+            var newGate =
+                SelectedGate.GateNumber;
 
             var result =
-                await _apiService.ChangeFlightGateAsync(
-                    flightId,
-                    SelectedGate.Id);
+                await _apiService
+                    .ChangeFlightGateAsync(
+                        SelectedFlight.Id,
+                        SelectedGate.Id);
 
-            if (!result.Success || result.Data == null)
+            if (!result.Success ||
+                result.Data == null)
             {
                 ErrorMessage =
                     result.ErrorMessage ??
                     "Não foi possível alterar a porta.";
 
                 HasError = true;
+
                 return;
             }
 
@@ -303,14 +380,13 @@ public partial class OperationsGatesViewModel : ObservableObject
 
             await Shell.Current.DisplayAlert(
                 "Porta atualizada",
-                $"O voo {SelectedFlight.FlightNumber} " +
+                $"O voo {flightNumber} " +
                 $"foi atribuído à porta {newGate}.",
                 "OK");
 
             SelectedFlight = null;
             SelectedGate = null;
 
-            // Atualizar os dados diretamente do servidor.
             await ReloadAfterChangeAsync();
         }
         catch (Exception ex)
@@ -329,26 +405,28 @@ public partial class OperationsGatesViewModel : ObservableObject
         }
     }
 
+    // =========================================================
+    // ATUALIZAR LISTA DEPOIS DA ALTERAÇÃO
+    // =========================================================
+
     private async Task ReloadAfterChangeAsync()
     {
-        /*
-         * Não usamos LoadAsync() diretamente porque
-         * ConfirmGateChangeAsync ainda está com IsBusy=true.
-         */
-
-        var result = await _apiService.GetDeparturesAsync();
+        var result =
+            await _apiService.GetDeparturesAsync();
 
         if (!result.Success)
         {
             StatusLabel =
-                "Porta alterada, mas não foi possível atualizar a lista.";
+                "Porta alterada, mas não foi possível " +
+                "atualizar a lista.";
 
             return;
         }
 
-        var flights = (result.Data ?? new List<FlightDto>())
+        var flights =
+            (result.Data ??
+             new List<FlightDto>())
             .Where(f =>
-                !string.IsNullOrWhiteSpace(f.Gate) &&
                 !string.Equals(
                     f.Status,
                     "Cancelled",
@@ -365,9 +443,9 @@ public partial class OperationsGatesViewModel : ObservableObject
 
         StatusLabel = flights.Count switch
         {
-            0 => "Nenhum voo com porta atribuída.",
-            1 => "1 voo com porta atribuída.",
-            _ => $"{flights.Count} voos com porta atribuída."
+            0 => "Nenhum voo disponível.",
+            1 => "1 voo disponível.",
+            _ => $"{flights.Count} voos disponíveis."
         };
     }
 }

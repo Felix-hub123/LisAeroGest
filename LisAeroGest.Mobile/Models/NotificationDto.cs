@@ -11,4 +11,6 @@ public class NotificationDto
     public bool IsRead { get; set; }
     public DateTime CreatedAt { get; set; }
     public string Type { get; set; } = "Info";
+
+    public bool IsUnread => !IsRead;
 }
