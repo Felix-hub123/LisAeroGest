@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -6,15 +8,19 @@
     x:Class="LisAeroGest.Mobile.Views.OperationsFlightDetailsPage"
     x:DataType="vm:OperationsFlightDetailsViewModel"
     Title="Operação do voo"
-    Background="{AppThemeBinding Light={StaticResource AppBackgroundLightBrush},
-                                 Dark={StaticResource AppBackgroundGradientBrush}}">
+    Background="{AppThemeBinding
+        Light={StaticResource AppBackgroundLightBrush},
+        Dark={StaticResource AppBackgroundGradientBrush}}">
+
     <ScrollView>
 
         <VerticalStackLayout
             Padding="22,25,22,30"
             Spacing="18">
 
-            <!-- LOADING -->
+            <!-- =====================================================
+                 LOADING
+            ====================================================== -->
 
             <ActivityIndicator
                 IsVisible="{Binding IsBusy}"
@@ -22,7 +28,9 @@
                 Color="{StaticResource AccentDark}" />
 
 
-            <!-- ERRO -->
+            <!-- =====================================================
+                 ERRO
+            ====================================================== -->
 
             <Label
                 Text="{Binding ErrorMessage}"
@@ -31,13 +39,18 @@
                 HorizontalTextAlignment="Center" />
 
 
-            <!-- CONTEÚDO -->
+            <!-- =====================================================
+                 CONTEÚDO
+            ====================================================== -->
 
             <VerticalStackLayout
                 IsVisible="{Binding HasOperation}"
                 Spacing="18">
 
-                <!-- CABEÇALHO -->
+
+                <!-- =================================================
+                     CABEÇALHO
+                ================================================== -->
 
                 <VerticalStackLayout Spacing="4">
 
@@ -71,7 +84,9 @@
                 </VerticalStackLayout>
 
 
-                <!-- ROTA -->
+                <!-- =================================================
+                     ROTA
+                ================================================== -->
 
                 <Border Style="{StaticResource CardElevatedStyle}">
 
@@ -111,11 +126,15 @@
                 </Border>
 
 
-                <!-- PARTIDA / PORTA -->
+                <!-- =================================================
+                     PARTIDA / PORTA
+                ================================================== -->
 
                 <Grid
                     ColumnDefinitions="*,*"
                     ColumnSpacing="12">
+
+                    <!-- PARTIDA -->
 
                     <Border Style="{StaticResource CardStyle}">
 
@@ -127,19 +146,21 @@
 
                             <Label
                                 Text="{Binding Operation.DepartureTime,
-                                               StringFormat='{0:HH:mm}'}"
+                                    StringFormat='{0:HH:mm}'}"
                                 FontSize="25"
                                 FontFamily="OpenSansSemibold" />
 
                             <Label
                                 Text="{Binding Operation.DepartureTime,
-                                               StringFormat='{0:dd MMM yyyy}'}"
+                                    StringFormat='{0:dd MMM yyyy}'}"
                                 Style="{StaticResource CaptionStyle}" />
 
                         </VerticalStackLayout>
 
                     </Border>
 
+
+                    <!-- PORTA -->
 
                     <Border
                         Grid.Column="1"
@@ -168,7 +189,9 @@
                 </Grid>
 
 
-                <!-- RESUMO -->
+                <!-- =================================================
+                     RESUMO DE PASSAGEIROS
+                ================================================== -->
 
                 <Label
                     Text="Resumo de passageiros"
@@ -245,45 +268,87 @@
                 </Grid>
 
 
-                <!-- PASSAGEIROS -->
+                <!-- =================================================
+                     PASSAGEIROS DO VOO
+                ================================================== -->
 
-                <Grid
+                <VerticalStackLayout
                     Margin="0,8,0,0"
-                    ColumnDefinitions="*,Auto">
+                    Spacing="12">
 
-                    <VerticalStackLayout Spacing="2">
+                    <!-- TÍTULO -->
+
+                    <Grid ColumnDefinitions="*,Auto">
+
+                        <VerticalStackLayout Spacing="2">
+
+                            <Label
+                                Text="Passageiros do voo"
+                                Style="{StaticResource Title2Style}" />
+
+                            <Label
+                                Text="Pesquisa e acompanha os passageiros deste voo"
+                                Style="{StaticResource CaptionStyle}" />
+
+                        </VerticalStackLayout>
 
                         <Label
-                            Text="Passageiros do voo"
-                            Style="{StaticResource Title2Style}" />
+                            Grid.Column="1"
+                            Text="{Binding Operation.TotalPassengers}"
+                            FontSize="18"
+                            FontFamily="OpenSansSemibold"
+                            VerticalOptions="Center" />
 
-                        <Label
-                            Text="Estado de check-in e lugar atribuído"
-                            Style="{StaticResource CaptionStyle}" />
-
-                    </VerticalStackLayout>
-
-                    <Label
-                        Grid.Column="1"
-                        Text="{Binding Operation.TotalPassengers}"
-                        FontSize="18"
-                        FontFamily="OpenSansSemibold"
-                        VerticalOptions="Center" />
-
-                </Grid>
+                    </Grid>
 
 
-                <!-- SEM PASSAGEIROS -->
+                    <!-- PESQUISA -->
+
+                    <Border
+                        Style="{StaticResource CardStyle}"
+                        Padding="14,5">
+
+                        <Grid
+                            ColumnDefinitions="Auto,*"
+                            ColumnSpacing="10">
+
+                            <Label
+                                Text="⌕"
+                                FontSize="22"
+                                VerticalOptions="Center"
+                                TextColor="{StaticResource AccentDark}" />
+
+                            <Entry
+                                Grid.Column="1"
+                                Text="{Binding SearchText}"
+                                Placeholder="Nome, documento ou nº do bilhete"
+                                ClearButtonVisibility="WhileEditing"
+                                ReturnType="Search"
+                                FontSize="14"
+                                VerticalOptions="Center" />
+
+                        </Grid>
+
+                    </Border>
+
+                </VerticalStackLayout>
+
+
+                <!-- =================================================
+                     SEM PASSAGEIROS / SEM RESULTADOS
+                ================================================== -->
 
                 <Label
-                    Text="Não existem passageiros neste voo."
+                    Text="Nenhum passageiro encontrado."
                     IsVisible="{Binding HasNoPassengers}"
                     Style="{StaticResource CaptionStyle}"
                     HorizontalTextAlignment="Center"
                     Margin="0,15" />
 
 
-                <!-- LISTA -->
+                <!-- =================================================
+                     LISTA DE PASSAGEIROS
+                ================================================== -->
 
                 <VerticalStackLayout
                     BindableLayout.ItemsSource="{Binding Passengers}"
@@ -291,7 +356,8 @@
 
                     <BindableLayout.ItemTemplate>
 
-                        <DataTemplate x:DataType="models:EmployeeFlightPassengerDto">
+                        <DataTemplate
+                            x:DataType="models:EmployeeFlightPassengerDto">
 
                             <Border Style="{StaticResource CardStyle}">
 
@@ -302,52 +368,64 @@
                                     <Grid ColumnDefinitions="*,Auto">
 
                                         <Label
-                        Text="{Binding PassengerName}"
-                        FontSize="16"
-                        FontFamily="OpenSansSemibold" />
+                                            Text="{Binding PassengerName}"
+                                            FontSize="16"
+                                            FontFamily="OpenSansSemibold" />
 
                                         <Border
-                        Grid.Column="1"
-                        Padding="10,5">
+                                            Grid.Column="1"
+                                            Padding="10,5">
 
                                             <Label
-                            Text="{Binding Seat}"
-                            FontSize="13"
-                            FontFamily="OpenSansSemibold" />
+                                                Text="{Binding Seat}"
+                                                FontSize="13"
+                                                FontFamily="OpenSansSemibold" />
 
                                         </Border>
 
                                     </Grid>
 
+
                                     <!-- DOCUMENTO -->
 
                                     <Label
-                    Text="{Binding DocumentNumber,
-                                   StringFormat='Documento: {0}'}"
-                    Style="{StaticResource CaptionStyle}" />
+                                        Text="{Binding DocumentNumber,
+                                            StringFormat='Documento: {0}'}"
+                                        Style="{StaticResource CaptionStyle}" />
+
+
+                                    <!-- NÚMERO DO BILHETE -->
+
+                                    <Label
+                                        Text="{Binding TicketId,
+                                            StringFormat='Bilhete: #{0}'}"
+                                        Style="{StaticResource FootnoteStyle}" />
+
 
                                     <!-- ESTADO / CHECK-IN -->
 
                                     <Grid
-                    ColumnDefinitions="*,Auto"
-                    ColumnSpacing="10">
+                                        ColumnDefinitions="*,Auto"
+                                        ColumnSpacing="10">
 
                                         <Label
-                        Text="{Binding Status}"
-                        FontSize="12"
-                        TextColor="{StaticResource AccentDark}"
-                        VerticalOptions="Center" />
+                                            Text="{Binding Status}"
+                                            FontSize="12"
+                                            TextColor="{StaticResource AccentDark}"
+                                            VerticalOptions="Center" />
 
                                         <Button
-                        Grid.Column="1"
-                        Text="{Binding CheckInButtonText}"
-                        IsEnabled="{Binding CanCheckIn}"
-                        FontSize="12"
-                        Padding="12,7"
-                        VerticalOptions="Center"
-                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}},
-                                          Path=BindingContext.CheckInPassengerCommand}"
-                        CommandParameter="{Binding .}" />
+                                            Grid.Column="1"
+                                            Text="{Binding CheckInButtonText}"
+                                            IsEnabled="{Binding CanCheckIn}"
+                                            FontSize="12"
+                                            Padding="12,7"
+                                            VerticalOptions="Center"
+                                            Command="{Binding
+                                                Source={RelativeSource
+                                                    AncestorType={x:Type ContentPage}},
+                                                Path=BindingContext.CheckInPassengerCommand}"
+                                            CommandParameter="{Binding .}" />
 
                                     </Grid>
 
@@ -362,12 +440,46 @@
                 </VerticalStackLayout>
 
 
-                <!-- PORTA -->
+                <!-- =================================================
+                     AÇÕES DO VOO
+                ================================================== -->
 
-                <Button
-                    Text="🚪  Gerir porta"
-                    Style="{StaticResource SecondaryButtonStyle}"
-                    Command="{Binding OpenGatesCommand}" />
+                <VerticalStackLayout
+                    Margin="0,8,0,0"
+                    Spacing="10">
+
+                    <Label
+                        Text="Ações do voo"
+                        Style="{StaticResource Title2Style}" />
+
+                    <Label
+                        Text="Ferramentas operacionais para este voo."
+                        Style="{StaticResource CaptionStyle}" />
+
+                    <Grid
+                        ColumnDefinitions="*,*"
+                        ColumnSpacing="10">
+
+                        <!-- GERIR PORTA -->
+
+                        <Button
+                            Grid.Column="0"
+                            Text="🚪  Gerir porta"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Command="{Binding OpenGatesCommand}" />
+
+
+                        <!-- COMUNICAR -->
+
+                        <Button
+                            Grid.Column="1"
+                            Text="📢  Comunicar"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Command="{Binding OpenCommunicationsCommand}" />
+
+                    </Grid>
+
+                </VerticalStackLayout>
 
             </VerticalStackLayout>
 

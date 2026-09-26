@@ -1,0 +1,385 @@
+﻿@model LisAeroGest.Models.AuditLogDetailsViewModel
+
+@{
+    ViewData["Title"] = "Detalhes da Auditoria";
+}
+
+<div class="container py-4">
+
+    <!-- CABEÇALHO -->
+    <div class="d-flex justify-content-between
+                align-items-center mb-4">
+
+        <div>
+            <div class="text-uppercase
+                        text-primary fw-semibold small mb-1">
+                Auditoria
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                Detalhes do registo
+            </h2>
+
+            <p class="text-muted mb-0">
+                Registo de auditoria #@Model.Id
+            </p>
+        </div>
+
+        <a asp-controller="AuditLogs"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+
+            <i class="bi bi-arrow-left me-1"></i>
+            Voltar
+        </a>
+
+    </div>
+
+
+    <div class="row g-4">
+
+        <!-- COLUNA PRINCIPAL -->
+        <div class="col-lg-8">
+
+            <!-- AÇÃO -->
+            <div class="card border-0 shadow-sm mb-4">
+
+                <div class="card-body p-4">
+
+                    <div class="d-flex
+                                justify-content-between
+                                align-items-start
+                                gap-3">
+
+                        <div>
+
+                            <div class="text-muted small mb-2">
+                                AÇÃO REALIZADA
+                            </div>
+
+                            @if (Model.Action == "CheckIn")
+                            {
+                                <span class="badge
+                                             bg-success-subtle
+                                             text-success
+                                             fs-6 px-3 py-2">
+
+                                    <i class="bi bi-person-check me-1"></i>
+                                    Check-in
+                                </span>
+                            }
+                            else if (Model.Action == "GateChanged")
+                            {
+                                <span class="badge
+                                             bg-warning-subtle
+                                             text-warning-emphasis
+                                             fs-6 px-3 py-2">
+
+                                    <i class="bi bi-signpost me-1"></i>
+                                    Alteração de porta
+                                </span>
+                            }
+                            else if (Model.Action ==
+                                     "CommunicationSent")
+                            {
+                                <span class="badge
+                                             bg-info-subtle
+                                             text-info-emphasis
+                                             fs-6 px-3 py-2">
+
+                                    <i class="bi bi-megaphone me-1"></i>
+                                    Comunicação
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge
+                                             bg-secondary-subtle
+                                             text-secondary
+                                             fs-6 px-3 py-2">
+
+                                    @Model.Action
+
+                                </span>
+                            }
+
+                        </div>
+
+
+                        <div class="text-end">
+
+                            <div class="text-muted small">
+                                Data e hora
+                            </div>
+
+                            <div class="fw-semibold">
+                                @Model.CreatedAt.ToLocalTime()
+                                    .ToString("dd/MM/yyyy HH:mm:ss")
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <hr class="my-4" />
+
+
+                    <div class="text-muted small mb-2">
+                        DESCRIÇÃO
+                    </div>
+
+                    <p class="fs-5 mb-0">
+                        @Model.Description
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- ALTERAÇÃO -->
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-header bg-white
+                            border-0 pt-4 px-4">
+
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-arrow-left-right me-2"></i>
+                        Dados da alteração
+                    </h5>
+
+                </div>
+
+
+                <div class="card-body p-4">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+
+                            <div class="border rounded-3 p-3 h-100">
+
+                                <small class="text-muted">
+                                    Valor anterior
+                                </small>
+
+                                <div class="fw-semibold mt-1">
+
+                                    @if (!string.IsNullOrWhiteSpace(
+                                        Model.OldValue))
+                                    {
+                                        @Model.OldValue
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            Não aplicável
+                                        </span>
+                                    }
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <div class="border rounded-3 p-3 h-100">
+
+                                <small class="text-muted">
+                                    Novo valor
+                                </small>
+
+                                <div class="fw-semibold mt-1">
+
+                                    @if (!string.IsNullOrWhiteSpace(
+                                        Model.NewValue))
+                                    {
+                                        @Model.NewValue
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            Não aplicável
+                                        </span>
+                                    }
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- COLUNA LATERAL -->
+        <div class="col-lg-4">
+
+            <!-- UTILIZADOR -->
+            <div class="card border-0 shadow-sm mb-4">
+
+                <div class="card-body p-4">
+
+                    <h5 class="fw-bold mb-3">
+                        <i class="bi bi-person-circle me-2"></i>
+                        Responsável
+                    </h5>
+
+                    <div class="fw-semibold">
+                        @Model.UserName
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(
+                        Model.UserEmail))
+                    {
+                        <div class="text-muted small mt-1">
+                            @Model.UserEmail
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+
+            <!-- CONTEXTO -->
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <h5 class="fw-bold mb-4">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Contexto
+                    </h5>
+
+
+                    <div class="mb-3">
+
+                        <small class="text-muted d-block">
+                            Categoria
+                        </small>
+
+                        <span class="fw-semibold">
+                            @Model.Category
+                        </span>
+
+                    </div>
+
+
+                    <hr />
+
+
+                    <div class="mb-3">
+
+                        <small class="text-muted d-block">
+                            Voo
+                        </small>
+
+                        @if (!string.IsNullOrWhiteSpace(
+                            Model.FlightNumber))
+                        {
+                            <span class="fw-semibold">
+                                @Model.FlightNumber
+                            </span>
+
+                            @if (Model.FlightId.HasValue)
+                            {
+                                <span class="text-muted">
+                                    (#@Model.FlightId)
+                                </span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted">
+                                Não associado
+                            </span>
+                        }
+
+                    </div>
+
+
+                    <hr />
+
+
+                    <div class="mb-3">
+
+                        <small class="text-muted d-block">
+                            Bilhete
+                        </small>
+
+                        @if (Model.TicketId.HasValue)
+                        {
+                            <span class="fw-semibold">
+                                #@Model.TicketId
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">
+                                Não associado
+                            </span>
+                        }
+
+                    </div>
+
+
+                    @if (!string.IsNullOrWhiteSpace(
+                        Model.PassengerName))
+                    {
+                        <hr />
+
+                        <div>
+
+                            <small class="text-muted d-block">
+                                Passageiro
+                            </small>
+
+                            <span class="fw-semibold">
+                                @Model.PassengerName
+                            </span>
+
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- NOTA -->
+    <div class="alert alert-light border mt-4 mb-0">
+
+        <div class="d-flex gap-3">
+
+            <i class="bi bi-shield-lock fs-4 text-primary"></i>
+
+            <div>
+                <strong>Registo de auditoria</strong>
+
+                <div class="text-muted small mt-1">
+                    Este registo identifica uma ação realizada
+                    no sistema, o utilizador responsável e os
+                    dados operacionais associados.
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

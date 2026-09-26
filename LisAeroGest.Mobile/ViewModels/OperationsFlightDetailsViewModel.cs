@@ -12,8 +12,13 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
 {
     private readonly ApiService _apiService;
 
+    private List<EmployeeFlightPassengerDto> _allPassengers = new();
+
     [ObservableProperty]
     private int _flightId;
+
+    [ObservableProperty]
+    private string _searchText = string.Empty;
 
     [ObservableProperty]
     private bool _isBusy;
@@ -96,11 +101,9 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
 
             Passengers.Clear();
 
-            foreach (var passenger
-                     in result.Data.Passengers)
-            {
-                Passengers.Add(passenger);
-            }
+            _allPassengers = result.Data.Passengers.ToList();
+
+            ApplyPassengerFilter();
         }
         catch (Exception)
         {
@@ -112,6 +115,48 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
             IsBusy = false;
         }
     }
+
+    // =========================================================
+    // PESQUISA DE PASSAGEIROS
+    // =========================================================
+
+    partial void OnSearchTextChanged(string value)
+    {
+        ApplyPassengerFilter();
+    }
+
+    private void ApplyPassengerFilter()
+    {
+        IEnumerable<EmployeeFlightPassengerDto> query =
+            _allPassengers;
+
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            var search = SearchText.Trim();
+
+            query = query.Where(p =>
+                p.PassengerName.Contains(
+                    search,
+                    StringComparison.OrdinalIgnoreCase)
+                ||
+                p.DocumentNumber.Contains(
+                    search,
+                    StringComparison.OrdinalIgnoreCase)
+                ||
+                p.TicketId.ToString().Contains(
+                    search,
+                    StringComparison.OrdinalIgnoreCase));
+        }
+
+        Passengers.Clear();
+
+        foreach (var passenger in query)
+        {
+            Passengers.Add(passenger);
+        }
+    }
+
+
 
     // =========================================================
     // CHECK-IN DO PASSAGEIRO
@@ -197,6 +242,22 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
 
         await Shell.Current.GoToAsync(
             $"{nameof(OperationsGatesPage)}" +
+            $"?flightId={Operation.FlightId}");
+    }
+
+
+    // =========================================================
+    // COMUNICAÇÕES DESTE VOO
+    // =========================================================
+
+    [RelayCommand]
+    private async Task OpenCommunicationsAsync()
+    {
+        if (Operation == null)
+            return;
+
+        await Shell.Current.GoToAsync(
+            $"{nameof(OperationsCommunicationsPage)}" +
             $"?flightId={Operation.FlightId}");
     }
 }

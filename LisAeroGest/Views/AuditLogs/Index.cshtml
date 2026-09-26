@@ -1,0 +1,495 @@
+﻿@model LisAeroGest.Models.AuditLogHistoryViewModel
+
+@{
+    ViewData["Title"] = "Auditoria do Sistema";
+}
+
+<div class="container-fluid py-4">
+
+    <!-- CABEÇALHO -->
+    <div class="d-flex flex-column flex-lg-row
+                justify-content-between align-items-lg-center
+                gap-3 mb-4">
+
+        <div>
+            <div class="text-uppercase text-primary fw-semibold small mb-1">
+                Administração
+            </div>
+
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-shield-check me-2"></i>
+                Auditoria do Sistema
+            </h2>
+
+            <p class="text-muted mb-0">
+                Consulte as ações operacionais registadas no LisAeroGest.
+            </p>
+        </div>
+
+        <div>
+            <a asp-controller="Admin"
+               asp-action="Dashboard"
+               class="btn btn-outline-secondary">
+
+                <i class="bi bi-arrow-left me-1"></i>
+                Voltar ao Dashboard
+            </a>
+        </div>
+    </div>
+
+
+    <!-- ESTATÍSTICAS -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-6 col-xl">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        Total de registos
+                    </div>
+
+                    <div class="fs-3 fw-bold mt-1">
+                        @Model.TotalLogs
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-6 col-xl">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        Hoje
+                    </div>
+
+                    <div class="fs-3 fw-bold text-primary mt-1">
+                        @Model.LogsToday
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-6 col-xl">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        Check-ins
+                    </div>
+
+                    <div class="fs-3 fw-bold text-success mt-1">
+                        @Model.CheckIns
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-6 col-xl">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        Portas
+                    </div>
+
+                    <div class="fs-3 fw-bold text-warning mt-1">
+                        @Model.GateChanges
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-6 col-xl">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted small">
+                        Comunicações
+                    </div>
+
+                    <div class="fs-3 fw-bold text-info mt-1">
+                        @Model.Communications
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- FILTROS -->
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <form method="get"
+                  asp-controller="AuditLogs"
+                  asp-action="Index">
+
+                <div class="row g-3 align-items-end">
+
+                    <div class="col-lg-5">
+                        <label class="form-label fw-semibold">
+                            Pesquisar
+                        </label>
+
+                        <div class="input-group">
+
+                            <span class="input-group-text bg-white">
+                                <i class="bi bi-search"></i>
+                            </span>
+
+                            <input type="text"
+                                   name="search"
+                                   value="@Model.Search"
+                                   class="form-control"
+                                   placeholder="Utilizador, voo, ação, descrição..." />
+
+                        </div>
+                    </div>
+
+
+                    <div class="col-md-4 col-lg-2">
+                        <label class="form-label fw-semibold">
+                            Ação
+                        </label>
+
+                        <select name="action"
+                                class="form-select">
+
+                            <option value="">
+                                Todas
+                            </option>
+
+                            <option value="CheckIn"
+                                    selected="@(Model.Action == "CheckIn")">
+                                Check-in
+                            </option>
+
+                            <option value="GateChanged"
+                                    selected="@(Model.Action == "GateChanged")">
+                                Alteração de porta
+                            </option>
+
+                            <option value="CommunicationSent"
+                                    selected="@(Model.Action == "CommunicationSent")">
+                                Comunicação
+                            </option>
+
+                        </select>
+                    </div>
+
+
+                    <div class="col-md-4 col-lg-2">
+                        <label class="form-label fw-semibold">
+                            Categoria
+                        </label>
+
+                        <select name="category"
+                                class="form-select">
+
+                            <option value="">
+                                Todas
+                            </option>
+
+                            <option value="Passenger"
+                                    selected="@(Model.Category == "Passenger")">
+                                Passageiro
+                            </option>
+
+                            <option value="Flight"
+                                    selected="@(Model.Category == "Flight")">
+                                Voo
+                            </option>
+
+                            <option value="Communication"
+                                    selected="@(Model.Category == "Communication")">
+                                Comunicação
+                            </option>
+
+                        </select>
+                    </div>
+
+
+                    <div class="col-md-4 col-lg-3">
+
+                        <div class="d-flex gap-2">
+
+                            <button type="submit"
+                                    class="btn btn-primary flex-fill">
+
+                                <i class="bi bi-funnel me-1"></i>
+                                Filtrar
+                            </button>
+
+                            <a asp-controller="AuditLogs"
+                               asp-action="Index"
+                               class="btn btn-outline-secondary">
+
+                                <i class="bi bi-x-lg"></i>
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+
+    <!-- TABELA -->
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-header bg-white border-0 py-3">
+
+            <div class="d-flex justify-content-between
+                        align-items-center">
+
+                <div>
+                    <h5 class="fw-bold mb-0">
+                        Histórico de atividades
+                    </h5>
+
+                    <small class="text-muted">
+                        @Model.Logs.Count registo(s) apresentado(s)
+                    </small>
+                </div>
+
+                <i class="bi bi-clock-history fs-4 text-muted"></i>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body p-0">
+
+            @if (Model.Logs.Count == 0)
+            {
+                <div class="text-center py-5">
+
+                    <div class="mb-3">
+                        <i class="bi bi-journal-x
+                                      display-5 text-muted"></i>
+                    </div>
+
+                    <h5 class="fw-semibold">
+                        Nenhum registo encontrado
+                    </h5>
+
+                    <p class="text-muted mb-0">
+                        Ainda não existem atividades para os
+                        critérios selecionados.
+                    </p>
+
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+
+                    <table class="table table-hover
+                                      align-middle mb-0">
+
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">
+                                    Data
+                                </th>
+
+                                <th>
+                                    Utilizador
+                                </th>
+
+                                <th>
+                                    Ação
+                                </th>
+
+                                <th>
+                                    Voo
+                                </th>
+
+                                <th>
+                                    Descrição
+                                </th>
+
+                                <th class="text-center">
+                                    Detalhes
+                                </th>
+                            </tr>
+                        </thead>
+
+
+                        <tbody>
+
+                            @foreach (var item in Model.Logs)
+                            {
+                                <tr>
+
+                                    <!-- DATA -->
+                                    <td class="ps-4 text-nowrap">
+
+                                        <div class="fw-semibold">
+                                            @item.CreatedAt.ToLocalTime()
+                                            .ToString("dd/MM/yyyy")
+                                        </div>
+
+                                        <small class="text-muted">
+                                            @item.CreatedAt.ToLocalTime()
+                                            .ToString("HH:mm")
+                                        </small>
+
+                                    </td>
+
+
+                                    <!-- UTILIZADOR -->
+                                    <td>
+
+                                        <div class="fw-semibold">
+                                            @item.UserName
+                                        </div>
+
+                                        @if (!string.IsNullOrWhiteSpace(
+                                                                        item.UserEmail))
+                                        {
+                                            <small class="text-muted">
+                                                @item.UserEmail
+                                            </small>
+                                        }
+
+                                    </td>
+
+
+                                    <!-- AÇÃO -->
+                                    <td>
+
+                                        @if (item.Action == "CheckIn")
+                                        {
+                                            <span class="badge
+                                                                     bg-success-subtle
+                                                                     text-success
+                                                                     border
+                                                                     border-success-subtle">
+
+                                                <i class="bi
+                                                                      bi-person-check
+                                                                      me-1"></i>
+
+                                                Check-in
+                                            </span>
+                                        }
+                                        else if (item.Action == "GateChanged")
+                                        {
+                                            <span class="badge
+                                                                     bg-warning-subtle
+                                                                     text-warning-emphasis
+                                                                     border
+                                                                     border-warning-subtle">
+
+                                                <i class="bi
+                                                                      bi-signpost
+                                                                      me-1"></i>
+
+                                                Porta
+                                            </span>
+                                        }
+                                        else if (item.Action ==
+                                        "CommunicationSent")
+                                        {
+                                            <span class="badge
+                                                                     bg-info-subtle
+                                                                     text-info-emphasis
+                                                                     border
+                                                                     border-info-subtle">
+
+                                                <i class="bi
+                                                                      bi-megaphone
+                                                                      me-1"></i>
+
+                                                Comunicação
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge
+                                                                     bg-secondary-subtle
+                                                                     text-secondary">
+
+                                                @item.Action
+
+                                            </span>
+                                        }
+
+                                    </td>
+
+
+                                    <!-- VOO -->
+                                    <td>
+
+                                        @if (!string.IsNullOrWhiteSpace(
+                                                                        item.FlightNumber))
+                                        {
+                                            <span class="fw-semibold">
+                                                @item.FlightNumber
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+                                                —
+                                            </span>
+                                        }
+
+                                    </td>
+
+
+                                    <!-- DESCRIÇÃO -->
+                                    <td style="min-width: 260px;
+                                                       max-width: 420px;">
+
+                                        <div class="text-truncate"
+                                             style="max-width: 420px;"
+                                             title="@item.Description">
+
+                                            @item.Description
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <!-- DETALHES -->
+                                    <td class="text-center">
+
+                                        <a asp-controller="AuditLogs"
+                                           asp-action="Details"
+                                           asp-route-id="@item.Id"
+                                           class="btn btn-sm
+                                                          btn-outline-primary">
+
+                                            <i class="bi bi-eye"></i>
+
+                                        </a>
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+</div>

@@ -14,6 +14,8 @@ namespace LisAeroGest.Data
         public DbSet<Flight> Flights { get; set; }
         public DbSet<Passenger> Passengers { get; set; }
 
+        public DbSet<AuditLog> AuditLogs { get; set; }
+
         /// <summary>
         /// Tabela única de bilhetes
         /// (Reservados, Pagos, CheckedIn, etc.).
@@ -49,8 +51,34 @@ namespace LisAeroGest.Data
         protected override void OnModelCreating(
             ModelBuilder modelBuilder)
         {
+
             // Necessário para o Identity funcionar corretamente
             base.OnModelCreating(modelBuilder);
+
+            // =========================================================
+            // AUDITORIA
+            // =========================================================
+
+            modelBuilder.Entity<AuditLog>()
+                .HasOne(a => a.User)
+                .WithMany()
+                .HasForeignKey(a => a.UserId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<AuditLog>()
+                .HasOne(a => a.Flight)
+                .WithMany()
+                .HasForeignKey(a => a.FlightId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<AuditLog>()
+                .HasOne(a => a.Ticket)
+                .WithMany()
+                .HasForeignKey(a => a.TicketId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
 
 
             #region Filtros Globais de Soft Delete

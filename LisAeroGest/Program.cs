@@ -171,6 +171,8 @@ builder.Services.AddScoped<IPayPalService, PayPalService>();
 builder.Services.AddHostedService<ReservationExpirationService>();
 builder.Services.AddHostedService<FlightStatusUpdaterService>();
 builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
+builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<IAuditLogRepository,  AuditLogRepository>();
 builder.Services.AddSignalR();
 builder.Services.AddSignalR();
 // ─── HttpClient (para OpenWeatherMap) ───────────────────────────────────────

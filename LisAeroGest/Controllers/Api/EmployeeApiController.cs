@@ -3,6 +3,7 @@ using LisAeroGest.Data;
 using LisAeroGest.Data.Entities;
 using LisAeroGest.Data.Interfaces;
 using LisAeroGest.Data.Repositories;
+using LisAeroGest.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ using System.Security.Claims;
 namespace LisAeroGest.Controllers.Api
 {
     /// <summary>
-    /// API para operações de funcionário (check-in presencial, pesquisa de passageiros).
+    /// API para operações de funcionário.
     /// </summary>
     [Route("api/employee")]
     [ApiController]
@@ -25,6 +26,7 @@ namespace LisAeroGest.Controllers.Api
         private readonly IGateRepository _gateRepository;
         private readonly INotificationRepository _notificationRepository;
         private readonly DataContext _context;
+        private readonly IAuditService _auditService;
 
         public EmployeeApiController(
             ITicketRepository ticketRepository,
@@ -32,9 +34,9 @@ namespace LisAeroGest.Controllers.Api
             IPassengerRepository passengerRepository,
             IFlightRepository flightRepository,
             IGateRepository gateRepository,
-            INotificationRepository notificationRepository, 
-            DataContext context)
-           
+            INotificationRepository notificationRepository,
+            DataContext context,
+            IAuditService auditService)
         {
             _ticketRepository = ticketRepository;
             _boardingPassRepository = boardingPassRepository;
@@ -43,11 +45,14 @@ namespace LisAeroGest.Controllers.Api
             _gateRepository = gateRepository;
             _notificationRepository = notificationRepository;
             _context = context;
+            _auditService = auditService;
         }
 
 
-
-
+        // =========================================================
+        // RESUMO OPERACIONAL
+        // GET: /api/employee/summary
+        // =========================================================
 
         [HttpGet("summary")]
         public async Task<IActionResult> Summary()
@@ -96,56 +101,101 @@ namespace LisAeroGest.Controllers.Api
             });
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // 1. PESQUISAR BILHETES PARA CHECK-IN
+
+        // =========================================================
+        // PESQUISAR BILHETES PARA CHECK-IN
         // GET: /api/employee/checkin/search?query=...
-        // ═══════════════════════════════════════════════════════════
+        // =========================================================
 
         [HttpGet("checkin/search")]
-        public async Task<IActionResult> SearchTickets([FromQuery] string query)
+        public async Task<IActionResult> SearchTickets(
+            [FromQuery] string query)
         {
             if (string.IsNullOrWhiteSpace(query))
                 return Ok(Array.Empty<object>());
 
             var term = query.Trim();
 
-            // Procura por nome, email, documento, telefone, voo ou ID do bilhete
-            var tickets = await _ticketRepository.GetAllQueryable()
+            var tickets = await _ticketRepository
+                .GetAllQueryable()
                 .Include(t => t.Passenger)
-                .Include(t => t.Flight).ThenInclude(f => f!.OriginAirport)
-                .Include(t => t.Flight).ThenInclude(f => f!.DestinationAirport)
-                .Include(t => t.Flight).ThenInclude(f => f!.Gate)
+                .Include(t => t.Flight)
+                    .ThenInclude(f => f!.OriginAirport)
+                .Include(t => t.Flight)
+                    .ThenInclude(f => f!.DestinationAirport)
+                .Include(t => t.Flight)
+                    .ThenInclude(f => f!.Gate)
                 .Include(t => t.Seat)
-                .Where(t => !t.WasDeleted
-                    && t.Status == "Paid")   // Só bilhetes pagos podem fazer check-in
+                .Where(t =>
+                    !t.WasDeleted &&
+                    t.Status == "Paid")
                 .Where(t =>
                     t.Passenger != null &&
                     (
-                        EF.Functions.Like(t.Passenger.FirstName, $"%{term}%") ||
-                        EF.Functions.Like(t.Passenger.LastName, $"%{term}%") ||
-                        EF.Functions.Like(t.Passenger.Email, $"%{term}%") ||
-                        EF.Functions.Like(t.Passenger.DocumentNumber, $"%{term}%") ||
+                        EF.Functions.Like(
+                            t.Passenger.FirstName,
+                            $"%{term}%") ||
+
+                        EF.Functions.Like(
+                            t.Passenger.LastName,
+                            $"%{term}%") ||
+
+                        EF.Functions.Like(
+                            t.Passenger.Email,
+                            $"%{term}%") ||
+
+                        EF.Functions.Like(
+                            t.Passenger.DocumentNumber,
+                            $"%{term}%") ||
+
                         (t.Passenger.PhoneNumber != null &&
-                         EF.Functions.Like(t.Passenger.PhoneNumber, $"%{term}%")) ||
+                         EF.Functions.Like(
+                             t.Passenger.PhoneNumber,
+                             $"%{term}%")) ||
+
                         (t.Flight != null &&
-                         EF.Functions.Like(t.Flight.FlightNumber, $"%{term}%"))
-                    )
-                )
+                         EF.Functions.Like(
+                             t.Flight.FlightNumber,
+                             $"%{term}%"))
+                    ))
                 .OrderBy(t => t.Flight!.DepartureTime)
                 .Take(20)
                 .Select(t => new
                 {
                     ticketId = t.Id,
-                    passengerName = t.Passenger!.FirstName + " " + t.Passenger.LastName,
+
+                    passengerName =
+                        t.Passenger!.FirstName + " " +
+                        t.Passenger.LastName,
+
                     email = t.Passenger.Email,
-                    documentNumber = t.Passenger.DocumentNumber,
-                    flightNumber = t.Flight != null ? t.Flight.FlightNumber : "",
-                    departureTime = t.Flight != null ? t.Flight.DepartureTime : DateTime.MinValue,
+
+                    documentNumber =
+                        t.Passenger.DocumentNumber,
+
+                    flightNumber =
+                        t.Flight != null
+                            ? t.Flight.FlightNumber
+                            : "",
+
+                    departureTime =
+                        t.Flight != null
+                            ? t.Flight.DepartureTime
+                            : DateTime.MinValue,
+
                     status = t.Status,
-                    gate = t.Flight != null && t.Flight.Gate != null
-                        ? t.Flight.Gate.GateNumber
-                        : "TBA",
-                    seat = t.Seat != null ? t.Seat.Code : null,
+
+                    gate =
+                        t.Flight != null &&
+                        t.Flight.Gate != null
+                            ? t.Flight.Gate.GateNumber
+                            : "TBA",
+
+                    seat =
+                        t.Seat != null
+                            ? t.Seat.Code
+                            : null,
+
                     canCheckIn = true
                 })
                 .ToListAsync();
@@ -153,225 +203,35 @@ namespace LisAeroGest.Controllers.Api
             return Ok(tickets);
         }
 
-        // ═══════════════════════════════════════════════════════════
-        // 2. FAZER CHECK-IN PRESENCIAL
+
+        // =========================================================
+        // CHECK-IN POR ID DO BILHETE
         // POST: /api/employee/checkin
-        // ═══════════════════════════════════════════════════════════
+        // =========================================================
 
         public class EmployeeCheckInRequest
         {
             public int TicketId { get; set; }
         }
 
+
         [HttpPost("checkin")]
-        public async Task<IActionResult> DoEmployeeCheckIn([FromBody] EmployeeCheckInRequest request)
+        public async Task<IActionResult> DoEmployeeCheckIn(
+            [FromBody] EmployeeCheckInRequest request)
         {
-            var ticket = await _ticketRepository.GetTicketWithDetailsAsync(request.TicketId);
+            var ticket =
+                await _ticketRepository
+                    .GetTicketWithDetailsAsync(request.TicketId);
 
             if (ticket == null)
-                return NotFound(new { success = false, errorMessage = "Bilhete não encontrado." });
-
-            if (ticket.Status != "Paid")
-                return BadRequest(new { success = false, errorMessage = "Este bilhete não está pago ou já tem check-in." });
-
-            if (ticket.Flight == null)
-                return BadRequest(new { success = false, errorMessage = "Dados do voo indisponíveis." });
-
-            if (ticket.Flight.Status == "Cancelled")
-                return BadRequest(new { success = false, errorMessage = "Voo cancelado." });
-
-            if (ticket.Flight.Status == "Departed")
-                return BadRequest(new { success = false, errorMessage = "O voo já partiu." });
-
-            // Verificar se já existe boarding pass (evitar double check-in)
-            var existing = await _boardingPassRepository.GetByTicketIdAsync(ticket.Id);
-            if (existing != null)
-            {
-                return Ok(new
-                {
-                    success = true,
-                    message = "Este bilhete já tem check-in feito.",
-                    passengerName = $"{ticket.Passenger?.FirstName} {ticket.Passenger?.LastName}".Trim(),
-                    flightNumber = ticket.Flight.FlightNumber,
-                    gate = existing.Gate,
-                    sequenceNumber = existing.SequenceNumber,
-                    qrData = existing.QRCode
-                });
-            }
-
-            // Criar boarding pass
-            var gateNumber = ticket.Flight.Gate?.GateNumber ?? "TBA";
-
-            var boardingPass = new BoardingPass
-            {
-                TicketId = ticket.Id,
-                IssuedAt = DateTime.UtcNow,
-                Gate = gateNumber,
-                SequenceNumber = await _boardingPassRepository.GetNextSequenceNumberAsync(ticket.FlightId),
-                QRCode = $"BOARDING|{ticket.Id}|{ticket.Flight.FlightNumber}|{gateNumber}"
-            };
-
-            await _boardingPassRepository.AddAsync(boardingPass);
-
-            ticket.Status = "CheckedIn";
-            await _ticketRepository.UpdateAsync(ticket);
-
-            await _boardingPassRepository.SaveAsync();
-
-            return Ok(new
-            {
-                success = true,
-                message = "Check-in realizado com sucesso.",
-                passengerName = $"{ticket.Passenger?.FirstName} {ticket.Passenger?.LastName}".Trim(),
-                flightNumber = ticket.Flight.FlightNumber,
-                gate = gateNumber,
-                sequenceNumber = boardingPass.SequenceNumber,
-                qrData = boardingPass.QRCode
-            });
-        }
-
-
-
-        [HttpPost("checkin/by-name")]
-        public async Task<IActionResult> CheckInByPassengerData(
-                 [FromBody] EmployeeNameCheckInRequest request)
-        {
-            if (string.IsNullOrWhiteSpace(request.PassengerName) &&
-                string.IsNullOrWhiteSpace(request.DocumentNumber))
-            {
-                return BadRequest(new
-                {
-                    success = false,
-                    errorMessage =
-                        "Indique o nome do passageiro ou o número do documento."
-                });
-            }
-
-            var query = _ticketRepository
-       .GetAllQueryable()
-       .Include(t => t.Passenger)
-       .Include(t => t.Flight)
-           .ThenInclude(f => f!.Gate)
-       .Include(t => t.Seat)
-       .Where(t =>
-           !t.WasDeleted &&
-           t.Status == "Paid" &&
-           t.Passenger != null &&
-           t.Flight != null);
-
-            // Search by document number
-            if (!string.IsNullOrWhiteSpace(request.DocumentNumber))
-            {
-                var documentNumber = request.DocumentNumber.Trim();
-
-                query = query.Where(t =>
-                    t.Passenger!.DocumentNumber == documentNumber);
-            }
-            else
-            {
-                // Search by passenger name
-                var passengerName = request.PassengerName.Trim();
-
-                var nameParts = passengerName.Split(
-                    ' ',
-                    StringSplitOptions.RemoveEmptyEntries);
-
-                if (nameParts.Length == 1)
-                {
-                    query = query.Where(t =>
-                        EF.Functions.Like(
-                            t.Passenger!.FirstName!,
-                            $"%{passengerName}%") ||
-
-                        EF.Functions.Like(
-                            t.Passenger!.LastName!,
-                            $"%{passengerName}%"));
-                }
-                else
-                {
-                    var firstName = nameParts[0];
-                    var lastName = nameParts[^1];
-
-                    query = query.Where(t =>
-                        EF.Functions.Like(
-                            t.Passenger!.FirstName!,
-                            $"%{firstName}%") &&
-
-                        EF.Functions.Like(
-                            t.Passenger!.LastName!,
-                            $"%{lastName}%"));
-                }
-            }
-
-            // If the flight number was provided,
-            // use it to narrow the search.
-            if (!string.IsNullOrWhiteSpace(request.FlightNumber))
-            {
-                var flightNumber = request.FlightNumber.Trim();
-
-                query = query.Where(t =>
-                    t.Flight!.FlightNumber == flightNumber);
-            }
-
-            var matches = await query
-                .OrderBy(t => t.Flight!.DepartureTime)
-                .Take(10)
-                .ToListAsync();
-
-            if (matches.Count == 0)
             {
                 return NotFound(new
                 {
                     success = false,
-                    errorMessage =
-                        "Não foi encontrado um bilhete pago para estes dados."
+                    errorMessage = "Bilhete não encontrado."
                 });
             }
 
-            // If multiple tickets have the same passenger name,
-            // request the flight number to avoid checking in
-            // the wrong passenger.
-            if (matches.Count > 1 &&
-                string.IsNullOrWhiteSpace(request.FlightNumber) &&
-                string.IsNullOrWhiteSpace(request.DocumentNumber))
-            {
-                return Conflict(new
-                {
-                    success = false,
-
-                    errorMessage =
-                        "Foram encontrados vários bilhetes. " +
-                        "Indique também o número do voo.",
-
-                    matches = matches.Select(t => new
-                    {
-                        ticketId = t.Id,
-
-                        passengerName =
-                            $"{t.Passenger!.FirstName} " +
-                            $"{t.Passenger.LastName}".Trim(),
-
-                        flightNumber =
-                            t.Flight!.FlightNumber,
-
-                        departureTime =
-                            t.Flight.DepartureTime,
-
-                        seat =
-                            t.Seat?.Code
-                    })
-                });
-            }
-
-            return await PerformEmployeeCheckIn(matches[0]);
-
-
-        }
-
-
-
-        private async Task<IActionResult> PerformEmployeeCheckIn(Ticket ticket)
-        {
             if (ticket.Status != "Paid")
             {
                 return BadRequest(new
@@ -409,11 +269,11 @@ namespace LisAeroGest.Controllers.Api
                 });
             }
 
-            // Prevent duplicate check-in
-            var existingBoardingPass =
-                await _boardingPassRepository.GetByTicketIdAsync(ticket.Id);
+            var existing =
+                await _boardingPassRepository
+                    .GetByTicketIdAsync(ticket.Id);
 
-            if (existingBoardingPass != null)
+            if (existing != null)
             {
                 return Ok(new
                 {
@@ -429,14 +289,13 @@ namespace LisAeroGest.Controllers.Api
                     flightNumber =
                         ticket.Flight.FlightNumber,
 
-                    gate =
-                        existingBoardingPass.Gate,
+                    gate = existing.Gate,
 
                     sequenceNumber =
-                        existingBoardingPass.SequenceNumber,
+                        existing.SequenceNumber,
 
                     qrData =
-                        existingBoardingPass.QRCode
+                        existing.QRCode
                 });
             }
 
@@ -453,7 +312,8 @@ namespace LisAeroGest.Controllers.Api
 
                 SequenceNumber =
                     await _boardingPassRepository
-                        .GetNextSequenceNumberAsync(ticket.FlightId),
+                        .GetNextSequenceNumberAsync(
+                            ticket.FlightId),
 
                 QRCode =
                     $"BOARDING|{ticket.Id}|" +
@@ -461,13 +321,32 @@ namespace LisAeroGest.Controllers.Api
                     $"{gateNumber}"
             };
 
-            await _boardingPassRepository.AddAsync(boardingPass);
+            await _boardingPassRepository
+                .AddAsync(boardingPass);
 
             ticket.Status = "CheckedIn";
 
-            await _ticketRepository.UpdateAsync(ticket);
+            await _ticketRepository
+                .UpdateAsync(ticket);
 
-            await _boardingPassRepository.SaveAsync();
+            await _boardingPassRepository
+                .SaveAsync();
+
+
+            // AUDITORIA GERAL
+            await _auditService.LogAsync(
+                User,
+                "CheckIn",
+                "Passenger",
+                $"Check-in presencial realizado para " +
+                $"{ticket.Passenger?.FirstName} " +
+                $"{ticket.Passenger?.LastName} " +
+                $"no voo {ticket.Flight.FlightNumber}.",
+                ticket.FlightId,
+                ticket.Id,
+                "Paid",
+                "CheckedIn");
+
 
             return Ok(new
             {
@@ -495,9 +374,334 @@ namespace LisAeroGest.Controllers.Api
         }
 
 
-        // ═══════════════════════════════════════════════════════════
+        // =========================================================
+        // CHECK-IN POR NOME / DOCUMENTO
+        // POST: /api/employee/checkin/by-name
+        // =========================================================
+
+        [HttpPost("checkin/by-name")]
+        public async Task<IActionResult> CheckInByPassengerData(
+            [FromBody] EmployeeNameCheckInRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(
+                    request.PassengerName) &&
+                string.IsNullOrWhiteSpace(
+                    request.DocumentNumber))
+            {
+                return BadRequest(new
+                {
+                    success = false,
+
+                    errorMessage =
+                        "Indique o nome do passageiro " +
+                        "ou o número do documento."
+                });
+            }
+
+            var query = _ticketRepository
+                .GetAllQueryable()
+                .Include(t => t.Passenger)
+                .Include(t => t.Flight)
+                    .ThenInclude(f => f!.Gate)
+                .Include(t => t.Seat)
+                .Where(t =>
+                    !t.WasDeleted &&
+                    t.Status == "Paid" &&
+                    t.Passenger != null &&
+                    t.Flight != null);
+
+
+            if (!string.IsNullOrWhiteSpace(
+                    request.DocumentNumber))
+            {
+                var documentNumber =
+                    request.DocumentNumber.Trim();
+
+                query = query.Where(t =>
+                    t.Passenger!.DocumentNumber ==
+                    documentNumber);
+            }
+            else
+            {
+                var passengerName =
+                    request.PassengerName.Trim();
+
+                var nameParts =
+                    passengerName.Split(
+                        ' ',
+                        StringSplitOptions
+                            .RemoveEmptyEntries);
+
+                if (nameParts.Length == 1)
+                {
+                    query = query.Where(t =>
+                        EF.Functions.Like(
+                            t.Passenger!.FirstName!,
+                            $"%{passengerName}%") ||
+
+                        EF.Functions.Like(
+                            t.Passenger!.LastName!,
+                            $"%{passengerName}%"));
+                }
+                else
+                {
+                    var firstName =
+                        nameParts[0];
+
+                    var lastName =
+                        nameParts[^1];
+
+                    query = query.Where(t =>
+                        EF.Functions.Like(
+                            t.Passenger!.FirstName!,
+                            $"%{firstName}%") &&
+
+                        EF.Functions.Like(
+                            t.Passenger!.LastName!,
+                            $"%{lastName}%"));
+                }
+            }
+
+
+            if (!string.IsNullOrWhiteSpace(
+                    request.FlightNumber))
+            {
+                var flightNumber =
+                    request.FlightNumber.Trim();
+
+                query = query.Where(t =>
+                    t.Flight!.FlightNumber ==
+                    flightNumber);
+            }
+
+
+            var matches = await query
+                .OrderBy(t =>
+                    t.Flight!.DepartureTime)
+                .Take(10)
+                .ToListAsync();
+
+
+            if (matches.Count == 0)
+            {
+                return NotFound(new
+                {
+                    success = false,
+
+                    errorMessage =
+                        "Não foi encontrado um bilhete " +
+                        "pago para estes dados."
+                });
+            }
+
+
+            if (matches.Count > 1 &&
+                string.IsNullOrWhiteSpace(
+                    request.FlightNumber) &&
+                string.IsNullOrWhiteSpace(
+                    request.DocumentNumber))
+            {
+                return Conflict(new
+                {
+                    success = false,
+
+                    errorMessage =
+                        "Foram encontrados vários bilhetes. " +
+                        "Indique também o número do voo.",
+
+                    matches =
+                        matches.Select(t => new
+                        {
+                            ticketId =
+                                t.Id,
+
+                            passengerName =
+                                $"{t.Passenger!.FirstName} " +
+                                $"{t.Passenger.LastName}".Trim(),
+
+                            flightNumber =
+                                t.Flight!.FlightNumber,
+
+                            departureTime =
+                                t.Flight.DepartureTime,
+
+                            seat =
+                                t.Seat?.Code
+                        })
+                });
+            }
+
+
+            return await PerformEmployeeCheckIn(
+                matches[0]);
+        }
+
+
+        // =========================================================
+        // MÉTODO INTERNO DE CHECK-IN
+        // =========================================================
+
+        private async Task<IActionResult>
+            PerformEmployeeCheckIn(Ticket ticket)
+        {
+            if (ticket.Status != "Paid")
+            {
+                return BadRequest(new
+                {
+                    success = false,
+
+                    errorMessage =
+                        "Este bilhete não está pago " +
+                        "ou já tem check-in."
+                });
+            }
+
+
+            if (ticket.Flight == null)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    errorMessage =
+                        "Dados do voo indisponíveis."
+                });
+            }
+
+
+            if (ticket.Flight.Status == "Cancelled")
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    errorMessage = "Voo cancelado."
+                });
+            }
+
+
+            if (ticket.Flight.Status == "Departed")
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    errorMessage = "O voo já partiu."
+                });
+            }
+
+
+            var existingBoardingPass =
+                await _boardingPassRepository
+                    .GetByTicketIdAsync(ticket.Id);
+
+            if (existingBoardingPass != null)
+            {
+                return Ok(new
+                {
+                    success = true,
+
+                    message =
+                        "Este bilhete já tem check-in feito.",
+
+                    passengerName =
+                        $"{ticket.Passenger?.FirstName} " +
+                        $"{ticket.Passenger?.LastName}".Trim(),
+
+                    flightNumber =
+                        ticket.Flight.FlightNumber,
+
+                    gate =
+                        existingBoardingPass.Gate,
+
+                    sequenceNumber =
+                        existingBoardingPass
+                            .SequenceNumber,
+
+                    qrData =
+                        existingBoardingPass.QRCode
+                });
+            }
+
+
+            var gateNumber =
+                ticket.Flight.Gate?.GateNumber ??
+                "TBA";
+
+
+            var boardingPass = new BoardingPass
+            {
+                TicketId = ticket.Id,
+
+                IssuedAt = DateTime.UtcNow,
+
+                Gate = gateNumber,
+
+                SequenceNumber =
+                    await _boardingPassRepository
+                        .GetNextSequenceNumberAsync(
+                            ticket.FlightId),
+
+                QRCode =
+                    $"BOARDING|{ticket.Id}|" +
+                    $"{ticket.Flight.FlightNumber}|" +
+                    $"{gateNumber}"
+            };
+
+
+            await _boardingPassRepository
+                .AddAsync(boardingPass);
+
+            ticket.Status = "CheckedIn";
+
+            await _ticketRepository
+                .UpdateAsync(ticket);
+
+            await _boardingPassRepository
+                .SaveAsync();
+
+
+            // AUDITORIA GERAL
+            await _auditService.LogAsync(
+                User,
+                "CheckIn",
+                "Passenger",
+                $"Check-in presencial realizado para " +
+                $"{ticket.Passenger?.FirstName} " +
+                $"{ticket.Passenger?.LastName} " +
+                $"no voo {ticket.Flight.FlightNumber}.",
+                ticket.FlightId,
+                ticket.Id,
+                "Paid",
+                "CheckedIn");
+
+
+            return Ok(new
+            {
+                success = true,
+
+                message =
+                    "Check-in realizado com sucesso.",
+
+                passengerName =
+                    $"{ticket.Passenger?.FirstName} " +
+                    $"{ticket.Passenger?.LastName}".Trim(),
+
+                flightNumber =
+                    ticket.Flight.FlightNumber,
+
+                gate =
+                    gateNumber,
+
+                sequenceNumber =
+                    boardingPass.SequenceNumber,
+
+                qrData =
+                    boardingPass.QRCode
+            });
+        }
+
+
+        // =========================================================
         // GESTÃO OPERACIONAL DE PORTAS
-        // ═══════════════════════════════════════════════════════════
+        // =========================================================
 
         public class ChangeGateRequest
         {
@@ -506,8 +710,7 @@ namespace LisAeroGest.Controllers.Api
 
 
         /// <summary>
-        /// Lista todas as portas que podem ser utilizadas.
-        /// GET: /api/employee/gates
+        /// Lista todas as portas disponíveis.
         /// </summary>
         [HttpGet("gates")]
         public async Task<IActionResult> GetGates()
@@ -532,7 +735,6 @@ namespace LisAeroGest.Controllers.Api
 
         /// <summary>
         /// Altera a porta atribuída a um voo.
-        /// PUT: /api/employee/flights/{flightId}/gate
         /// </summary>
         [HttpPut("flights/{flightId:int}/gate")]
         public async Task<IActionResult> ChangeFlightGate(
@@ -544,11 +746,12 @@ namespace LisAeroGest.Controllers.Api
                 return BadRequest(new
                 {
                     success = false,
-                    errorMessage = "Selecione uma porta válida."
+                    errorMessage =
+                        "Selecione uma porta válida."
                 });
             }
 
-            // Procurar voo
+
             var flight = await _flightRepository
                 .GetAllQueryable()
                 .Include(f => f.Gate)
@@ -561,20 +764,24 @@ namespace LisAeroGest.Controllers.Api
                 return NotFound(new
                 {
                     success = false,
-                    errorMessage = "Voo não encontrado."
+                    errorMessage =
+                        "Voo não encontrado."
                 });
             }
 
-            // Não permitir alterações em voos terminados
+
             if (flight.Status == "Cancelled")
             {
                 return BadRequest(new
                 {
                     success = false,
+
                     errorMessage =
-                        "Não é possível alterar a porta de um voo cancelado."
+                        "Não é possível alterar a porta " +
+                        "de um voo cancelado."
                 });
             }
+
 
             if (flight.Status == "Departed" ||
                 flight.Status == "Arrived")
@@ -582,12 +789,14 @@ namespace LisAeroGest.Controllers.Api
                 return BadRequest(new
                 {
                     success = false,
+
                     errorMessage =
-                        "Não é possível alterar a porta de um voo já concluído."
+                        "Não é possível alterar a porta " +
+                        "de um voo já concluído."
                 });
             }
 
-            // Procurar nova porta
+
             var gate = await _gateRepository
                 .GetAllQueryable()
                 .FirstOrDefaultAsync(g =>
@@ -599,90 +808,132 @@ namespace LisAeroGest.Controllers.Api
                 return NotFound(new
                 {
                     success = false,
-                    errorMessage = "Porta não encontrada."
+                    errorMessage =
+                        "Porta não encontrada."
                 });
             }
 
-            // Porta em manutenção
+
             if (gate.Status == "Maintenance")
             {
                 return BadRequest(new
                 {
                     success = false,
+
                     errorMessage =
                         "Esta porta encontra-se em manutenção."
                 });
             }
 
-            // Se já é a mesma porta, não há nada para alterar
+
             if (flight.GateId == gate.Id)
             {
                 return Ok(new
                 {
                     success = true,
-                    message = "O voo já está atribuído a esta porta.",
-                    flightId = flight.Id,
-                    flightNumber = flight.FlightNumber,
-                    gateId = gate.Id,
-                    gateNumber = gate.GateNumber
+
+                    message =
+                        "O voo já está atribuído a esta porta.",
+
+                    flightId =
+                        flight.Id,
+
+                    flightNumber =
+                        flight.FlightNumber,
+
+                    gateId =
+                        gate.Id,
+
+                    gateNumber =
+                        gate.GateNumber
                 });
             }
 
-            // Verificar conflito operacional
+
             var occupied =
-                await _gateRepository.IsGateOccupiedAsync(
-                    gate.Id,
-                    flight.DepartureTime,
-                    flight.ArrivalTime,
-                    flight.Id);
+                await _gateRepository
+                    .IsGateOccupiedAsync(
+                        gate.Id,
+                        flight.DepartureTime,
+                        flight.ArrivalTime,
+                        flight.Id);
 
             if (occupied)
             {
                 return Conflict(new
                 {
                     success = false,
+
                     errorMessage =
-                        $"A porta {gate.GateNumber} já está ocupada " +
-                        "por outro voo neste período."
+                        $"A porta {gate.GateNumber} " +
+                        $"já está ocupada por outro voo " +
+                        $"neste período."
                 });
             }
 
-            var previousGate =
-                flight.Gate?.GateNumber ?? "Sem porta";
 
-            // Alterar porta
+            var previousGate =
+                flight.Gate?.GateNumber ??
+                "Sem porta";
+
+
             flight.GateId = gate.Id;
             flight.Gate = gate;
 
-            await _flightRepository.UpdateAsync(flight);
+            await _flightRepository
+                .UpdateAsync(flight);
+
+
+            // AUDITORIA GERAL
+            await _auditService.LogAsync(
+                User,
+                "GateChanged",
+                "Flight",
+                $"Porta do voo {flight.FlightNumber} " +
+                $"alterada de {previousGate} " +
+                $"para {gate.GateNumber}.",
+                flight.Id,
+                null,
+                previousGate,
+                gate.GateNumber);
+
 
             return Ok(new
             {
                 success = true,
-                message =
-                    $"Porta alterada de {previousGate} para {gate.GateNumber}.",
 
-                flightId = flight.Id,
-                flightNumber = flight.FlightNumber,
+                message =
+                    $"Porta alterada de {previousGate} " +
+                    $"para {gate.GateNumber}.",
+
+                flightId =
+                    flight.Id,
+
+                flightNumber =
+                    flight.FlightNumber,
 
                 previousGate,
 
-                gateId = gate.Id,
-                gateNumber = gate.GateNumber,
+                gateId =
+                    gate.Id,
 
-                terminal = gate.Terminal
+                gateNumber =
+                    gate.GateNumber,
+
+                terminal =
+                    gate.Terminal
             });
         }
 
 
-
-        // ═══════════════════════════════════════════════════════════
+        // =========================================================
         // DETALHES OPERACIONAIS DO VOO
         // GET: /api/employee/flights/{flightId}/operation
-        // ═══════════════════════════════════════════════════════════
+        // =========================================================
 
         [HttpGet("flights/{flightId:int}/operation")]
-        public async Task<IActionResult> GetFlightOperation(int flightId)
+        public async Task<IActionResult> GetFlightOperation(
+            int flightId)
         {
             var flight = await _flightRepository
                 .GetAllQueryable()
@@ -701,6 +952,7 @@ namespace LisAeroGest.Controllers.Api
                 });
             }
 
+
             var tickets = await _ticketRepository
                 .GetAllQueryable()
                 .Include(t => t.Passenger)
@@ -709,68 +961,94 @@ namespace LisAeroGest.Controllers.Api
                     !t.WasDeleted &&
                     t.FlightId == flightId &&
                     t.Status != "Cancelled")
-                .OrderBy(t => t.Passenger!.FirstName)
-                .ThenBy(t => t.Passenger!.LastName)
+                .OrderBy(t =>
+                    t.Passenger!.FirstName)
+                .ThenBy(t =>
+                    t.Passenger!.LastName)
                 .ToListAsync();
 
-            var totalPassengers = tickets.Count;
 
-            var checkedIn = tickets.Count(t =>
-                t.Status == "CheckedIn");
+            var totalPassengers =
+                tickets.Count;
 
-            var pendingCheckIns = tickets.Count(t =>
-                t.Status == "Paid");
+            var checkedIn =
+                tickets.Count(t =>
+                    t.Status == "CheckedIn");
 
-            var passengers = tickets.Select(t => new
-            {
-                ticketId = t.Id,
+            var pendingCheckIns =
+                tickets.Count(t =>
+                    t.Status == "Paid");
 
-                passengerName = t.Passenger != null
-                    ? $"{t.Passenger.FirstName} {t.Passenger.LastName}".Trim()
-                    : "Passageiro",
 
-                documentNumber = t.Passenger?.DocumentNumber ?? "",
+            var passengers =
+                tickets.Select(t => new
+                {
+                    ticketId =
+                        t.Id,
 
-                seat = t.Seat?.Code ?? "—",
+                    passengerName =
+                        t.Passenger != null
+                            ? $"{t.Passenger.FirstName} " +
+                              $"{t.Passenger.LastName}".Trim()
+                            : "Passageiro",
 
-                status = t.Status,
+                    documentNumber =
+                        t.Passenger?.DocumentNumber ?? "",
 
-                checkedIn = t.Status == "CheckedIn"
-            })
-            .ToList();
+                    seat =
+                        t.Seat?.Code ?? "—",
+
+                    status =
+                        t.Status,
+
+                    checkedIn =
+                        t.Status == "CheckedIn"
+                })
+                .ToList();
+
 
             return Ok(new
             {
-                flightId = flight.Id,
-                flightNumber = flight.FlightNumber,
+                flightId =
+                    flight.Id,
 
-                origin = flight.OriginAirport?.City ?? "—",
-                destination = flight.DestinationAirport?.City ?? "—",
+                flightNumber =
+                    flight.FlightNumber,
 
-                departureTime = flight.DepartureTime,
+                origin =
+                    flight.OriginAirport?.City ?? "—",
 
-                gate = flight.Gate?.GateNumber ?? "TBA",
+                destination =
+                    flight.DestinationAirport?.City ?? "—",
 
-                status = flight.Status,
+                departureTime =
+                    flight.DepartureTime,
+
+                gate =
+                    flight.Gate?.GateNumber ?? "TBA",
+
+                status =
+                    flight.Status,
 
                 totalPassengers,
                 checkedIn,
                 pendingCheckIns,
-
                 passengers
             });
         }
 
 
-        // =============================================================
+        // =========================================================
         // COMUNICAÇÃO PARA PASSAGEIROS DE UM VOO
         // POST: /api/employee/flights/{flightId}/communications
-        // =============================================================
+        // =========================================================
 
         [HttpPost("flights/{flightId:int}/communications")]
-        public async Task<IActionResult> SendFlightCommunication(
-     int flightId,
-     [FromBody] FlightCommunicationRequest request)
+        public async Task<IActionResult>
+            SendFlightCommunication(
+                int flightId,
+                [FromBody]
+                FlightCommunicationRequest request)
         {
             if (flightId <= 0)
             {
@@ -780,24 +1058,32 @@ namespace LisAeroGest.Controllers.Api
                 });
             }
 
+
             if (request == null ||
-                string.IsNullOrWhiteSpace(request.Message))
+                string.IsNullOrWhiteSpace(
+                    request.Message))
             {
                 return BadRequest(new
                 {
-                    message = "A mensagem é obrigatória."
+                    message =
+                        "A mensagem é obrigatória."
                 });
             }
 
-            var message = request.Message.Trim();
+
+            var message =
+                request.Message.Trim();
 
             if (message.Length > 500)
             {
                 return BadRequest(new
                 {
-                    message = "A mensagem não pode exceder 500 caracteres."
+                    message =
+                        "A mensagem não pode exceder " +
+                        "500 caracteres."
                 });
             }
+
 
             var flight = await _flightRepository
                 .GetAllQueryable()
@@ -809,9 +1095,11 @@ namespace LisAeroGest.Controllers.Api
             {
                 return NotFound(new
                 {
-                    message = "Voo não encontrado."
+                    message =
+                        "Voo não encontrado."
                 });
             }
+
 
             var tickets = await _ticketRepository
                 .GetAllQueryable()
@@ -823,92 +1111,158 @@ namespace LisAeroGest.Controllers.Api
                     t.Status != "Expired")
                 .ToListAsync();
 
+
             var userIds = tickets
                 .Where(t =>
                     t.Passenger != null &&
                     !t.Passenger.WasDeleted &&
                     !string.IsNullOrWhiteSpace(
                         t.Passenger.UserId))
-                .Select(t => t.Passenger!.UserId!)
+                .Select(t =>
+                    t.Passenger!.UserId!)
                 .Distinct()
                 .ToList();
+
 
             if (userIds.Count == 0)
             {
                 return BadRequest(new
                 {
                     message =
-                        "Este voo não possui passageiros disponíveis " +
-                        "para receber a comunicação."
+                        "Este voo não possui passageiros " +
+                        "disponíveis para receber " +
+                        "a comunicação."
                 });
             }
 
-            var type = string.IsNullOrWhiteSpace(request.Type)
-                ? "Info"
-                : request.Type.Trim();
+
+            var type =
+                string.IsNullOrWhiteSpace(
+                    request.Type)
+                    ? "Info"
+                    : request.Type.Trim();
+
 
             var title = type switch
             {
                 "Gate" =>
-                    $"Porta de embarque · {flight.FlightNumber}",
+                    $"Porta de embarque · " +
+                    $"{flight.FlightNumber}",
 
                 "Boarding" =>
-                    $"Embarque · {flight.FlightNumber}",
+                    $"Embarque · " +
+                    $"{flight.FlightNumber}",
 
                 "Delay" =>
-                    $"Informação do voo · {flight.FlightNumber}",
+                    $"Informação do voo · " +
+                    $"{flight.FlightNumber}",
 
                 _ =>
-                    $"Informação · {flight.FlightNumber}"
+                    $"Informação · " +
+                    $"{flight.FlightNumber}"
             };
 
-            // Criar uma notificação para cada passageiro
-            foreach (var userId in userIds)
+
+            foreach (var passengerUserId in userIds)
             {
-                var notification = new Notification
-                {
-                    UserId = userId,
-                    Title = title,
-                    Message = message,
-                    Type = type,
-                    Icon = "bi-megaphone",
-                    ColorClass = "text-primary",
-                    Link = null,
-                    IsRead = false,
-                    CreatedAt = DateTime.UtcNow
-                };
+                var notification =
+                    new Notification
+                    {
+                        UserId =
+                            passengerUserId,
+
+                        Title =
+                            title,
+
+                        Message =
+                            message,
+
+                        Type =
+                            type,
+
+                        Icon =
+                            "bi-megaphone",
+
+                        ColorClass =
+                            "text-primary",
+
+                        Link =
+                            null,
+
+                        IsRead =
+                            false,
+
+                        CreatedAt =
+                            DateTime.UtcNow
+                    };
 
                 await _notificationRepository
                     .AddAsync(notification);
             }
 
-            // Guardar as notificações
-            await _notificationRepository.SaveAsync();
 
-            // Identificar o funcionário que enviou a comunicação
+            await _notificationRepository
+                .SaveAsync();
+
+
             var sentByUserId =
-                User.FindFirstValue(ClaimTypes.NameIdentifier);
+                User.FindFirstValue(
+                    ClaimTypes.NameIdentifier);
 
-            // Guardar uma única entrada no histórico
-            var communication = new FlightCommunication
-            {
-                FlightId = flight.Id,
-                Type = type,
-                Message = message,
-                SentByUserId = sentByUserId,
-                RecipientsCount = userIds.Count,
-                CreatedAt = DateTime.UtcNow
-            };
 
-            _context.FlightCommunications.Add(communication);
+            var communication =
+                new FlightCommunication
+                {
+                    FlightId =
+                        flight.Id,
+
+                    Type =
+                        type,
+
+                    Message =
+                        message,
+
+                    SentByUserId =
+                        sentByUserId,
+
+                    RecipientsCount =
+                        userIds.Count,
+
+                    CreatedAt =
+                        DateTime.UtcNow
+                };
+
+
+            _context.FlightCommunications
+                .Add(communication);
 
             await _context.SaveChangesAsync();
+
+
+            // AUDITORIA GERAL
+            await _auditService.LogAsync(
+                User,
+                "CommunicationSent",
+                "Communication",
+                $"Comunicação do tipo {type} enviada " +
+                $"a {userIds.Count} passageiro(s) " +
+                $"do voo {flight.FlightNumber}.",
+                flight.Id,
+                null,
+                null,
+                $"Tipo: {type} | " +
+                $"Destinatários: {userIds.Count}");
+
 
             return Ok(new
             {
                 success = true,
-                recipients = userIds.Count,
-                communicationId = communication.Id,
+
+                recipients =
+                    userIds.Count,
+
+                communicationId =
+                    communication.Id,
 
                 message =
                     $"Comunicação enviada a " +
@@ -916,16 +1270,18 @@ namespace LisAeroGest.Controllers.Api
             });
         }
 
-        // =============================================================
-        // REQUEST
-        // =============================================================
+
+        // =========================================================
+        // REQUEST DE COMUNICAÇÃO
+        // =========================================================
 
         public class FlightCommunicationRequest
         {
-            public string Type { get; set; } = "Info";
+            public string Type { get; set; } =
+                "Info";
 
-            public string Message { get; set; } = string.Empty;
+            public string Message { get; set; } =
+                string.Empty;
         }
-
     }
 }
