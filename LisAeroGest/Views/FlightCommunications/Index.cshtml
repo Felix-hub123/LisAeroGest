@@ -1,0 +1,409 @@
+﻿@model LisAeroGest.Models.FlightCommunicationHistoryViewModel
+
+@{
+    ViewData["Title"] = "Histórico de Comunicações";
+}
+
+<div class="container-fluid py-4">
+
+    <!-- Cabeçalho -->
+    <div class="d-flex flex-column flex-lg-row
+                justify-content-between align-items-lg-center
+                gap-3 mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-chat-square-text me-2"></i>
+                Histórico de Comunicações
+            </h2>
+
+            <p class="text-muted mb-0">
+                Consulte as comunicações operacionais enviadas
+                aos passageiros.
+            </p>
+        </div>
+
+        <a asp-controller="Dashboard"
+           asp-action="AdminDashboard"
+           class="btn btn-outline-secondary">
+
+            <i class="bi bi-arrow-left me-1"></i>
+            Voltar ao Dashboard
+        </a>
+    </div>
+
+
+    <!-- Estatísticas -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="fs-2 text-primary">
+                            <i class="bi bi-megaphone"></i>
+                        </div>
+
+                        <div>
+                            <div class="text-muted small">
+                                Comunicações
+                            </div>
+
+                            <div class="fs-3 fw-bold">
+                                @Model.TotalCommunications
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="fs-2 text-success">
+                            <i class="bi bi-people"></i>
+                        </div>
+
+                        <div>
+                            <div class="text-muted small">
+                                Destinatários
+                            </div>
+
+                            <div class="fs-3 fw-bold">
+                                @Model.TotalRecipients
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="fs-2 text-warning">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+
+                        <div>
+                            <div class="text-muted small">
+                                Enviadas hoje
+                            </div>
+
+                            <div class="fs-3 fw-bold">
+                                @Model.CommunicationsToday
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Filtros -->
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <form method="get"
+                  asp-controller="FlightCommunications"
+                  asp-action="Index">
+
+                <div class="row g-3 align-items-end">
+
+                    <div class="col-12 col-lg-4">
+                        <label class="form-label fw-semibold">
+                            Pesquisar
+                        </label>
+
+                        <input type="text"
+                               name="search"
+                               value="@Model.Search"
+                               class="form-control"
+                               placeholder="Mensagem, voo ou funcionário..." />
+                    </div>
+
+
+                    <div class="col-12 col-md-4 col-lg-3">
+                        <label class="form-label fw-semibold">
+                            Tipo
+                        </label>
+
+                        <select name="type"
+                                class="form-select">
+
+                            <option value="">
+                                Todos
+                            </option>
+
+                            <option value="Info"
+                                    selected="@(Model.Type == "Info")">
+                                Informação
+                            </option>
+
+                            <option value="Gate"
+                                    selected="@(Model.Type == "Gate")">
+                                Porta
+                            </option>
+
+                            <option value="Boarding"
+                                    selected="@(Model.Type == "Boarding")">
+                                Embarque
+                            </option>
+
+                            <option value="Delay"
+                                    selected="@(Model.Type == "Delay")">
+                                Atraso
+                            </option>
+
+                        </select>
+                    </div>
+
+
+                    <div class="col-12 col-md-4 col-lg-3">
+                        <label class="form-label fw-semibold">
+                            Número do voo
+                        </label>
+
+                        <input type="text"
+                               name="flightNumber"
+                               value="@Model.FlightNumber"
+                               class="form-control"
+                               placeholder="Ex.: TP4653" />
+                    </div>
+
+
+                    <div class="col-12 col-md-4 col-lg-2">
+                        <div class="d-grid">
+
+                            <button type="submit"
+                                    class="btn btn-primary">
+
+                                <i class="bi bi-search me-1"></i>
+                                Filtrar
+                            </button>
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </form>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Search)
+                        || !string.IsNullOrWhiteSpace(Model.Type)
+                        || !string.IsNullOrWhiteSpace(Model.FlightNumber))
+            {
+                <div class="mt-3">
+
+                    <a asp-controller="FlightCommunications"
+                       asp-action="Index"
+                       class="text-decoration-none">
+
+                        <i class="bi bi-x-circle me-1"></i>
+                        Limpar filtros
+                    </a>
+
+                </div>
+            }
+
+        </div>
+    </div>
+
+
+    <!-- Histórico -->
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-header bg-white border-0 py-3">
+
+            <div class="d-flex justify-content-between
+                        align-items-center">
+
+                <div>
+                    <h5 class="fw-bold mb-0">
+                        Registos
+                    </h5>
+                </div>
+
+                <span class="badge bg-light text-dark border">
+                    @Model.Communications.Count resultado(s)
+                </span>
+
+            </div>
+
+        </div>
+
+
+        @if (Model.Communications.Count == 0)
+        {
+            <div class="card-body text-center py-5">
+
+                <div class="display-6 text-muted mb-3">
+                    <i class="bi bi-chat-square"></i>
+                </div>
+
+                <h5>
+                    Nenhuma comunicação encontrada
+                </h5>
+
+                <p class="text-muted mb-0">
+                    Não existem comunicações correspondentes
+                    aos filtros selecionados.
+                </p>
+
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+
+                <table class="table table-hover
+                                  align-middle mb-0">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>Voo</th>
+                            <th>Tipo</th>
+                            <th>Mensagem</th>
+                            <th>Funcionário</th>
+                            <th class="text-center">
+                                Destinatários
+                            </th>
+                            <th>Data / Hora</th>
+                            <th class="text-end">
+                                Ações
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var item in Model.Communications)
+                        {
+                            <tr>
+
+                                <td>
+                                    <span class="fw-bold">
+                                        @item.FlightNumber
+                                    </span>
+                                </td>
+
+
+                                <td>
+                                    @switch (item.Type)
+                                    {
+                                        case "Gate":
+                                            <span class="badge bg-primary">
+                                                Porta
+                                            </span>
+                                            break;
+
+                                        case "Boarding":
+                                            <span class="badge bg-success">
+                                                Embarque
+                                            </span>
+                                            break;
+
+                                        case "Delay":
+                                            <span class="badge bg-warning text-dark">
+                                                Atraso
+                                            </span>
+                                            break;
+
+                                        default:
+                                            <span class="badge bg-secondary">
+                                                Informação
+                                            </span>
+                                            break;
+                                    }
+                                </td>
+
+
+                                <td style="min-width: 250px;
+                                                   max-width: 420px;">
+
+                                    <div class="text-truncate"
+                                         style="max-width: 420px;"
+                                         title="@item.Message">
+
+                                        @item.Message
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+                                    @item.EmployeeName
+                                </td>
+
+
+                                <td class="text-center">
+
+                                    <span class="badge
+                                                         bg-light
+                                                         text-dark
+                                                         border">
+
+                                        <i class="bi bi-people me-1"></i>
+                                        @item.RecipientsCount
+
+                                    </span>
+
+                                </td>
+
+
+                                <td class="text-nowrap">
+
+                                    <div>
+                                        @item.CreatedAt.ToString("dd/MM/yyyy")
+                                    </div>
+
+                                    <small class="text-muted">
+                                        @item.CreatedAt.ToString("HH:mm")
+                                    </small>
+
+                                </td>
+
+
+                                <td class="text-end">
+
+                                    <a asp-controller="FlightCommunications"
+                                       asp-action="Details"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-sm
+                                                      btn-outline-primary">
+
+                                        <i class="bi bi-eye me-1"></i>
+                                        Detalhes
+
+                                    </a>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+
+    </div>
+
+</div>

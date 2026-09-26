@@ -156,6 +156,7 @@ builder.Services.AddScoped<IBoardingPassRepository, BoardingPassRepository>();
 builder.Services.AddScoped<IForumTopicRepository, ForumTopicRepository>();
 builder.Services.AddScoped<IForumCommentRepository, ForumCommentRepository>(); 
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<IFlightCommunicationRepository, FlightCommunicationRepository>();
 builder.Services.AddScoped<IUserHelper, UserHelper>();
 builder.Services.AddScoped<IBlobHelper, BlobHelper>();
 builder.Services.AddTransient<IMailHelper, MailHelper>();
