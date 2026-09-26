@@ -1,10 +1,12 @@
 ﻿using LisAeroGest.Controllers.Api.Entities;
+using LisAeroGest.Data;
 using LisAeroGest.Data.Entities;
 using LisAeroGest.Data.Interfaces;
 using LisAeroGest.Data.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace LisAeroGest.Controllers.Api
 {
@@ -22,6 +24,7 @@ namespace LisAeroGest.Controllers.Api
         private readonly IFlightRepository _flightRepository;
         private readonly IGateRepository _gateRepository;
         private readonly INotificationRepository _notificationRepository;
+        private readonly DataContext _context;
 
         public EmployeeApiController(
             ITicketRepository ticketRepository,
@@ -29,7 +32,9 @@ namespace LisAeroGest.Controllers.Api
             IPassengerRepository passengerRepository,
             IFlightRepository flightRepository,
             IGateRepository gateRepository,
-            INotificationRepository notificationRepository)
+            INotificationRepository notificationRepository, 
+            DataContext context)
+           
         {
             _ticketRepository = ticketRepository;
             _boardingPassRepository = boardingPassRepository;
@@ -37,6 +42,7 @@ namespace LisAeroGest.Controllers.Api
             _flightRepository = flightRepository;
             _gateRepository = gateRepository;
             _notificationRepository = notificationRepository;
+            _context = context;
         }
 
 
@@ -763,8 +769,8 @@ namespace LisAeroGest.Controllers.Api
 
         [HttpPost("flights/{flightId:int}/communications")]
         public async Task<IActionResult> SendFlightCommunication(
-            int flightId,
-            [FromBody] FlightCommunicationRequest request)
+     int flightId,
+     [FromBody] FlightCommunicationRequest request)
         {
             if (flightId <= 0)
             {
@@ -832,7 +838,8 @@ namespace LisAeroGest.Controllers.Api
                 return BadRequest(new
                 {
                     message =
-                        "Este voo não possui passageiros disponíveis para receber a comunicação."
+                        "Este voo não possui passageiros disponíveis " +
+                        "para receber a comunicação."
                 });
             }
 
@@ -842,32 +849,32 @@ namespace LisAeroGest.Controllers.Api
 
             var title = type switch
             {
-                "Gate" => $"Porta de embarque · {flight.FlightNumber}",
-                "Boarding" => $"Embarque · {flight.FlightNumber}",
-                "Delay" => $"Informação do voo · {flight.FlightNumber}",
-                _ => $"Informação · {flight.FlightNumber}"
+                "Gate" =>
+                    $"Porta de embarque · {flight.FlightNumber}",
+
+                "Boarding" =>
+                    $"Embarque · {flight.FlightNumber}",
+
+                "Delay" =>
+                    $"Informação do voo · {flight.FlightNumber}",
+
+                _ =>
+                    $"Informação · {flight.FlightNumber}"
             };
 
+            // Criar uma notificação para cada passageiro
             foreach (var userId in userIds)
             {
                 var notification = new Notification
                 {
                     UserId = userId,
-
                     Title = title,
-
                     Message = message,
-
                     Type = type,
-
                     Icon = "bi-megaphone",
-
                     ColorClass = "text-primary",
-
                     Link = null,
-
                     IsRead = false,
-
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -875,17 +882,39 @@ namespace LisAeroGest.Controllers.Api
                     .AddAsync(notification);
             }
 
+            // Guardar as notificações
             await _notificationRepository.SaveAsync();
+
+            // Identificar o funcionário que enviou a comunicação
+            var sentByUserId =
+                User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Guardar uma única entrada no histórico
+            var communication = new FlightCommunication
+            {
+                FlightId = flight.Id,
+                Type = type,
+                Message = message,
+                SentByUserId = sentByUserId,
+                RecipientsCount = userIds.Count,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.FlightCommunications.Add(communication);
+
+            await _context.SaveChangesAsync();
 
             return Ok(new
             {
                 success = true,
                 recipients = userIds.Count,
+                communicationId = communication.Id,
+
                 message =
-                    $"Comunicação enviada a {userIds.Count} passageiro(s)."
+                    $"Comunicação enviada a " +
+                    $"{userIds.Count} passageiro(s)."
             });
         }
-
 
         // =============================================================
         // REQUEST
