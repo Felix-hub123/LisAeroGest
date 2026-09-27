@@ -23,9 +23,9 @@ namespace LisAeroGest.Controllers
         // =========================================================
 
         public async Task<IActionResult> Index(
-            string? search,
-            string? action,
-            string? category)
+      string? search,
+      string? action,
+      string? category)
         {
             var logs =
                 (await _auditLogRepository
@@ -33,7 +33,27 @@ namespace LisAeroGest.Controllers
                 .ToList();
 
 
-            // Estatísticas são calculadas antes dos filtros.
+            // =========================================================
+            // NORMALIZAR FILTROS
+            // =========================================================
+
+            search = string.IsNullOrWhiteSpace(search)
+                ? null
+                : search.Trim();
+
+            action = string.IsNullOrWhiteSpace(action)
+                ? null
+                : action.Trim();
+
+            category = string.IsNullOrWhiteSpace(category)
+                ? null
+                : category.Trim();
+
+
+            // =========================================================
+            // ESTATÍSTICAS
+            // =========================================================
+
             var today = DateTime.UtcNow.Date;
 
             var model = new AuditLogHistoryViewModel
@@ -58,76 +78,91 @@ namespace LisAeroGest.Controllers
             };
 
 
-            IEnumerable<AuditLog> filteredLogs = logs;
+            // =========================================================
+            // COMEÇAMOS COM TODOS OS REGISTOS
+            // =========================================================
+
+            var filteredLogs = logs.ToList();
 
 
-            // =====================================================
-            // PESQUISA GERAL
-            // =====================================================
+            // =========================================================
+            // PESQUISA
+            // =========================================================
 
-            if (!string.IsNullOrWhiteSpace(search))
+            if (search != null)
             {
-                var term = search.Trim();
-
-                filteredLogs = filteredLogs.Where(a =>
-                    ContainsIgnoreCase(
-                        a.Description,
-                        term) ||
-
-                    ContainsIgnoreCase(
-                        a.Action,
-                        term) ||
-
-                    ContainsIgnoreCase(
-                        a.Category,
-                        term) ||
-
-                    ContainsIgnoreCase(
-                        a.User?.Email,
-                        term) ||
-
-                    ContainsIgnoreCase(
-                        a.Flight?.FlightNumber,
-                        term) ||
-
-                    (a.TicketId.HasValue &&
-                     a.TicketId.Value
-                         .ToString()
-                         .Contains(term,
-                             StringComparison.OrdinalIgnoreCase))
-                );
+                filteredLogs = filteredLogs
+                    .Where(a =>
+                        ContainsIgnoreCase(
+                            a.Description,
+                            search)
+                        ||
+                        ContainsIgnoreCase(
+                            a.Action,
+                            search)
+                        ||
+                        ContainsIgnoreCase(
+                            a.Category,
+                            search)
+                        ||
+                        ContainsIgnoreCase(
+                            a.User?.Email,
+                            search)
+                        ||
+                        ContainsIgnoreCase(
+                            GetUserName(a),
+                            search)
+                        ||
+                        ContainsIgnoreCase(
+                            a.Flight?.FlightNumber,
+                            search)
+                        ||
+                        (a.TicketId.HasValue &&
+                         a.TicketId.Value
+                             .ToString()
+                             .Contains(
+                                 search,
+                                 StringComparison.OrdinalIgnoreCase)))
+                    .ToList();
             }
 
 
-            // =====================================================
+            // =========================================================
             // FILTRO POR AÇÃO
-            // =====================================================
+            // =========================================================
 
-            if (!string.IsNullOrWhiteSpace(action))
+            if (action != null)
             {
-                filteredLogs = filteredLogs.Where(a =>
-                    string.Equals(
-                        a.Action,
-                        action,
-                        StringComparison.OrdinalIgnoreCase));
+                filteredLogs = filteredLogs
+                    .Where(a =>
+                        string.Equals(
+                            a.Action,
+                            action,
+                            StringComparison.OrdinalIgnoreCase))
+                    .ToList();
             }
 
 
-            // =====================================================
+            // =========================================================
             // FILTRO POR CATEGORIA
-            // =====================================================
+            // =========================================================
 
-            if (!string.IsNullOrWhiteSpace(category))
+            if (category != null)
             {
-                filteredLogs = filteredLogs.Where(a =>
-                    string.Equals(
-                        a.Category,
-                        category,
-                        StringComparison.OrdinalIgnoreCase));
+                filteredLogs = filteredLogs
+                    .Where(a =>
+                        string.Equals(
+                            a.Category,
+                            category,
+                            StringComparison.OrdinalIgnoreCase))
+                    .ToList();
             }
 
 
-            model.Logs = filteredLogs
+            // =========================================================
+            // RESULTADO
+            // =========================================================
+            model.Logs = logs
                 .OrderByDescending(a => a.CreatedAt)
                 .Select(MapToItemViewModel)
                 .ToList();
