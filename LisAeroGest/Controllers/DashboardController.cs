@@ -2,15 +2,12 @@
 using LisAeroGest.Data.Interfaces;
 using LisAeroGest.Helpers;
 using LisAeroGest.Models;
+using LisAeroGest.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LisAeroGest.Controllers
 {
-    /// <summary>
-    /// Controller do Dashboard.
-    /// Cada role recebe uma view e um ViewModel específicos.
-    /// </summary>
     public class DashboardController : Controller
     {
         private readonly IFlightRepository _flightRepository;
@@ -18,23 +15,26 @@ namespace LisAeroGest.Controllers
         private readonly IPassengerRepository _passengerRepository;
         private readonly IUserHelper _userHelper;
         private readonly INotificationRepository _notificationRepository;
+        private readonly IWeatherService _weatherService;
 
-        /// <summary>
-        /// Inicializa o controller com as dependências necessárias.
-        /// </summary>
         public DashboardController(
             IFlightRepository flightRepository,
             ITicketRepository ticketRepository,
             IPassengerRepository passengerRepository,
             IUserHelper userHelper,
-            INotificationRepository notificationRepository)
+            INotificationRepository notificationRepository,
+            IWeatherService weatherService)
         {
             _flightRepository = flightRepository;
             _ticketRepository = ticketRepository;
             _passengerRepository = passengerRepository;
             _userHelper = userHelper;
             _notificationRepository = notificationRepository;
+            _weatherService = weatherService;
         }
+
+
+
 
         /// <summary>
         /// Entrada única: redireciona para o dashboard da role autenticada.
@@ -470,6 +470,133 @@ namespace LisAeroGest.Controllers
                 return null;
 
             return await _userHelper.GetUserByEmailAsync(User.Identity.Name);
+        }
+
+
+
+
+        // =========================================================
+        //  METEOROLOGIA OPERACIONAL
+        // =========================================================
+
+        [HttpGet]
+        [Authorize(Roles = "Admin,Employee")]
+        public async Task<IActionResult> OperationalWeather()
+        {
+            var flights = (await _flightRepository.GetAllWithDetailsAsync())
+                .Where(f => !f.WasDeleted
+                    && f.DepartureTime >= DateTime.UtcNow
+                    && f.Status != "Cancelled")
+                .OrderBy(f => f.DepartureTime)
+                .ToList();
+
+            var locations = new List<(string City, string AirportCode)>
+    {
+        ("Lisbon", "LIS")
+    };
+
+            // Adicionar destinos dos próximos voos.
+            foreach (var flight in flights)
+            {
+                if (flight.DestinationAirport == null)
+                    continue;
+
+                var city = flight.DestinationAirport.City;
+                var code = flight.DestinationAirport.IATACode;
+
+                if (string.IsNullOrWhiteSpace(city))
+                    continue;
+
+                if (!locations.Any(x =>
+                    x.City.Equals(city, StringComparison.OrdinalIgnoreCase)))
+                {
+                    locations.Add((city, code ?? ""));
+                }
+            }
+
+            var model = new OperationalWeatherViewModel
+            {
+                LastUpdated = DateTime.Now
+            };
+
+            foreach (var location in locations)
+            {
+                var weather =
+                    await _weatherService.GetWeatherAsync(location.City);
+
+                if (weather == null)
+                    continue;
+
+                var windKmh =
+                    (weather.Wind?.Speed ?? 0) * 3.6;
+
+                var visibilityKm =
+                    weather.Visibility / 1000.0;
+
+                var description =
+                    weather.Weather?.FirstOrDefault()?.Description
+                    ?? "Sem informação";
+
+                var item = new OperationalWeatherItemViewModel
+                {
+                    City = weather.Name ?? location.City,
+
+                    AirportCode = location.AirportCode,
+
+                    Temperature =
+                        Math.Round(weather.Main?.Temp ?? 0, 1),
+
+                    FeelsLike =
+                        Math.Round(weather.Main?.FeelsLike ?? 0, 1),
+
+                    Humidity =
+                        weather.Main?.Humidity ?? 0,
+
+                    Description = description,
+
+                    Icon =
+                        weather.Weather?.FirstOrDefault()?.Icon
+                        ?? string.Empty,
+
+                    WindSpeedKmh =
+                        Math.Round(windKmh, 1),
+
+                    VisibilityKm =
+                        Math.Round(visibilityKm, 1)
+                };
+
+                // Alertas informativos do projeto.
+                // Não alteram automaticamente o estado do voo.
+                var alerts = new List<string>();
+
+                if (item.WindSpeedKmh >= 40)
+                {
+                    alerts.Add("Vento forte");
+                }
+
+                if (item.VisibilityKm < 5)
+                {
+                    alerts.Add("Visibilidade reduzida");
+                }
+
+                var condition = description.ToLowerInvariant();
+
+                if (condition.Contains("trovoada") ||
+                    condition.Contains("thunderstorm"))
+                {
+                    alerts.Add("Trovoada");
+                }
+
+                if (alerts.Count > 0)
+                {
+                    item.HasAlert = true;
+                    item.AlertMessage = string.Join(" • ", alerts);
+                }
+
+                model.Locations.Add(item);
+            }
+
+            return View(model);
         }
     }
 }

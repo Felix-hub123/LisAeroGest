@@ -162,7 +162,7 @@ builder.Services.AddScoped<IBlobHelper, BlobHelper>();
 builder.Services.AddTransient<IMailHelper, MailHelper>();
 builder.Services.AddScoped<IImageHelper, ImageHelper>();
 builder.Services.AddScoped<IConverterHelper, ConverterHelper>();
-builder.Services.AddScoped<WeatherService>();
+builder.Services.AddHttpClient<IWeatherService, WeatherService>();
 builder.Services.AddScoped<PdfService>();
 builder.Services.AddScoped<IFlightExportService, FlightExportService>();
 builder.Services.AddScoped<IQrCodeService, QrCodeService>();

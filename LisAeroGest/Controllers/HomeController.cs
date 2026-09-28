@@ -14,21 +14,21 @@ namespace LisAeroGest.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IFlightRepository _flightRepository;
         private readonly IAirportRepository _airportRepository;
-        private readonly WeatherService _weatherService;
-        private readonly IConverterHelper _converterHelper; 
+        private readonly IWeatherService _weatherService;
+        private readonly IConverterHelper _converterHelper;
 
         public HomeController(
             ILogger<HomeController> logger,
             IFlightRepository flightRepository,
             IAirportRepository airportRepository,
-            WeatherService weatherService,
-            IConverterHelper converterHelper) 
+            IWeatherService weatherService,
+            IConverterHelper converterHelper)
         {
             _logger = logger;
             _flightRepository = flightRepository;
             _airportRepository = airportRepository;
             _weatherService = weatherService;
-            _converterHelper = converterHelper; 
+            _converterHelper = converterHelper;
         }
 
         [HttpGet]

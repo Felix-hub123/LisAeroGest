@@ -1,0 +1,431 @@
+﻿@model LisAeroGest.Models.OperationalWeatherViewModel
+
+@{
+    ViewData["Title"] = "Meteorologia Operacional";
+
+    var alertCount = Model.Locations.Count(x => x.HasAlert);
+    var normalCount = Model.Locations.Count(x => !x.HasAlert);
+}
+
+<div class="container-fluid py-4">
+
+    <!-- CABEÇALHO -->
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="bi bi-cloud-sun fs-3 text-primary"></i>
+
+                <h2 class="fw-bold mb-0">
+                    Meteorologia Operacional
+                </h2>
+            </div>
+
+            <p class="text-muted mb-0">
+                Condições meteorológicas em Lisboa e nos destinos dos próximos voos.
+            </p>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+
+            <span class="text-muted small">
+                <i class="bi bi-clock me-1"></i>
+                Atualizado em
+                @Model.LastUpdated.ToString("dd/MM/yyyy HH:mm")
+            </span>
+
+            <a asp-controller="Dashboard"
+               asp-action="OperationalWeather"
+               class="btn btn-outline-primary">
+
+                <i class="bi bi-arrow-clockwise me-1"></i>
+                Atualizar
+            </a>
+
+        </div>
+    </div>
+
+
+    <!-- RESUMO -->
+    <div class="row g-3 mb-4">
+
+        <!-- LOCALIZAÇÕES -->
+        <div class="col-md-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body d-flex align-items-center">
+
+                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                        <i class="bi bi-geo-alt-fill fs-4 text-primary"></i>
+                    </div>
+
+                    <div>
+                        <div class="text-muted small">
+                            Localizações monitorizadas
+                        </div>
+
+                        <div class="fs-3 fw-bold">
+                            @Model.Locations.Count
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CONDIÇÕES NORMAIS -->
+        <div class="col-md-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body d-flex align-items-center">
+
+                    <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+                        <i class="bi bi-check-circle-fill fs-4 text-success"></i>
+                    </div>
+
+                    <div>
+                        <div class="text-muted small">
+                            Sem alertas
+                        </div>
+
+                        <div class="fs-3 fw-bold text-success">
+                            @normalCount
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ALERTAS -->
+        <div class="col-md-4">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body d-flex align-items-center">
+
+                    <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
+                        <i class="bi bi-exclamation-triangle-fill fs-4 text-warning"></i>
+                    </div>
+
+                    <div>
+                        <div class="text-muted small">
+                            Alertas meteorológicos
+                        </div>
+
+                        <div class="fs-3 fw-bold @(alertCount > 0 ? "text-warning" : "text-success")">
+                            @alertCount
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- AVISO OPERACIONAL -->
+    @if (alertCount > 0)
+    {
+        <div class="alert alert-warning border-0 shadow-sm mb-4">
+
+            <div class="d-flex align-items-start gap-3">
+
+                <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+
+                <div>
+                    <strong>
+                        Condições meteorológicas que requerem atenção
+                    </strong>
+
+                    <div class="small mt-1">
+                        Existem @alertCount localização(ões) com condições
+                        meteorológicas que devem ser acompanhadas pela operação.
+                    </div>
+
+                    <div class="small mt-1">
+                        Estes avisos são informativos e não alteram automaticamente
+                        o estado dos voos.
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+
+    <!-- METEOROLOGIA -->
+    @if (Model.Locations.Any())
+    {
+        <div class="row g-4">
+
+            @foreach (var item in Model.Locations)
+            {
+                <div class="col-12 col-md-6 col-xl-4">
+
+                    <div class="card border-0 shadow-sm h-100">
+
+                        <!-- TOPO -->
+                        <div class="card-body pb-2">
+
+                            <div class="d-flex justify-content-between align-items-start">
+
+                                <div>
+
+                                    <div class="d-flex align-items-center gap-2">
+
+                                        <h4 class="fw-bold mb-0">
+                                            @item.City
+                                        </h4>
+
+                                        @if (!string.IsNullOrWhiteSpace(item.AirportCode))
+                                        {
+                                            <span class="badge bg-dark">
+                                                @item.AirportCode
+                                            </span>
+                                        }
+
+                                    </div>
+
+                                    <div class="text-muted text-capitalize mt-1">
+                                        @item.Description
+                                    </div>
+
+                                </div>
+
+
+                                <!-- ÍCONE OPENWEATHER -->
+                                @if (!string.IsNullOrWhiteSpace(item.Icon))
+                                {
+                                    <img src="https://openweathermap.org/img/wn/@(item.Icon)@@2x.png"
+                                         alt="@item.Description"
+                                         width="70"
+                                         height="70" />
+                                }
+
+                            </div>
+
+
+                            <!-- TEMPERATURA -->
+                            <div class="d-flex align-items-end gap-2 mt-2">
+
+                                <span class="display-5 fw-bold">
+                                    @item.Temperature.ToString("0.#")°
+                                </span>
+
+                                <span class="text-muted mb-2">
+                                    C
+                                </span>
+
+                            </div>
+
+                            <div class="small text-muted">
+                                Sensação térmica:
+                                <strong>
+                                    @item.FeelsLike.ToString("0.#") °C
+                                </strong>
+                            </div>
+
+                        </div>
+
+
+                        <hr class="my-2" />
+
+
+                        <!-- DADOS OPERACIONAIS -->
+                        <div class="card-body pt-3">
+
+                            <div class="row g-3">
+
+                                <!-- VENTO -->
+                                <div class="col-4 text-center">
+
+                                    <i class="bi bi-wind fs-4 text-primary"></i>
+
+                                    <div class="small text-muted mt-1">
+                                        Vento
+                                    </div>
+
+                                    <strong>
+                                        @item.WindSpeedKmh.ToString("0.#")
+                                    </strong>
+
+                                    <div class="small text-muted">
+                                        km/h
+                                    </div>
+
+                                </div>
+
+
+                                <!-- VISIBILIDADE -->
+                                <div class="col-4 text-center">
+
+                                    <i class="bi bi-eye fs-4 text-primary"></i>
+
+                                    <div class="small text-muted mt-1">
+                                        Visibilidade
+                                    </div>
+
+                                    <strong>
+                                        @item.VisibilityKm.ToString("0.#")
+                                    </strong>
+
+                                    <div class="small text-muted">
+                                        km
+                                    </div>
+
+                                </div>
+
+
+                                <!-- HUMIDADE -->
+                                <div class="col-4 text-center">
+
+                                    <i class="bi bi-droplet-fill fs-4 text-primary"></i>
+
+                                    <div class="small text-muted mt-1">
+                                        Humidade
+                                    </div>
+
+                                    <strong>
+                                        @item.Humidity
+                                    </strong>
+
+                                    <div class="small text-muted">
+                                        %
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ESTADO -->
+                        <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+
+                            @if (item.HasAlert)
+                            {
+                                <div class="alert alert-warning mb-0 py-2">
+
+                                    <div class="d-flex align-items-center">
+
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+                                        <div>
+                                            <strong>
+                                                Atenção operacional
+                                            </strong>
+
+                                            @if (!string.IsNullOrWhiteSpace(item.AlertMessage))
+                                            {
+                                                <div class="small">
+                                                    @item.AlertMessage
+                                                </div>
+                                            }
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-success mb-0 py-2">
+
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+
+                                    <strong>
+                                        Sem alertas meteorológicos
+                                    </strong>
+
+                                </div>
+                            }
+
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+    }
+    else
+    {
+        <!-- SEM DADOS -->
+        <div class="card border-0 shadow-sm">
+
+            <div class="card-body text-center py-5">
+
+                <i class="bi bi-cloud-slash display-4 text-muted"></i>
+
+                <h5 class="fw-bold mt-3">
+                    Meteorologia indisponível
+                </h5>
+
+                <p class="text-muted mb-3">
+                    Não foi possível obter dados meteorológicos neste momento.
+                </p>
+
+                <a asp-controller="Dashboard"
+                   asp-action="OperationalWeather"
+                   class="btn btn-primary">
+
+                    <i class="bi bi-arrow-clockwise me-1"></i>
+                    Tentar novamente
+
+                </a>
+
+            </div>
+
+        </div>
+    }
+
+
+    <!-- NOTA -->
+    <div class="mt-4">
+
+        <div class="card border-0 bg-light">
+
+            <div class="card-body">
+
+                <div class="d-flex align-items-start gap-3">
+
+                    <i class="bi bi-info-circle fs-4 text-primary"></i>
+
+                    <div>
+
+                        <strong>
+                            Informação operacional
+                        </strong>
+
+                        <p class="text-muted small mb-0 mt-1">
+                            Os dados meteorológicos são utilizados como apoio à
+                            monitorização da operação. Os alertas apresentados são
+                            informativos e não alteram automaticamente o estado dos voos.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

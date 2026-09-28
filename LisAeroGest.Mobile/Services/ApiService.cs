@@ -840,5 +840,27 @@ namespace LisAeroGest.Mobile.Services
                         "Ocorreu um erro ao enviar a comunicação.");
             }
         }
+
+
+        // ═══════════════════════════════════════════════════════════
+        // METEOROLOGIA
+        // ═══════════════════════════════════════════════════════════
+
+        public Task<ApiResult<WeatherDto>> GetWeatherAsync(string city)
+        {
+            if (string.IsNullOrWhiteSpace(city))
+            {
+                return Task.FromResult(
+                    ApiResult<WeatherDto>.Fail(
+                        "A localização não foi indicada."));
+            }
+
+            var encodedCity = Uri.EscapeDataString(city.Trim());
+
+            return GetAsync<WeatherDto>(
+                $"api/weather/{encodedCity}");
+        }
+
+
     }
 }

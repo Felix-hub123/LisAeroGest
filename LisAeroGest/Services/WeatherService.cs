@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace LisAeroGest.Services
 {
-    public class WeatherService
+    public class WeatherService : IWeatherService
     {
         /// <summary>
         /// Serviço responsável por obter dados meteorológicos da API OpenWeatherMap.
@@ -30,17 +30,36 @@ namespace LisAeroGest.Services
         /// <returns>Objeto com os dados do tempo ou null em caso de erro.</returns>
         public async Task<WeatherData?> GetWeatherAsync(string city)
         {
-            var apiKey = _configuration["OpenWeatherMap:ApiKey"];
-            if (string.IsNullOrEmpty(apiKey)) return null;
+            var apiKey =
+                _configuration["OpenWeatherMap:ApiKey"];
+
+            if (string.IsNullOrEmpty(apiKey))
+                return null;
 
             try
             {
-                var url = $"https://api.openweathermap.org/data/2.5/weather?q={city}&units=metric&lang=pt&appid={apiKey}";
-                var response = await _httpClient.GetAsync(url);
-                if (!response.IsSuccessStatusCode) return null;
+                var url =
+                    $"https://api.openweathermap.org/data/2.5/weather" +
+                    $"?q={Uri.EscapeDataString(city)}" +
+                    $"&units=metric" +
+                    $"&lang=pt" +
+                    $"&appid={apiKey}";
 
-                var json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<WeatherData>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                var response =
+                    await _httpClient.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                    return null;
+
+                var json =
+                    await response.Content.ReadAsStringAsync();
+
+                return JsonSerializer.Deserialize<WeatherData>(
+                    json,
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
             }
             catch
             {

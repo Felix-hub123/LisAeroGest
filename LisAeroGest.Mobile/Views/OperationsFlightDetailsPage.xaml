@@ -127,6 +127,283 @@
 
 
                 <!-- =================================================
+                     METEOROLOGIA
+                ================================================== -->
+
+                <VerticalStackLayout
+                    IsVisible="{Binding HasWeather}"
+                    Spacing="10">
+
+                    <!-- TÍTULO -->
+
+                    <Grid ColumnDefinitions="*,Auto">
+
+                        <VerticalStackLayout Spacing="2">
+
+                            <Label
+                                Text="Meteorologia do voo"
+                                Style="{StaticResource Title2Style}" />
+
+                            <Label
+                                Text="Condições na origem e no destino"
+                                Style="{StaticResource CaptionStyle}" />
+
+                        </VerticalStackLayout>
+
+                        <Label
+                            Grid.Column="1"
+                            Text="☁️"
+                            FontSize="26"
+                            VerticalOptions="Center" />
+
+                    </Grid>
+
+
+                    <!-- ORIGEM E DESTINO -->
+
+                    <Grid
+                        ColumnDefinitions="*,*"
+                        ColumnSpacing="10">
+
+
+                        <!-- =========================
+                             ORIGEM
+                        ========================== -->
+
+                        <Border
+                            IsVisible="{Binding HasOriginWeather}"
+                            Style="{StaticResource CardStyle}">
+
+                            <VerticalStackLayout Spacing="6">
+
+                                <Label
+                                    Text="ORIGEM"
+                                    Style="{StaticResource FootnoteStyle}" />
+
+                                <Label
+                                    Text="{Binding OriginWeather.City}"
+                                    FontSize="15"
+                                    FontFamily="OpenSansSemibold"
+                                    LineBreakMode="TailTruncation" />
+
+                                <Label
+                                    Text="{Binding OriginWeather.Temperature,
+                                        StringFormat='{0:F1} °C'}"
+                                    FontSize="25"
+                                    FontFamily="OpenSansSemibold"
+                                    TextColor="{StaticResource AccentDark}" />
+
+                                <Label
+                                    Text="{Binding OriginWeather.Description}"
+                                    Style="{StaticResource CaptionStyle}"
+                                    LineBreakMode="WordWrap" />
+
+
+                                <!-- VENTO -->
+
+                                <HorizontalStackLayout Spacing="5">
+
+                                    <Label
+                                        Text="💨"
+                                        FontSize="12"
+                                        VerticalOptions="Center" />
+
+                                    <Label
+                                        Text="{Binding OriginWeather.WindSpeed,
+                                            StringFormat='{0:F1} km/h'}"
+                                        Style="{StaticResource FootnoteStyle}"
+                                        VerticalOptions="Center" />
+
+                                </HorizontalStackLayout>
+
+
+                                <!-- VISIBILIDADE -->
+
+                                <HorizontalStackLayout Spacing="5">
+
+                                    <Label
+                                        Text="👁"
+                                        FontSize="12"
+                                        VerticalOptions="Center" />
+
+                                    <Label
+                                        Text="{Binding OriginWeather.Visibility,
+                                            StringFormat='{0:F1} km'}"
+                                        Style="{StaticResource FootnoteStyle}"
+                                        VerticalOptions="Center" />
+
+                                </HorizontalStackLayout>
+
+
+                                <!-- HUMIDADE -->
+
+                                <HorizontalStackLayout Spacing="5">
+
+                                    <Label
+                                        Text="💧"
+                                        FontSize="12"
+                                        VerticalOptions="Center" />
+
+                                    <Label
+                                        Text="{Binding OriginWeather.Humidity,
+                                            StringFormat='{0}% humidade'}"
+                                        Style="{StaticResource FootnoteStyle}"
+                                        VerticalOptions="Center" />
+
+                                </HorizontalStackLayout>
+
+                            </VerticalStackLayout>
+
+                        </Border>
+
+
+                        <!-- =========================
+                             DESTINO
+                        ========================== -->
+
+                        <Border
+                            Grid.Column="1"
+                            IsVisible="{Binding HasDestinationWeather}"
+                            Style="{StaticResource CardStyle}">
+
+                            <VerticalStackLayout Spacing="6">
+
+                                <Label
+                                    Text="DESTINO"
+                                    Style="{StaticResource FootnoteStyle}" />
+
+                                <Label
+                                    Text="{Binding DestinationWeather.City}"
+                                    FontSize="15"
+                                    FontFamily="OpenSansSemibold"
+                                    LineBreakMode="TailTruncation" />
+
+                                <Label
+                                    Text="{Binding DestinationWeather.Temperature,
+                                        StringFormat='{0:F1} °C'}"
+                                    FontSize="25"
+                                    FontFamily="OpenSansSemibold"
+                                    TextColor="{StaticResource AccentDark}" />
+
+                                <Label
+                                    Text="{Binding DestinationWeather.Description}"
+                                    Style="{StaticResource CaptionStyle}"
+                                    LineBreakMode="WordWrap" />
+
+
+                                <!-- VENTO -->
+
+                                <HorizontalStackLayout Spacing="5">
+
+                                    <Label
+                                        Text="💨"
+                                        FontSize="12"
+                                        VerticalOptions="Center" />
+
+                                    <Label
+                                        Text="{Binding DestinationWeather.WindSpeed,
+                                            StringFormat='{0:F1} km/h'}"
+                                        Style="{StaticResource FootnoteStyle}"
+                                        VerticalOptions="Center" />
+
+                                </HorizontalStackLayout>
+
+
+                                <!-- VISIBILIDADE -->
+
+                                <HorizontalStackLayout Spacing="5">
+
+                                    <Label
+                                        Text="👁"
+                                        FontSize="12"
+                                        VerticalOptions="Center" />
+
+                                    <Label
+                                        Text="{Binding DestinationWeather.Visibility,
+                                            StringFormat='{0:F1} km'}"
+                                        Style="{StaticResource FootnoteStyle}"
+                                        VerticalOptions="Center" />
+
+                                </HorizontalStackLayout>
+
+
+                                <!-- HUMIDADE -->
+
+                                <HorizontalStackLayout Spacing="5">
+
+                                    <Label
+                                        Text="💧"
+                                        FontSize="12"
+                                        VerticalOptions="Center" />
+
+                                    <Label
+                                        Text="{Binding DestinationWeather.Humidity,
+                                            StringFormat='{0}% humidade'}"
+                                        Style="{StaticResource FootnoteStyle}"
+                                        VerticalOptions="Center" />
+
+                                </HorizontalStackLayout>
+
+                            </VerticalStackLayout>
+
+                        </Border>
+
+                    </Grid>
+
+
+                    <!-- =============================
+                         ALERTA METEOROLÓGICO
+                    ============================== -->
+
+                    <Border
+                        IsVisible="{Binding HasWeatherAlert}"
+                        Padding="14"
+                        BackgroundColor="#33FFC107"
+                        Stroke="#FFC107"
+                        StrokeThickness="1">
+
+                        <Grid
+                            ColumnDefinitions="Auto,*"
+                            ColumnSpacing="10">
+
+                            <Label
+                                Text="⚠️"
+                                FontSize="20"
+                                VerticalOptions="Center" />
+
+                            <VerticalStackLayout
+                                Grid.Column="1"
+                                Spacing="2">
+
+                                <Label
+                                    Text="Atenção meteorológica"
+                                    FontSize="13"
+                                    FontFamily="OpenSansSemibold" />
+
+                                <Label
+                                    Text="{Binding WeatherAlertMessage}"
+                                    FontSize="12"
+                                    LineBreakMode="WordWrap" />
+
+                            </VerticalStackLayout>
+
+                        </Grid>
+
+                    </Border>
+
+
+                    <!-- NOTA -->
+
+                    <Label
+                        Text="Informação meteorológica para apoio à operação. Não altera automaticamente o estado do voo."
+                        FontSize="10"
+                        Opacity="0.6"
+                        LineBreakMode="WordWrap" />
+
+                </VerticalStackLayout>
+
+
+                <!-- =================================================
                      PARTIDA / PORTA
                 ================================================== -->
 

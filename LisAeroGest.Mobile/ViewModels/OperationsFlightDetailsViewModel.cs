@@ -29,8 +29,32 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
     [ObservableProperty]
     private EmployeeFlightOperationDto? _operation;
 
+
+    // =========================================================
+    // METEOROLOGIA
+    // =========================================================
+
+    [ObservableProperty]
+    private WeatherDto? _originWeather;
+
+    [ObservableProperty]
+    private WeatherDto? _destinationWeather;
+
+    [ObservableProperty]
+    private string _weatherAlertMessage = string.Empty;
+
+
+    // =========================================================
+    // PASSAGEIROS
+    // =========================================================
+
     public ObservableCollection<EmployeeFlightPassengerDto> Passengers { get; }
         = new();
+
+
+    // =========================================================
+    // PROPRIEDADES AUXILIARES
+    // =========================================================
 
     public bool HasError =>
         !string.IsNullOrWhiteSpace(ErrorMessage);
@@ -44,6 +68,24 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
     public bool HasNoPassengers =>
         Passengers.Count == 0;
 
+    public bool HasOriginWeather =>
+        OriginWeather != null;
+
+    public bool HasDestinationWeather =>
+        DestinationWeather != null;
+
+    public bool HasWeather =>
+        OriginWeather != null ||
+        DestinationWeather != null;
+
+    public bool HasWeatherAlert =>
+        !string.IsNullOrWhiteSpace(WeatherAlertMessage);
+
+
+    // =========================================================
+    // CONSTRUTOR
+    // =========================================================
+
     public OperationsFlightDetailsViewModel(
         ApiService apiService)
     {
@@ -56,6 +98,11 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
         };
     }
 
+
+    // =========================================================
+    // ALTERAÇÕES DE PROPRIEDADES
+    // =========================================================
+
     partial void OnErrorMessageChanged(string value)
     {
         OnPropertyChanged(nameof(HasError));
@@ -66,6 +113,24 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(HasOperation));
     }
+
+    partial void OnOriginWeatherChanged(WeatherDto? value)
+    {
+        OnPropertyChanged(nameof(HasOriginWeather));
+        OnPropertyChanged(nameof(HasWeather));
+    }
+
+    partial void OnDestinationWeatherChanged(WeatherDto? value)
+    {
+        OnPropertyChanged(nameof(HasDestinationWeather));
+        OnPropertyChanged(nameof(HasWeather));
+    }
+
+    partial void OnWeatherAlertMessageChanged(string value)
+    {
+        OnPropertyChanged(nameof(HasWeatherAlert));
+    }
+
 
     // =========================================================
     // CARREGAR OPERAÇÃO
@@ -81,6 +146,10 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
         {
             IsBusy = true;
             ErrorMessage = string.Empty;
+
+            OriginWeather = null;
+            DestinationWeather = null;
+            WeatherAlertMessage = string.Empty;
 
             var result =
                 await _apiService
@@ -101,9 +170,14 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
 
             Passengers.Clear();
 
-            _allPassengers = result.Data.Passengers.ToList();
+            _allPassengers =
+                result.Data.Passengers?.ToList()
+                ?? new List<EmployeeFlightPassengerDto>();
 
             ApplyPassengerFilter();
+
+            // Carregar meteorologia depois de carregar o voo.
+            await LoadWeatherAsync();
         }
         catch (Exception)
         {
@@ -115,6 +189,144 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
             IsBusy = false;
         }
     }
+
+
+    // =========================================================
+    // CARREGAR METEOROLOGIA
+    // =========================================================
+
+    private async Task LoadWeatherAsync()
+    {
+        if (Operation == null)
+            return;
+
+        OriginWeather = null;
+        DestinationWeather = null;
+        WeatherAlertMessage = string.Empty;
+
+        var errors = new List<string>();
+
+        // -------------------------
+        // ORIGEM
+        // -------------------------
+
+        if (!string.IsNullOrWhiteSpace(Operation.Origin))
+        {
+            var originResult =
+                await _apiService.GetWeatherAsync(
+                    Operation.Origin);
+
+            if (originResult.Success &&
+                originResult.Data != null)
+            {
+                OriginWeather = originResult.Data;
+            }
+            else
+            {
+                errors.Add(
+                    $"Origem ({Operation.Origin}): " +
+                    $"{originResult.ErrorMessage}");
+            }
+        }
+
+
+        // =====================================================
+        // DESTINO
+        // =====================================================
+
+        if (!string.IsNullOrWhiteSpace(Operation.Destination))
+        {
+            var destinationResult =
+                await _apiService.GetWeatherAsync(
+                    Operation.Destination);
+
+            if (destinationResult.Success &&
+                destinationResult.Data != null)
+            {
+                DestinationWeather =
+                    destinationResult.Data;
+            }
+            else
+            {
+                errors.Add(
+                    $"Destino ({Operation.Destination}): " +
+                    $"{destinationResult.ErrorMessage}");
+            }
+        }
+
+
+        // =====================================================
+        // MOSTRAR ERRO DA METEOROLOGIA
+        // =====================================================
+
+        if (errors.Count > 0)
+        {
+            await Shell.Current.DisplayAlert(
+                "Meteorologia",
+                string.Join(
+                    Environment.NewLine,
+                    errors),
+                "OK");
+        }
+
+
+        // =====================================================
+        // ALERTAS METEOROLÓGICOS
+        // =====================================================
+
+        var alerts = new List<string>();
+
+        CheckWeatherAlert(
+            OriginWeather,
+            "Origem",
+            alerts);
+
+        CheckWeatherAlert(
+            DestinationWeather,
+            "Destino",
+            alerts);
+
+        WeatherAlertMessage =
+            string.Join(" • ", alerts);
+    }
+
+
+    // =========================================================
+    // VERIFICAR CONDIÇÕES METEOROLÓGICAS
+    // =========================================================
+
+    private static void CheckWeatherAlert(
+        WeatherDto? weather,
+        string location,
+        List<string> alerts)
+    {
+        if (weather == null)
+            return;
+
+        if (weather.WindSpeed >= 40)
+        {
+            alerts.Add(
+                $"{location}: vento forte");
+        }
+
+        if (weather.Visibility < 5)
+        {
+            alerts.Add(
+                $"{location}: visibilidade reduzida");
+        }
+
+        var condition =
+            weather.Description?.ToLowerInvariant()
+            ?? string.Empty;
+
+        if (condition.Contains("trovoada") ||
+            condition.Contains("thunderstorm"))
+        {
+            alerts.Add(
+                $"{location}: trovoada");
+        }
+    }
+
 
     // =========================================================
     // PESQUISA DE PASSAGEIROS
@@ -155,7 +367,6 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
             Passengers.Add(passenger);
         }
     }
-
 
 
     // =========================================================
@@ -226,9 +437,9 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
             IsBusy = false;
         }
 
-        // Atualizar dados depois do check-in.
         await LoadAsync();
     }
+
 
     // =========================================================
     // GERIR PORTA DESTE VOO
