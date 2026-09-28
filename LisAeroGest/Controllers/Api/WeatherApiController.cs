@@ -1,4 +1,5 @@
 ﻿using LisAeroGest.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,7 +7,7 @@ namespace LisAeroGest.Controllers
 {
     [Route("api/weather")]
     [ApiController]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class WeatherApiController : ControllerBase
     {
         private readonly IWeatherService _weatherService;
@@ -44,23 +45,16 @@ namespace LisAeroGest.Controllers
             return Ok(new
             {
                 city = weather.Name ?? city,
-
                 temperature = weather.Main?.Temp ?? 0,
-
                 feelsLike = weather.Main?.FeelsLike ?? 0,
-
                 humidity = weather.Main?.Humidity ?? 0,
-
                 description =
                     weather.Weather?.FirstOrDefault()?.Description
                     ?? "Sem informação",
-
                 icon =
                     weather.Weather?.FirstOrDefault()?.Icon
                     ?? string.Empty,
-
                 windSpeed = Math.Round(windKmh, 1),
-
                 visibility = Math.Round(visibilityKm, 1)
             });
         }
