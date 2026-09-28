@@ -25,7 +25,7 @@ namespace LisAeroGest.Controllers
         private readonly IConverterHelper _converterHelper;
         private readonly PdfService _pdfService;
         private readonly IPayPalService _payPalService;
-        private readonly WeatherService _weatherService;
+        private readonly IWeatherService _weatherService;
         private readonly IWhatsAppService _whatsAppService;
         private readonly IMailHelper _mailHelper;
 
@@ -34,18 +34,18 @@ namespace LisAeroGest.Controllers
         private const decimal MealFee = 15m;
 
         public ShopController(
-            IFlightRepository flightRepository,
-            IAirportRepository airportRepository,
-            ISeatRepository seatRepository,
-            ITicketRepository ticketRepository,
-            IPassengerRepository passengerRepository,
-            IUserHelper userHelper,
-            IConverterHelper converterHelper,
-            PdfService pdfService,
-            IPayPalService payPalService,
-            WeatherService weatherService,
-            IWhatsAppService whatsAppService,
-            IMailHelper mailHelper )
+             IFlightRepository flightRepository,
+             IAirportRepository airportRepository,
+             ISeatRepository seatRepository,
+             ITicketRepository ticketRepository,
+             IPassengerRepository passengerRepository,
+             IUserHelper userHelper,
+             IConverterHelper converterHelper,
+             PdfService pdfService,
+             IPayPalService payPalService,
+             IWeatherService weatherService,
+             IWhatsAppService whatsAppService,
+             IMailHelper mailHelper)
         {
             _flightRepository = flightRepository;
             _airportRepository = airportRepository;

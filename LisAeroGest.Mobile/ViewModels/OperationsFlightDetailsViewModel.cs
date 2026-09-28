@@ -204,8 +204,6 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
         DestinationWeather = null;
         WeatherAlertMessage = string.Empty;
 
-        var errors = new List<string>();
-
         // -------------------------
         // ORIGEM
         // -------------------------
@@ -221,18 +219,11 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
             {
                 OriginWeather = originResult.Data;
             }
-            else
-            {
-                errors.Add(
-                    $"Origem ({Operation.Origin}): " +
-                    $"{originResult.ErrorMessage}");
-            }
         }
 
-
-        // =====================================================
+        // -------------------------
         // DESTINO
-        // =====================================================
+        // -------------------------
 
         if (!string.IsNullOrWhiteSpace(Operation.Destination))
         {
@@ -246,33 +237,11 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
                 DestinationWeather =
                     destinationResult.Data;
             }
-            else
-            {
-                errors.Add(
-                    $"Destino ({Operation.Destination}): " +
-                    $"{destinationResult.ErrorMessage}");
-            }
         }
 
-
-        // =====================================================
-        // MOSTRAR ERRO DA METEOROLOGIA
-        // =====================================================
-
-        if (errors.Count > 0)
-        {
-            await Shell.Current.DisplayAlert(
-                "Meteorologia",
-                string.Join(
-                    Environment.NewLine,
-                    errors),
-                "OK");
-        }
-
-
-        // =====================================================
+        // -------------------------
         // ALERTAS METEOROLÓGICOS
-        // =====================================================
+        // -------------------------
 
         var alerts = new List<string>();
 

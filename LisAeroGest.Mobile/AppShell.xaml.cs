@@ -6,29 +6,61 @@ namespace LisAeroGest.Mobile
     public partial class AppShell : Shell
     {
         private readonly AuthService _authService;
+        private readonly ApiService _apiService;
 
         private static bool _sessionExpiredAlreadyShown = false;
         private bool _isChangingMenu = false;
 
-        public AppShell(AuthService authService)
+        public AppShell(
+            AuthService authService,
+            ApiService apiService)
         {
             InitializeComponent();
 
             _authService = authService;
+            _apiService = apiService;
 
-            // Passenger routes
+            // =====================================================
+            // ROTAS DO PASSAGEIRO
+            // =====================================================
+
             Routing.RegisterRoute(
-             nameof(CheckInPage),
-             new DiRouteFactory<CheckInPage>());
-            Routing.RegisterRoute(nameof(FlightDetailsPage), typeof(FlightDetailsPage));
-            Routing.RegisterRoute(nameof(SelectSeatPage), typeof(SelectSeatPage));
-            Routing.RegisterRoute(nameof(PaymentPage), typeof(PaymentPage));
-            Routing.RegisterRoute(nameof(SettingsPage), typeof(SettingsPage));
-            Routing.RegisterRoute(nameof(HistoryPage), typeof(HistoryPage));
-            Routing.RegisterRoute(nameof(FavoritesPage), typeof(FavoritesPage));
-            Routing.RegisterRoute(nameof(PassengerFlightsPage), typeof(PassengerFlightsPage));
+                nameof(CheckInPage),
+                new DiRouteFactory<CheckInPage>());
 
-            // Employee routes
+            Routing.RegisterRoute(
+                nameof(FlightDetailsPage),
+                typeof(FlightDetailsPage));
+
+            Routing.RegisterRoute(
+                nameof(SelectSeatPage),
+                typeof(SelectSeatPage));
+
+            Routing.RegisterRoute(
+                nameof(PaymentPage),
+                typeof(PaymentPage));
+
+            Routing.RegisterRoute(
+                nameof(SettingsPage),
+                typeof(SettingsPage));
+
+            Routing.RegisterRoute(
+                nameof(HistoryPage),
+                typeof(HistoryPage));
+
+            Routing.RegisterRoute(
+                nameof(FavoritesPage),
+                typeof(FavoritesPage));
+
+            Routing.RegisterRoute(
+                nameof(PassengerFlightsPage),
+                typeof(PassengerFlightsPage));
+
+
+            // =====================================================
+            // ROTAS DO FUNCIONÁRIO
+            // =====================================================
+
             Routing.RegisterRoute(
                 nameof(OperationsPassengersPage),
                 typeof(OperationsPassengersPage));
@@ -45,17 +77,29 @@ namespace LisAeroGest.Mobile
                 nameof(OperationsFlightDetailsPage),
                 new DiRouteFactory<OperationsFlightDetailsPage>());
 
-            // Listen for HTTP 401 responses
-            AuthTokenHandler.UnauthorizedDetected += OnUnauthorizedDetected;
+
+            // =====================================================
+            // SESSÃO
+            // =====================================================
+
+            // Escuta respostas HTTP 401.
+            AuthTokenHandler.UnauthorizedDetected +=
+                OnUnauthorizedDetected;
         }
 
+
+        // =========================================================
+        // CONFIGURAR AUTENTICAÇÃO
+        // =========================================================
+
         /// <summary>
-        /// Checks authentication and displays the correct menu
-        /// according to the authenticated user's role.
+        /// Verifica a autenticação e apresenta o menu correto
+        /// de acordo com o perfil do utilizador.
         /// </summary>
         public async Task ConfigureAuthenticationAsync()
         {
-            var isAuthenticated = await _authService.IsAuthenticatedAsync();
+            var isAuthenticated =
+                await _authService.IsAuthenticatedAsync();
 
             if (!isAuthenticated)
             {
@@ -63,7 +107,8 @@ namespace LisAeroGest.Mobile
                 return;
             }
 
-            var role = await _authService.GetRoleAsync();
+            var role =
+                await _authService.GetRoleAsync();
 
             System.Diagnostics.Debug.WriteLine(
                 $"[AppShell] Role: {role}");
@@ -71,8 +116,14 @@ namespace LisAeroGest.Mobile
             await ShowAuthenticatedMenuAsync(role);
         }
 
+
+        // =========================================================
+        // MENU SEM AUTENTICAÇÃO
+        // =========================================================
+
         /// <summary>
-        /// Displays only the login area when no user is authenticated.
+        /// Apresenta apenas a área de login quando
+        /// não existe utilizador autenticado.
         /// </summary>
         private async Task ShowUnauthenticatedMenuAsync()
         {
@@ -83,26 +134,28 @@ namespace LisAeroGest.Mobile
             {
                 _isChangingMenu = true;
 
-                await MainThread.InvokeOnMainThreadAsync(async () =>
-                {
-                  
-                    LoginItem.IsVisible = true;
-
-                   
-                    PassengerTabs.IsVisible = false;
-                    EmployeeTabs.IsVisible = false;
-
-                  
-                    await Task.Delay(150);
-
-                   
-                    var loginShellItem = LoginItem.Parent as ShellItem;
-
-                    if (loginShellItem != null && CurrentItem != loginShellItem)
+                await MainThread.InvokeOnMainThreadAsync(
+                    async () =>
                     {
-                        CurrentItem = loginShellItem;
-                    }
-                });
+                        LoginItem.IsVisible = true;
+
+                        PassengerTabs.IsVisible = false;
+                        EmployeeTabs.IsVisible = false;
+
+                        // Limpar contador quando termina a sessão.
+                        NotificationsTab.Title = "Alertas";
+
+                        await Task.Delay(150);
+
+                        var loginShellItem =
+                            LoginItem.Parent as ShellItem;
+
+                        if (loginShellItem != null &&
+                            CurrentItem != loginShellItem)
+                        {
+                            CurrentItem = loginShellItem;
+                        }
+                    });
             }
             finally
             {
@@ -110,10 +163,17 @@ namespace LisAeroGest.Mobile
             }
         }
 
+
+        // =========================================================
+        // MENU AUTENTICADO
+        // =========================================================
+
         /// <summary>
-        /// Displays the correct authenticated menu according to the user's role.
+        /// Apresenta o menu correto de acordo
+        /// com o perfil do utilizador.
         /// </summary>
-        private async Task ShowAuthenticatedMenuAsync(string? role)
+        private async Task ShowAuthenticatedMenuAsync(
+            string? role)
         {
             if (_isChangingMenu)
                 return;
@@ -122,41 +182,53 @@ namespace LisAeroGest.Mobile
             {
                 _isChangingMenu = true;
 
-                await MainThread.InvokeOnMainThreadAsync(async () =>
-                {
-                    if (role is "Employee" or "Admin")
+                await MainThread.InvokeOnMainThreadAsync(
+                    async () =>
                     {
-                        // Make employee tabs visible first
-                        EmployeeTabs.IsVisible = true;
+                        // =========================================
+                        // FUNCIONÁRIO / ADMIN
+                        // =========================================
 
-                        await Task.Delay(100);
-
-                        if (CurrentItem != EmployeeTabs)
+                        if (role is "Employee" or "Admin")
                         {
-                            CurrentItem = EmployeeTabs;
+                            EmployeeTabs.IsVisible = true;
+
+                            await Task.Delay(100);
+
+                            if (CurrentItem != EmployeeTabs)
+                            {
+                                CurrentItem = EmployeeTabs;
+                            }
+
+                            LoginItem.IsVisible = false;
+                            PassengerTabs.IsVisible = false;
+
+                            // O contador é apenas do passageiro.
+                            NotificationsTab.Title = "Alertas";
                         }
 
-                        // Hide the other areas
-                        LoginItem.IsVisible = false;
-                        PassengerTabs.IsVisible = false;
-                    }
-                    else
-                    {
-                        // Make passenger tabs visible first
-                        PassengerTabs.IsVisible = true;
+                        // =========================================
+                        // PASSAGEIRO
+                        // =========================================
 
-                        await Task.Delay(100);
-
-                        if (CurrentItem != PassengerTabs)
+                        else
                         {
-                            CurrentItem = PassengerTabs;
-                        }
+                            PassengerTabs.IsVisible = true;
 
-                        // Hide the other areas
-                        LoginItem.IsVisible = false;
-                        EmployeeTabs.IsVisible = false;
-                    }
-                });
+                            await Task.Delay(100);
+
+                            if (CurrentItem != PassengerTabs)
+                            {
+                                CurrentItem = PassengerTabs;
+                            }
+
+                            LoginItem.IsVisible = false;
+                            EmployeeTabs.IsVisible = false;
+
+                            // Atualizar contador das notificações.
+                            await RefreshNotificationBadgeAsync();
+                        }
+                    });
             }
             finally
             {
@@ -164,9 +236,53 @@ namespace LisAeroGest.Mobile
             }
         }
 
+
+        // =========================================================
+        // CONTADOR DE NOTIFICAÇÕES
+        // =========================================================
+
         /// <summary>
-        /// Called when the API returns HTTP 401.
-        /// Clears the current session and returns to the login area.
+        /// Obtém o número de notificações não lidas
+        /// e atualiza o título da tab Alertas.
+        /// </summary>
+        public async Task RefreshNotificationBadgeAsync()
+        {
+            try
+            {
+                var result =
+                    await _apiService
+                        .GetUnreadNotificationCountAsync();
+
+                if (!result.Success ||
+                    result.Data == null)
+                {
+                    NotificationsTab.Title = "Alertas";
+                    return;
+                }
+
+                var count = result.Data.Count;
+
+                NotificationsTab.Title =
+                    count > 0
+                        ? $"Alertas ({count})"
+                        : "Alertas";
+            }
+            catch
+            {
+                // O contador não deve impedir
+                // o funcionamento da aplicação.
+                NotificationsTab.Title = "Alertas";
+            }
+        }
+
+
+        // =========================================================
+        // SESSÃO EXPIRADA
+        // =========================================================
+
+        /// <summary>
+        /// Executado quando a API devolve HTTP 401.
+        /// Limpa a sessão e regressa ao login.
         /// </summary>
         private async Task OnUnauthorizedDetected()
         {
@@ -181,13 +297,14 @@ namespace LisAeroGest.Mobile
 
                 await ShowUnauthenticatedMenuAsync();
 
-                await MainThread.InvokeOnMainThreadAsync(async () =>
-                {
-                    await DisplayAlert(
-                        "Sessão expirada",
-                        "A sua sessão expirou. Por favor, inicie sessão novamente.",
-                        "OK");
-                });
+                await MainThread.InvokeOnMainThreadAsync(
+                    async () =>
+                    {
+                        await DisplayAlert(
+                            "Sessão expirada",
+                            "A sua sessão expirou. Por favor, inicie sessão novamente.",
+                            "OK");
+                    });
             }
             finally
             {
@@ -195,13 +312,20 @@ namespace LisAeroGest.Mobile
             }
         }
 
+
+        // =========================================================
+        // LOGOUT
+        // =========================================================
+
         /// <summary>
-        /// Logs out the current user and restores the Shell
-        /// to its unauthenticated state.
+        /// Termina a sessão e restaura o Shell
+        /// para o estado sem autenticação.
         /// </summary>
         public async Task LogoutAsync()
         {
             _authService.Logout();
+
+            NotificationsTab.Title = "Alertas";
 
             await ShowUnauthenticatedMenuAsync();
         }

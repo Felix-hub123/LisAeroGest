@@ -17,11 +17,14 @@
         Padding="16"
         RowSpacing="12">
 
+
+        <!-- ================================================= -->
         <!-- CABEÇALHO -->
+        <!-- ================================================= -->
 
         <VerticalStackLayout
             Grid.Row="0"
-            Spacing="10">
+            Spacing="12">
 
             <Label
                 Text="Escolhe o teu lugar"
@@ -29,13 +32,23 @@
                 FontFamily="OpenSansSemibold"
                 HorizontalOptions="Center" />
 
+            <Label
+                Text="Seleciona um dos lugares disponíveis"
+                FontSize="12"
+                Opacity="0.7"
+                HorizontalOptions="Center" />
+
+
+            <!-- ============================================= -->
             <!-- LEGENDA -->
+            <!-- ============================================= -->
 
             <HorizontalStackLayout
                 HorizontalOptions="Center"
-                Spacing="18">
+                Spacing="14">
 
-                <!-- Disponível -->
+
+                <!-- DISPONÍVEL -->
 
                 <HorizontalStackLayout Spacing="5">
 
@@ -49,12 +62,13 @@
 
                     <Label
                         Text="Disponível"
-                        FontSize="11"
+                        FontSize="10"
                         VerticalOptions="Center" />
 
                 </HorizontalStackLayout>
 
-                <!-- Selecionado -->
+
+                <!-- SELECIONADO -->
 
                 <HorizontalStackLayout Spacing="5">
 
@@ -63,29 +77,32 @@
                         HeightRequest="15"
                         BackgroundColor="{StaticResource AccentDark}"
                         Stroke="{StaticResource AccentDark}"
+                        StrokeThickness="2"
                         StrokeShape="RoundRectangle 4" />
 
                     <Label
                         Text="Selecionado"
-                        FontSize="11"
+                        FontSize="10"
                         VerticalOptions="Center" />
 
                 </HorizontalStackLayout>
 
-                <!-- Ocupado -->
+
+                <!-- OCUPADO -->
 
                 <HorizontalStackLayout Spacing="5">
 
                     <Border
                         WidthRequest="15"
                         HeightRequest="15"
-                        BackgroundColor="#34373D"
-                        Stroke="#55585E"
+                        BackgroundColor="#7F1D1D"
+                        Stroke="#EF4444"
+                        StrokeThickness="2"
                         StrokeShape="RoundRectangle 4" />
 
                     <Label
                         Text="Ocupado"
-                        FontSize="11"
+                        FontSize="10"
                         VerticalOptions="Center" />
 
                 </HorizontalStackLayout>
@@ -95,7 +112,9 @@
         </VerticalStackLayout>
 
 
+        <!-- ================================================= -->
         <!-- LOADING -->
+        <!-- ================================================= -->
 
         <ActivityIndicator
             Grid.Row="1"
@@ -105,7 +124,9 @@
             HorizontalOptions="Center" />
 
 
+        <!-- ================================================= -->
         <!-- LUGARES -->
+        <!-- ================================================= -->
 
         <CollectionView
             Grid.Row="2"
@@ -125,7 +146,8 @@
                         TextColor="{StaticResource AccentDark}" />
 
                     <Label
-                        Text="Não existem lugares."
+                        Text="Não existem lugares disponíveis para apresentar."
+                        HorizontalTextAlignment="Center"
                         HorizontalOptions="Center"
                         FontFamily="OpenSansSemibold" />
 
@@ -133,6 +155,10 @@
 
             </CollectionView.EmptyView>
 
+
+            <!-- ============================================= -->
+            <!-- GRELHA -->
+            <!-- ============================================= -->
 
             <CollectionView.ItemsLayout>
 
@@ -145,15 +171,21 @@
             </CollectionView.ItemsLayout>
 
 
+            <!-- ============================================= -->
+            <!-- LUGAR -->
+            <!-- ============================================= -->
+
             <CollectionView.ItemTemplate>
 
                 <DataTemplate x:DataType="models:SeatDto">
 
                     <Border
                         Padding="8"
-                        MinimumHeightRequest="74"
-                        StrokeThickness="1.5"
-                        StrokeShape="RoundRectangle 9">
+                        MinimumHeightRequest="88"
+                        Stroke="{StaticResource AccentDark}"
+                        BackgroundColor="Transparent"
+                        StrokeThickness="2"
+                        StrokeShape="RoundRectangle 10">
 
                         <Border.GestureRecognizers>
 
@@ -167,30 +199,11 @@
                         </Border.GestureRecognizers>
 
 
-                        <!-- ESTADO VISUAL -->
+                        <!-- ================================= -->
+                        <!-- ESTADOS VISUAIS -->
+                        <!-- ================================= -->
 
                         <Border.Triggers>
-
-                            <!-- DISPONÍVEL -->
-
-                            <DataTrigger
-                                TargetType="Border"
-                                Binding="{Binding IsAvailable}"
-                                Value="True">
-
-                                <Setter
-                                    Property="Stroke"
-                                    Value="{StaticResource AccentDark}" />
-
-                                <Setter
-                                    Property="BackgroundColor"
-                                    Value="Transparent" />
-
-                                <Setter
-                                    Property="Opacity"
-                                    Value="1" />
-
-                            </DataTrigger>
 
 
                             <!-- OCUPADO -->
@@ -202,15 +215,15 @@
 
                                 <Setter
                                     Property="Stroke"
-                                    Value="#55585E" />
+                                    Value="#EF4444" />
 
                                 <Setter
                                     Property="BackgroundColor"
-                                    Value="#2B2D31" />
+                                    Value="#7F1D1D" />
 
                                 <Setter
                                     Property="Opacity"
-                                    Value="0.55" />
+                                    Value="0.75" />
 
                             </DataTrigger>
 
@@ -239,34 +252,19 @@
                         </Border.Triggers>
 
 
+                        <!-- ================================= -->
+                        <!-- INFORMAÇÃO -->
+                        <!-- ================================= -->
+
                         <VerticalStackLayout
-                            Spacing="3"
+                            Spacing="2"
                             VerticalOptions="Center">
 
                             <Label
                                 Text="{Binding Code}"
                                 FontSize="18"
                                 FontFamily="OpenSansSemibold"
-                                HorizontalOptions="Center" />
-
-                            <Label
-                                Text="{Binding SeatClass}"
-                                FontSize="10"
-                                HorizontalOptions="Center" />
-
-                            <Label
-                                Text="{Binding DisplayPrice}"
-                                FontSize="10"
-                                HorizontalOptions="Center" />
-
-                            <!-- Indicação de ocupado -->
-
-                            <Label
-                                Text="OCUPADO"
-                                FontSize="9"
-                                FontFamily="OpenSansSemibold"
-                                HorizontalOptions="Center"
-                                IsVisible="False">
+                                HorizontalOptions="Center">
 
                                 <Label.Triggers>
 
@@ -276,8 +274,96 @@
                                         Value="False">
 
                                         <Setter
-                                            Property="IsVisible"
-                                            Value="True" />
+                                            Property="TextColor"
+                                            Value="White" />
+
+                                    </DataTrigger>
+
+                                </Label.Triggers>
+
+                            </Label>
+
+
+                            <Label
+                                Text="{Binding SeatClass}"
+                                FontSize="10"
+                                HorizontalOptions="Center">
+
+                                <Label.Triggers>
+
+                                    <DataTrigger
+                                        TargetType="Label"
+                                        Binding="{Binding IsAvailable}"
+                                        Value="False">
+
+                                        <Setter
+                                            Property="TextColor"
+                                            Value="White" />
+
+                                    </DataTrigger>
+
+                                </Label.Triggers>
+
+                            </Label>
+
+
+                            <Label
+                                Text="{Binding DisplayPrice}"
+                                FontSize="10"
+                                HorizontalOptions="Center">
+
+                                <Label.Triggers>
+
+                                    <DataTrigger
+                                        TargetType="Label"
+                                        Binding="{Binding IsAvailable}"
+                                        Value="False">
+
+                                        <Setter
+                                            Property="TextColor"
+                                            Value="White" />
+
+                                    </DataTrigger>
+
+                                </Label.Triggers>
+
+                            </Label>
+
+
+                            <!-- ESTADO -->
+
+                            <Label
+                                Text="{Binding StatusText}"
+                                FontSize="9"
+                                FontFamily="OpenSansSemibold"
+                                HorizontalOptions="Center">
+
+                                <Label.Triggers>
+
+                                    <!-- OCUPADO -->
+
+                                    <DataTrigger
+                                        TargetType="Label"
+                                        Binding="{Binding IsAvailable}"
+                                        Value="False">
+
+                                        <Setter
+                                            Property="TextColor"
+                                            Value="White" />
+
+                                    </DataTrigger>
+
+
+                                    <!-- SELECIONADO -->
+
+                                    <DataTrigger
+                                        TargetType="Label"
+                                        Binding="{Binding IsSelected}"
+                                        Value="True">
+
+                                        <Setter
+                                            Property="TextColor"
+                                            Value="White" />
 
                                     </DataTrigger>
 
@@ -296,7 +382,9 @@
         </CollectionView>
 
 
+        <!-- ================================================= -->
         <!-- RODAPÉ -->
+        <!-- ================================================= -->
 
         <Border
             Grid.Row="3"
@@ -305,18 +393,28 @@
 
             <VerticalStackLayout Spacing="9">
 
+
+                <!-- MENSAGEM -->
+
                 <Label
                     Text="{Binding ErrorMessage}"
                     TextColor="{AppThemeBinding
                         Light={StaticResource Error},
                         Dark={StaticResource ErrorDark}}"
+                    HorizontalTextAlignment="Center"
                     HorizontalOptions="Center" />
+
+
+                <!-- LUGAR SELECIONADO -->
 
                 <Label
                     Text="{Binding SelectedSeat.Code,
                         StringFormat='Lugar selecionado: {0}'}"
                     HorizontalOptions="Center"
                     FontFamily="OpenSansSemibold" />
+
+
+                <!-- CONFIRMAR -->
 
                 <Button
                     Text="Confirmar lugar"

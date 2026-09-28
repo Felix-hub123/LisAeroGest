@@ -15,8 +15,34 @@ namespace LisAeroGest.Mobile.Models
 
         public decimal BasePrice { get; set; }
 
+
+        // =====================================================
+        // ESTADO DE SELEÇÃO
+        // =====================================================
+
         [ObservableProperty]
         private bool _isSelected;
+
+
+        // =====================================================
+        // PROPRIEDADES VISUAIS
+        // =====================================================
+
+        public bool IsOccupied => !IsAvailable;
+
+        public string StatusText
+        {
+            get
+            {
+                if (!IsAvailable)
+                    return "OCUPADO";
+
+                if (IsSelected)
+                    return "SELECIONADO";
+
+                return "DISPONÍVEL";
+            }
+        }
 
         public string DisplayPrice =>
             BasePrice > 0
@@ -24,5 +50,15 @@ namespace LisAeroGest.Mobile.Models
                     "C",
                     new CultureInfo("pt-PT"))
                 : string.Empty;
+
+
+        // =====================================================
+        // ATUALIZAR ESTADO VISUAL
+        // =====================================================
+
+        partial void OnIsSelectedChanged(bool value)
+        {
+            OnPropertyChanged(nameof(StatusText));
+        }
     }
 }
