@@ -15,9 +15,9 @@
 
     <Grid>
 
-        <!-- ======================================= -->
-        <!-- CONTEÚDO PRINCIPAL                     -->
-        <!-- ======================================= -->
+        <!-- =====================================================
+             CONTEÚDO PRINCIPAL
+        ====================================================== -->
 
         <RefreshView
             x:Name="Refresh"
@@ -25,12 +25,15 @@
 
             <Grid RowDefinitions="Auto,Auto,*">
 
-                <!-- CABEÇALHO -->
+
+                <!-- =================================================
+                     CABEÇALHO
+                ================================================== -->
 
                 <VerticalStackLayout
                     Grid.Row="0"
                     Padding="20,28,20,12"
-                    Spacing="5">
+                    Spacing="8">
 
                     <Label
                         Text="OPERAÇÕES"
@@ -51,30 +54,96 @@
                         Style="{StaticResource FootnoteStyle}"
                         Margin="0,5,0,0" />
 
-                    <!-- ERRO -->
+
+                    <!-- =============================================
+                         SUCESSO
+                    ============================================== -->
+
+                    <Border
+                        IsVisible="{Binding HasSuccess}"
+                        Padding="12"
+                        Margin="0,6,0,0"
+                        BackgroundColor="#1A22C55E"
+                        Stroke="#22C55E"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 10">
+
+                        <Grid
+                            ColumnDefinitions="Auto,*"
+                            ColumnSpacing="10">
+
+                            <Label
+                                Text="✓"
+                                FontSize="18"
+                                FontFamily="OpenSansSemibold"
+                                TextColor="#22C55E"
+                                VerticalOptions="Center" />
+
+                            <VerticalStackLayout
+                                Grid.Column="1"
+                                Spacing="1">
+
+                                <Label
+                                    Text="Porta atualizada"
+                                    FontSize="12"
+                                    FontFamily="OpenSansSemibold"
+                                    TextColor="#22C55E" />
+
+                                <Label
+                                    Text="{Binding SuccessMessage}"
+                                    FontSize="12"
+                                    TextColor="#22C55E"
+                                    LineBreakMode="WordWrap" />
+
+                            </VerticalStackLayout>
+
+                        </Grid>
+
+                    </Border>
+
+
+                    <!-- =============================================
+                         ERRO
+                    ============================================== -->
 
                     <Border
                         IsVisible="{Binding HasError}"
-                        BackgroundColor="#33C62828"
-                        Stroke="#C62828"
+                        BackgroundColor="#1AEF4444"
+                        Stroke="#EF4444"
                         StrokeThickness="1"
-                        StrokeShape="RoundRectangle 8"
+                        StrokeShape="RoundRectangle 10"
                         Padding="12"
                         Margin="0,6,0,0">
 
-                        <Label
-                            Text="{Binding ErrorMessage}"
-                            FontSize="12"
-                            TextColor="{AppThemeBinding
-                                Light=#B71C1C,
-                                Dark=#FF8A80}" />
+                        <Grid
+                            ColumnDefinitions="Auto,*"
+                            ColumnSpacing="10">
+
+                            <Label
+                                Text="!"
+                                FontSize="18"
+                                FontFamily="OpenSansSemibold"
+                                TextColor="#EF4444"
+                                VerticalOptions="Center" />
+
+                            <Label
+                                Grid.Column="1"
+                                Text="{Binding ErrorMessage}"
+                                FontSize="12"
+                                TextColor="#EF4444"
+                                VerticalOptions="Center"
+                                LineBreakMode="WordWrap" />
+
+                        </Grid>
 
                     </Border>
 
                 </VerticalStackLayout>
 
 
-                <!-- LOADING -->
+                <!-- =================================================
+                     LOADING
+                ================================================== -->
 
                 <ActivityIndicator
                     Grid.Row="1"
@@ -85,7 +154,9 @@
                     Margin="0,5" />
 
 
-                <!-- VOOS -->
+                <!-- =================================================
+                     LISTA DE VOOS
+                ================================================== -->
 
                 <CollectionView
                     Grid.Row="2"
@@ -105,12 +176,12 @@
                                 HorizontalOptions="Center" />
 
                             <Label
-                                Text="Sem portas atribuídas"
+                                Text="Sem voos disponíveis"
                                 Style="{StaticResource Title2Style}"
                                 HorizontalTextAlignment="Center" />
 
                             <Label
-                                Text="Não existem voos com porta atribuída neste momento."
+                                Text="Não existem voos disponíveis para gestão de porta neste momento."
                                 Style="{StaticResource CaptionStyle}"
                                 HorizontalTextAlignment="Center" />
 
@@ -121,7 +192,8 @@
 
                     <CollectionView.ItemTemplate>
 
-                        <DataTemplate x:DataType="models:FlightDto">
+                        <DataTemplate
+                            x:DataType="models:FlightDto">
 
                             <Border
                                 Style="{StaticResource CardStyle}"
@@ -130,7 +202,10 @@
 
                                 <VerticalStackLayout Spacing="13">
 
-                                    <!-- PORTA + HORA -->
+
+                                    <!-- =================================
+                                         PORTA + HORA
+                                    ================================== -->
 
                                     <Grid ColumnDefinitions="*,Auto">
 
@@ -147,6 +222,7 @@
                                                 TextColor="{StaticResource AccentDark}" />
 
                                         </VerticalStackLayout>
+
 
                                         <VerticalStackLayout
                                             Grid.Column="1"
@@ -169,6 +245,8 @@
                                     </Grid>
 
 
+                                    <!-- SEPARADOR -->
+
                                     <BoxView
                                         HeightRequest="1"
                                         BackgroundColor="{AppThemeBinding
@@ -176,7 +254,9 @@
                                             Dark={StaticResource BorderDark}}" />
 
 
-                                    <!-- VOO -->
+                                    <!-- =================================
+                                         VOO
+                                    ================================== -->
 
                                     <Grid ColumnDefinitions="*,Auto">
 
@@ -197,7 +277,8 @@
                                                         <Span
                                                             Text="{Binding Origin}" />
 
-                                                        <Span Text="  →  " />
+                                                        <Span
+                                                            Text="  →  " />
 
                                                         <Span
                                                             Text="{Binding Destination}" />
@@ -211,7 +292,7 @@
                                         </VerticalStackLayout>
 
 
-                                        <!-- ESTADO -->
+                                        <!-- ESTADO AUTOMÁTICO -->
 
                                         <Border
                                             Grid.Column="1"
@@ -229,7 +310,9 @@
                                     </Grid>
 
 
-                                    <!-- AÇÃO -->
+                                    <!-- =================================
+                                         AÇÃO
+                                    ================================== -->
 
                                     <Button
                                         Text="Alterar porta"
@@ -254,9 +337,9 @@
         </RefreshView>
 
 
-        <!-- ======================================= -->
-        <!-- FUNDO ESCURECIDO DO EDITOR              -->
-        <!-- ======================================= -->
+        <!-- =====================================================
+             FUNDO ESCURECIDO DO EDITOR
+        ====================================================== -->
 
         <BoxView
             IsVisible="{Binding IsGateEditorVisible}"
@@ -264,9 +347,9 @@
             InputTransparent="False" />
 
 
-        <!-- ======================================= -->
-        <!-- EDITOR DE PORTA                         -->
-        <!-- ======================================= -->
+        <!-- =====================================================
+             EDITOR DA PORTA
+        ====================================================== -->
 
         <Border
             IsVisible="{Binding IsGateEditorVisible}"
@@ -282,7 +365,10 @@
 
             <VerticalStackLayout Spacing="16">
 
-                <!-- CABEÇALHO -->
+
+                <!-- =================================================
+                     CABEÇALHO DO EDITOR
+                ================================================== -->
 
                 <Grid ColumnDefinitions="*,Auto">
 
@@ -301,6 +387,7 @@
 
                     </VerticalStackLayout>
 
+
                     <Button
                         Grid.Column="1"
                         Text="✕"
@@ -312,7 +399,9 @@
                 </Grid>
 
 
-                <!-- PORTA ATUAL -->
+                <!-- =================================================
+                     PORTA ATUAL
+                ================================================== -->
 
                 <Border
                     Style="{StaticResource InputCardStyle}"
@@ -334,6 +423,7 @@
 
                         </VerticalStackLayout>
 
+
                         <Label
                             Grid.Column="1"
                             Text="🚪"
@@ -345,7 +435,9 @@
                 </Border>
 
 
-                <!-- NOVA PORTA -->
+                <!-- =================================================
+                     NOVA PORTA
+                ================================================== -->
 
                 <VerticalStackLayout Spacing="7">
 
@@ -369,18 +461,69 @@
                 </VerticalStackLayout>
 
 
-                <!-- ERRO -->
+                <!-- =================================================
+                     ERRO DENTRO DO EDITOR
+                ================================================== -->
 
-                <Label
-                    Text="{Binding ErrorMessage}"
+                <Border
                     IsVisible="{Binding HasError}"
-                    TextColor="{AppThemeBinding
-                        Light={StaticResource Error},
-                        Dark={StaticResource ErrorDark}}"
-                    FontSize="12" />
+                    Padding="10"
+                    BackgroundColor="#1AEF4444"
+                    Stroke="#EF4444"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 8">
+
+                    <Grid
+                        ColumnDefinitions="Auto,*"
+                        ColumnSpacing="8">
+
+                        <Label
+                            Text="!"
+                            FontSize="15"
+                            FontFamily="OpenSansSemibold"
+                            TextColor="#EF4444"
+                            VerticalOptions="Center" />
+
+                        <Label
+                            Grid.Column="1"
+                            Text="{Binding ErrorMessage}"
+                            TextColor="#EF4444"
+                            FontSize="12"
+                            LineBreakMode="WordWrap"
+                            VerticalOptions="Center" />
+
+                    </Grid>
+
+                </Border>
 
 
-                <!-- BOTÕES -->
+                <!-- =================================================
+                     PROCESSAMENTO
+                ================================================== -->
+
+                <HorizontalStackLayout
+                    IsVisible="{Binding IsBusy}"
+                    HorizontalOptions="Center"
+                    Spacing="8">
+
+                    <ActivityIndicator
+                        IsRunning="{Binding IsBusy}"
+                        Color="{StaticResource AccentDark}"
+                        WidthRequest="20"
+                        HeightRequest="20" />
+
+                    <Label
+                        Text="A atualizar porta..."
+                        FontSize="12"
+                        VerticalOptions="Center"
+                        Opacity="0.7" />
+
+                </HorizontalStackLayout>
+
+
+                <!-- =================================================
+                     BOTÕES
+                ================================================== -->
 
                 <Grid
                     ColumnDefinitions="*,*"
@@ -389,12 +532,14 @@
                     <Button
                         Text="Cancelar"
                         Command="{Binding CancelGateChangeCommand}"
-                        Style="{StaticResource SecondaryButtonStyle}" />
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" />
 
                     <Button
                         Grid.Column="1"
                         Text="Confirmar"
-                        Command="{Binding ConfirmGateChangeCommand}" />
+                        Command="{Binding ConfirmGateChangeCommand}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" />
 
                 </Grid>
 

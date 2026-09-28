@@ -1,60 +1,426 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage x:Class="LisAeroGest.Mobile.Views.CheckInPage"
-             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
-             x:DataType="vm:CheckInViewModel"
-             Title="Boarding pass"
-             Background="{AppThemeBinding Light={StaticResource AppBackgroundLightBrush}, Dark={StaticResource AppBackgroundGradientBrush}}">
+
+<ContentPage
+    x:Class="LisAeroGest.Mobile.Views.CheckInPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
+    x:DataType="vm:CheckInViewModel"
+    Title="Cartão de embarque"
+    Background="{AppThemeBinding
+        Light={StaticResource AppBackgroundLightBrush},
+        Dark={StaticResource AppBackgroundGradientBrush}}">
+
     <ScrollView>
-        <VerticalStackLayout Padding="24,34,24,34" Spacing="20">
-            <VerticalStackLayout Spacing="3">
-                <Label Text="BOARDING PASS" FontFamily="OpenSansSemibold" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource TextSecondaryDark}}" />
-                <Label Text="A tua viagem" Style="{StaticResource TitleStyle}" />
+
+        <VerticalStackLayout
+            Padding="24,34,24,34"
+            Spacing="18">
+
+
+            <!-- =====================================================
+                 CABEÇALHO
+            ====================================================== -->
+
+            <VerticalStackLayout Spacing="4">
+
+                <Label
+                    Text="CHECK-IN"
+                    FontFamily="OpenSansSemibold"
+                    FontSize="13"
+                    TextColor="{StaticResource AccentDark}" />
+
+                <Label
+                    Text="A tua viagem"
+                    Style="{StaticResource TitleStyle}" />
+
+                <Label
+                    Text="Confirma a tua presença e consulta o cartão de embarque."
+                    Style="{StaticResource CaptionStyle}" />
+
             </VerticalStackLayout>
-            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{StaticResource AccentDark}" HorizontalOptions="Center" />
-            <Border IsVisible="{Binding HasError}" Style="{StaticResource StatusBadgeStyle}" Stroke="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}">
-                <Label Text="{Binding ErrorMessage}" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" FontSize="14" HorizontalTextAlignment="Center" />
-            </Border>
-            <VerticalStackLayout IsVisible="{Binding NotCheckedIn}" Spacing="16" Margin="0,28,0,0">
-                <Border Style="{StaticResource CardElevatedStyle}">
-                    <VerticalStackLayout Spacing="14">
-                        <Label Text="Ainda não tens check-in" Style="{StaticResource Title2Style}" HorizontalTextAlignment="Center" />
-                        <Label Text="Confirma a tua presença para gerar o cartão de embarque." Style="{StaticResource CaptionStyle}" HorizontalTextAlignment="Center" />
-                        <Button Text="Fazer check-in" Command="{Binding ConfirmCheckInCommand}" />
+
+
+            <!-- =====================================================
+                 CARREGAMENTO
+            ====================================================== -->
+
+            <HorizontalStackLayout
+                IsVisible="{Binding IsBusy}"
+                HorizontalOptions="Center"
+                Spacing="8">
+
+                <ActivityIndicator
+                    IsRunning="{Binding IsBusy}"
+                    Color="{StaticResource AccentDark}"
+                    WidthRequest="22"
+                    HeightRequest="22" />
+
+                <Label
+                    Text="A processar..."
+                    Style="{StaticResource CaptionStyle}"
+                    VerticalOptions="Center" />
+
+            </HorizontalStackLayout>
+
+
+            <!-- =====================================================
+                 ERRO
+            ====================================================== -->
+
+            <Border
+                IsVisible="{Binding HasError}"
+                Padding="14"
+                BackgroundColor="#1AEF4444"
+                Stroke="#EF4444"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 10">
+
+                <Grid
+                    ColumnDefinitions="Auto,*"
+                    ColumnSpacing="10">
+
+                    <Label
+                        Text="!"
+                        FontSize="20"
+                        FontFamily="OpenSansSemibold"
+                        TextColor="#EF4444"
+                        VerticalOptions="Center" />
+
+                    <VerticalStackLayout
+                        Grid.Column="1"
+                        Spacing="2">
+
+                        <Label
+                            Text="Não foi possível concluir"
+                            FontSize="13"
+                            FontFamily="OpenSansSemibold"
+                            TextColor="#EF4444" />
+
+                        <Label
+                            Text="{Binding ErrorMessage}"
+                            FontSize="12"
+                            TextColor="#EF4444"
+                            LineBreakMode="WordWrap" />
+
                     </VerticalStackLayout>
-                </Border>
-            </VerticalStackLayout>
-            <Border IsVisible="{Binding CheckInDone}" Style="{StaticResource CardElevatedStyle}" Stroke="{StaticResource AccentDark}" StrokeThickness="1.5" Padding="20">
-                <VerticalStackLayout Spacing="16">
-                    <Grid ColumnDefinitions="*,Auto">
-                        <Label Text="CARTÃO DE EMBARQUE" FontFamily="OpenSansSemibold" FontSize="20" TextColor="{StaticResource AccentDark}" />
-                        <Border Grid.Column="1" Style="{StaticResource StatusBadgeStyle}" Stroke="{StaticResource AccentDark}" Padding="10,5">
-                            <Label Text="CONFIRMADO" FontSize="10" TextColor="{StaticResource AccentDark}" FontFamily="OpenSansSemibold" />
-                        </Border>
-                    </Grid>
-                    <BoxView HeightRequest="1" BackgroundColor="{AppThemeBinding Light={StaticResource Border}, Dark={StaticResource BorderDark}}" />
-                    <Grid ColumnDefinitions="1.2*,*,*">
-                        <VerticalStackLayout>
-                            <Label Text="FLIGHT" Style="{StaticResource FootnoteStyle}" />
-                            <Label Text="{Binding FlightNumber}" FontFamily="OpenSansSemibold" FontSize="23" />
-                        </VerticalStackLayout>
-                        <VerticalStackLayout Grid.Column="1">
-                            <Label Text="GATE" Style="{StaticResource FootnoteStyle}" />
-                            <Label Text="{Binding Gate}" FontFamily="OpenSansSemibold" FontSize="23" TextColor="{StaticResource AccentDark}" />
-                        </VerticalStackLayout>
-                        <VerticalStackLayout Grid.Column="2">
-                            <Label Text="SEQ." Style="{StaticResource FootnoteStyle}" />
-                            <Label Text="{Binding SequenceNumber}" FontFamily="OpenSansSemibold" FontSize="23" />
-                        </VerticalStackLayout>
-                    </Grid>
-                    <BoxView HeightRequest="1" BackgroundColor="{AppThemeBinding Light={StaticResource Border}, Dark={StaticResource BorderDark}}" />
-                    <Border Style="{StaticResource CardStyle}" HorizontalOptions="Center" Padding="16" BackgroundColor="White" StrokeThickness="0">
-                        <Image Source="{Binding QrCodeImage}" WidthRequest="220" HeightRequest="220" Aspect="AspectFit" />
-                    </Border>
-                    <Label Text="Apresenta este QR Code na porta de embarque." Style="{StaticResource FootnoteStyle}" HorizontalTextAlignment="Center" />
-                </VerticalStackLayout>
+
+                </Grid>
+
             </Border>
+
+
+            <!-- =====================================================
+                 SUCESSO
+            ====================================================== -->
+
+            <Border
+                IsVisible="{Binding HasSuccess}"
+                Padding="14"
+                BackgroundColor="#1A22C55E"
+                Stroke="#22C55E"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 10">
+
+                <Grid
+                    ColumnDefinitions="Auto,*"
+                    ColumnSpacing="10">
+
+                    <Label
+                        Text="✓"
+                        FontSize="20"
+                        FontFamily="OpenSansSemibold"
+                        TextColor="#22C55E"
+                        VerticalOptions="Center" />
+
+                    <VerticalStackLayout
+                        Grid.Column="1"
+                        Spacing="2">
+
+                        <Label
+                            Text="Check-in confirmado"
+                            FontSize="13"
+                            FontFamily="OpenSansSemibold"
+                            TextColor="#22C55E" />
+
+                        <Label
+                            Text="{Binding SuccessMessage}"
+                            FontSize="12"
+                            TextColor="#22C55E"
+                            LineBreakMode="WordWrap" />
+
+                    </VerticalStackLayout>
+
+                </Grid>
+
+            </Border>
+
+
+            <!-- =====================================================
+                 AINDA NÃO TEM CHECK-IN
+            ====================================================== -->
+
+            <VerticalStackLayout
+                IsVisible="{Binding NotCheckedIn}"
+                Spacing="16"
+                Margin="0,16,0,0">
+
+                <Border
+                    Style="{StaticResource CardElevatedStyle}"
+                    Padding="22">
+
+                    <VerticalStackLayout
+                        Spacing="16">
+
+                        <Border
+                            WidthRequest="62"
+                            HeightRequest="62"
+                            HorizontalOptions="Center"
+                            BackgroundColor="{StaticResource AccentDark}"
+                            StrokeThickness="0">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle
+                                    CornerRadius="31" />
+                            </Border.StrokeShape>
+
+                            <Label
+                                Text="✓"
+                                TextColor="White"
+                                FontSize="28"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center" />
+
+                        </Border>
+
+
+                        <Label
+                            Text="Check-in disponível"
+                            Style="{StaticResource Title2Style}"
+                            HorizontalTextAlignment="Center" />
+
+
+                        <Label
+                            Text="Confirma a tua presença para obteres o cartão de embarque digital."
+                            Style="{StaticResource CaptionStyle}"
+                            HorizontalTextAlignment="Center" />
+
+
+                        <Button
+                            Text="Fazer check-in"
+                            Command="{Binding ConfirmCheckInCommand}" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+            </VerticalStackLayout>
+
+
+            <!-- =====================================================
+                 CARTÃO DE EMBARQUE
+            ====================================================== -->
+
+            <Border
+                IsVisible="{Binding CheckInDone}"
+                Style="{StaticResource CardElevatedStyle}"
+                Stroke="{StaticResource AccentDark}"
+                StrokeThickness="1.5"
+                Padding="20">
+
+                <VerticalStackLayout Spacing="18">
+
+
+                    <!-- =================================================
+                         CABEÇALHO DO CARTÃO
+                    ================================================== -->
+
+                    <Grid
+                        ColumnDefinitions="*,Auto"
+                        ColumnSpacing="10">
+
+                        <VerticalStackLayout Spacing="2">
+
+                            <Label
+                                Text="CARTÃO DE EMBARQUE"
+                                FontFamily="OpenSansSemibold"
+                                FontSize="11"
+                                TextColor="{StaticResource AccentDark}" />
+
+                            <Label
+                                Text="Passageiro confirmado"
+                                FontFamily="OpenSansSemibold"
+                                FontSize="20" />
+
+                        </VerticalStackLayout>
+
+
+                        <Border
+                            Grid.Column="1"
+                            Style="{StaticResource StatusBadgeStyle}"
+                            Stroke="#22C55E"
+                            BackgroundColor="#1A22C55E"
+                            Padding="10,5"
+                            VerticalOptions="Center">
+
+                            <Label
+                                Text="CONFIRMADO"
+                                FontSize="10"
+                                TextColor="#22C55E"
+                                FontFamily="OpenSansSemibold" />
+
+                        </Border>
+
+                    </Grid>
+
+
+                    <!-- SEPARADOR -->
+
+                    <BoxView
+                        HeightRequest="1"
+                        BackgroundColor="{AppThemeBinding
+                            Light={StaticResource Border},
+                            Dark={StaticResource BorderDark}}" />
+
+
+                    <!-- =================================================
+                         DADOS DO VOO
+                    ================================================== -->
+
+                    <Grid
+                        ColumnDefinitions="1.2*,*,*"
+                        ColumnSpacing="12">
+
+                        <VerticalStackLayout Spacing="3">
+
+                            <Label
+                                Text="VOO"
+                                Style="{StaticResource FootnoteStyle}" />
+
+                            <Label
+                                Text="{Binding FlightNumber}"
+                                FontFamily="OpenSansSemibold"
+                                FontSize="23" />
+
+                        </VerticalStackLayout>
+
+
+                        <VerticalStackLayout
+                            Grid.Column="1"
+                            Spacing="3">
+
+                            <Label
+                                Text="PORTA"
+                                Style="{StaticResource FootnoteStyle}" />
+
+                            <Label
+                                Text="{Binding Gate}"
+                                FontFamily="OpenSansSemibold"
+                                FontSize="23"
+                                TextColor="{StaticResource AccentDark}" />
+
+                        </VerticalStackLayout>
+
+
+                        <VerticalStackLayout
+                            Grid.Column="2"
+                            Spacing="3">
+
+                            <Label
+                                Text="SEQ."
+                                Style="{StaticResource FootnoteStyle}" />
+
+                            <Label
+                                Text="{Binding SequenceNumber}"
+                                FontFamily="OpenSansSemibold"
+                                FontSize="23" />
+
+                        </VerticalStackLayout>
+
+                    </Grid>
+
+
+                    <!-- SEPARADOR -->
+
+                    <BoxView
+                        HeightRequest="1"
+                        BackgroundColor="{AppThemeBinding
+                            Light={StaticResource Border},
+                            Dark={StaticResource BorderDark}}" />
+
+
+                    <!-- =================================================
+                         CARTÃO DIGITAL SEM QR
+                    ================================================== -->
+
+                    <Border
+                        Style="{StaticResource CardStyle}"
+                        Padding="18">
+
+                        <Grid
+                            ColumnDefinitions="Auto,*"
+                            ColumnSpacing="14">
+
+                            <Border
+                                WidthRequest="50"
+                                HeightRequest="50"
+                                BackgroundColor="#1A22C55E"
+                                Stroke="#22C55E"
+                                StrokeThickness="1">
+
+                                <Border.StrokeShape>
+                                    <RoundRectangle
+                                        CornerRadius="25" />
+                                </Border.StrokeShape>
+
+                                <Label
+                                    Text="✓"
+                                    FontSize="24"
+                                    TextColor="#22C55E"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center" />
+
+                            </Border>
+
+
+                            <VerticalStackLayout
+                                Grid.Column="1"
+                                VerticalOptions="Center"
+                                Spacing="3">
+
+                                <Label
+                                    Text="Check-in realizado"
+                                    FontFamily="OpenSansSemibold"
+                                    FontSize="15" />
+
+                                <Label
+                                    Text="O teu cartão de embarque está ativo e pronto para consulta."
+                                    Style="{StaticResource CaptionStyle}"
+                                    LineBreakMode="WordWrap" />
+
+                            </VerticalStackLayout>
+
+                        </Grid>
+
+                    </Border>
+
+
+                    <!-- =================================================
+                         INFORMAÇÃO
+                    ================================================== -->
+
+                    <Label
+                        Text="Consulta a porta de embarque antes da partida, pois pode sofrer alterações operacionais."
+                        Style="{StaticResource FootnoteStyle}"
+                        HorizontalTextAlignment="Center"
+                        LineBreakMode="WordWrap" />
+
+                </VerticalStackLayout>
+
+            </Border>
+
         </VerticalStackLayout>
+
     </ScrollView>
+
 </ContentPage>

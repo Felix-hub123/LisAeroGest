@@ -1,21 +1,29 @@
 using LisAeroGest.Mobile.ViewModels;
 
-namespace LisAeroGest.Mobile.Views;
-
-public partial class FavoritesPage : ContentPage
+namespace LisAeroGest.Mobile.Views
 {
-    private readonly FavoritesViewModel _viewModel;
-
-    public FavoritesPage(FavoritesViewModel viewModel)
+    public partial class FavoritesPage : ContentPage
     {
-        InitializeComponent();
-        _viewModel = viewModel;
-        BindingContext = _viewModel;
-    }
+        private readonly FavoritesViewModel _viewModel;
 
-    protected override async void OnAppearing()
-    {
-        base.OnAppearing();
-        await _viewModel.LoadCommand.ExecuteAsync(null);
+
+        public FavoritesPage(
+            FavoritesViewModel viewModel)
+        {
+            InitializeComponent();
+
+            _viewModel = viewModel;
+            BindingContext = _viewModel;
+        }
+
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+
+            await _viewModel
+                .LoadCommand
+                .ExecuteAsync(null);
+        }
     }
 }

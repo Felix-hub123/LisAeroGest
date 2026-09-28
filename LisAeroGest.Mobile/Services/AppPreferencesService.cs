@@ -1,43 +1,84 @@
 using Microsoft.Maui.Storage;
 
-namespace LisAeroGest.Mobile.Services;
-
-/// <summary>
-/// Preferências locais da aplicação. Não depende da API e funciona no Android e Windows.
-/// </summary>
-public class AppPreferencesService
+namespace LisAeroGest.Mobile.Services
 {
-    private const string ThemeKey = "app_theme";
-    private const string NotificationsKey = "notifications_enabled";
-
-    public string ThemeMode
+    /// <summary>
+    /// Preferências locais da aplicação.
+    /// São guardadas no dispositivo e não dependem da API.
+    /// </summary>
+    public class AppPreferencesService
     {
-        get => Preferences.Get(ThemeKey, "system");
-        set => Preferences.Set(ThemeKey, value);
-    }
+        private const string ThemeKey = "app_theme";
+        private const string NotificationsKey = "notifications_enabled";
 
-    public bool NotificationsEnabled
-    {
-        get => Preferences.Get(NotificationsKey, true);
-        set => Preferences.Set(NotificationsKey, value);
-    }
 
-    public void ApplyTheme()
-    {
-        if (Application.Current == null)
-            return;
+        // =========================================================
+        // TEMA
+        // =========================================================
 
-        Application.Current.UserAppTheme = ThemeMode switch
+        public string ThemeMode
         {
-            "light" => AppTheme.Light,
-            "dark" => AppTheme.Dark,
-            _ => AppTheme.Unspecified
-        };
-    }
+            get => Preferences.Get(ThemeKey, "system");
 
-    public void SetTheme(string mode)
-    {
-        ThemeMode = mode;
-        ApplyTheme();
+            private set =>
+                Preferences.Set(ThemeKey, value);
+        }
+
+
+        // =========================================================
+        // ALERTAS
+        // =========================================================
+
+        public bool NotificationsEnabled
+        {
+            get => Preferences.Get(NotificationsKey, true);
+
+            set =>
+                Preferences.Set(NotificationsKey, value);
+        }
+
+
+        // =========================================================
+        // APLICAR TEMA
+        // =========================================================
+
+        public void ApplyTheme()
+        {
+            if (Application.Current == null)
+                return;
+
+
+            Application.Current.UserAppTheme =
+                ThemeMode switch
+                {
+                    "light" => AppTheme.Light,
+                    "dark" => AppTheme.Dark,
+                    _ => AppTheme.Unspecified
+                };
+        }
+
+
+        // =========================================================
+        // ALTERAR TEMA
+        // =========================================================
+
+        public void SetTheme(string mode)
+        {
+            // Aceitar apenas valores conhecidos.
+            mode = mode?.ToLowerInvariant() ?? "system";
+
+
+            if (mode != "light" &&
+                mode != "dark" &&
+                mode != "system")
+            {
+                mode = "system";
+            }
+
+
+            ThemeMode = mode;
+
+            ApplyTheme();
+        }
     }
 }

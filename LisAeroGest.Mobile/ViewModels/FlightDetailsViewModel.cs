@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using LisAeroGest.Mobile.Models;
 using LisAeroGest.Mobile.Services;
 using LisAeroGest.Mobile.Views;
+using System.Diagnostics;
 
 namespace LisAeroGest.Mobile.ViewModels
 {
@@ -13,23 +14,64 @@ namespace LisAeroGest.Mobile.ViewModels
         private readonly ApiService _apiService;
         private readonly FavoritesService _favoritesService;
 
+
+        // =========================================================
+        // VOO
+        // =========================================================
+
         [ObservableProperty]
-        private int flightId;
+        private int _flightId;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HasFlight))]
-        private FlightDetailDto? flight;
+        private FlightDetailDto? _flight;
+
+
+        // =========================================================
+        // ESTADO
+        // =========================================================
 
         [ObservableProperty]
-        private bool isBusy;
+        private bool _isBusy;
 
         [ObservableProperty]
-        private string errorMessage = string.Empty;
+        private string _errorMessage = string.Empty;
 
         [ObservableProperty]
-        private bool isFavorite;
+        private bool _hasError;
 
-        public bool HasFlight => Flight != null;
+
+        // =========================================================
+        // FAVORITOS
+        // =========================================================
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(FavoriteButtonText))]
+        private bool _isFavorite;
+
+        [ObservableProperty]
+        private string _successMessage = string.Empty;
+
+        [ObservableProperty]
+        private bool _hasSuccess;
+
+
+        // =========================================================
+        // PROPRIEDADES AUXILIARES
+        // =========================================================
+
+        public bool HasFlight =>
+            Flight != null;
+
+        public string FavoriteButtonText =>
+            IsFavorite
+                ? "★ Favorito"
+                : "☆ Favorito";
+
+
+        // =========================================================
+        // CONSTRUTOR
+        // =========================================================
 
         public FlightDetailsViewModel(
             ApiService apiService,
@@ -39,16 +81,23 @@ namespace LisAeroGest.Mobile.ViewModels
             _favoritesService = favoritesService;
         }
 
+
+        // =========================================================
+        // NAVEGAÇÃO
+        // =========================================================
+
         public void ApplyQueryAttributes(
             IDictionary<string, object> query)
         {
             if (!query.TryGetValue(
                     "flightId",
-                    out var raw) ||
+                    out var raw)
+                ||
                 raw == null)
             {
                 return;
             }
+
 
             if (raw is int value)
             {
@@ -62,54 +111,132 @@ namespace LisAeroGest.Mobile.ViewModels
             }
         }
 
-        partial void OnFlightIdChanged(int value)
+
+        // =========================================================
+        // FLIGHT ID ALTERADO
+        // =========================================================
+
+        partial void OnFlightIdChanged(
+            int value)
         {
             if (value <= 0)
                 return;
 
+
             MainThread.BeginInvokeOnMainThread(
-                async () => await LoadAsync());
+                async () =>
+                {
+                    await LoadAsync();
+                });
         }
+
+
+        // =========================================================
+        // FEEDBACK
+        // =========================================================
+
+        private void ClearFeedback()
+        {
+            HasError = false;
+            ErrorMessage = string.Empty;
+
+            HasSuccess = false;
+            SuccessMessage = string.Empty;
+        }
+
+
+        private void ShowError(
+            string message)
+        {
+            HasSuccess = false;
+            SuccessMessage = string.Empty;
+
+            ErrorMessage = message;
+            HasError = true;
+        }
+
+
+        private void ShowSuccess(
+            string message)
+        {
+            HasError = false;
+            ErrorMessage = string.Empty;
+
+            SuccessMessage = message;
+            HasSuccess = true;
+        }
+
+
+        // =========================================================
+        // CARREGAR VOO
+        // =========================================================
 
         [RelayCommand]
         public async Task LoadAsync()
         {
-            if (FlightId <= 0 || IsBusy)
+            if (FlightId <= 0 ||
+                IsBusy)
+            {
                 return;
+            }
+
 
             try
             {
                 IsBusy = true;
-                ErrorMessage = string.Empty;
+
+                ClearFeedback();
+
 
                 var result =
-                    await _apiService.GetDetailsAsync(FlightId);
+                    await _apiService
+                        .GetDetailsAsync(
+                            FlightId);
+
+
+                // =================================================
+                // ERRO
+                // =================================================
 
                 if (!result.Success ||
                     result.Data == null)
                 {
                     Flight = null;
 
-                    ErrorMessage =
+                    ShowError(
                         result.ErrorMessage ??
-                        "Não foi possível encontrar os detalhes do voo.";
+                        "Não foi possível encontrar os detalhes do voo.");
 
                     return;
                 }
 
-                Flight = result.Data;
+
+                // =================================================
+                // VOO
+                // =================================================
+
+                Flight =
+                    result.Data;
+
+
+                // =================================================
+                // VERIFICAR FAVORITO
+                // =================================================
 
                 IsFavorite =
-                    _favoritesService.IsFavorite(Flight.Id);
+                    _favoritesService
+                        .IsFavorite(
+                            Flight.Id);
             }
             catch (Exception ex)
             {
                 Flight = null;
 
-                ErrorMessage =
-                    "Ocorreu um erro ao carregar os detalhes do voo.";
+                ShowError(
+                    "Ocorreu um erro ao carregar os detalhes do voo.");
 
-                System.Diagnostics.Debug.WriteLine(
+
+                Debug.WriteLine(
                     $"[FlightDetailsViewModel] {ex}");
             }
             finally
@@ -118,21 +245,68 @@ namespace LisAeroGest.Mobile.ViewModels
             }
         }
 
+
+        // =========================================================
+        // ADICIONAR / REMOVER FAVORITO
+        // =========================================================
+
         [RelayCommand]
         private void ToggleFavorite()
         {
-            if (Flight == null)
+            if (Flight == null ||
+                IsBusy)
+            {
                 return;
+            }
 
-            IsFavorite =
-                _favoritesService.Toggle(Flight.Id);
+
+            try
+            {
+                ClearFeedback();
+
+
+                IsFavorite =
+                    _favoritesService
+                        .Toggle(
+                            Flight.Id);
+
+
+                if (IsFavorite)
+                {
+                    ShowSuccess(
+                        $"O voo {Flight.FlightNumber} foi adicionado aos favoritos.");
+                }
+                else
+                {
+                    ShowSuccess(
+                        $"O voo {Flight.FlightNumber} foi removido dos favoritos.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(
+                    $"[FlightDetailsViewModel] Erro nos favoritos: {ex}");
+
+
+                ShowError(
+                    "Não foi possível atualizar os favoritos.");
+            }
         }
+
+
+        // =========================================================
+        // ESCOLHER LUGAR
+        // =========================================================
 
         [RelayCommand]
         private async Task SelectSeatAsync()
         {
-            if (FlightId <= 0)
+            if (FlightId <= 0 ||
+                IsBusy)
+            {
                 return;
+            }
+
 
             await Shell.Current.GoToAsync(
                 $"{nameof(SelectSeatPage)}?flightId={FlightId}");

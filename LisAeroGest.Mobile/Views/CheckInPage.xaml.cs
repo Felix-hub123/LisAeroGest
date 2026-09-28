@@ -4,11 +4,14 @@ namespace LisAeroGest.Mobile.Views;
 
 public partial class CheckInPage : ContentPage
 {
-    public CheckInPage(CheckInViewModel viewModel)
+    private readonly CheckInViewModel _viewModel;
+
+    public CheckInPage(
+        CheckInViewModel viewModel)
     {
         InitializeComponent();
-        BindingContext = viewModel;
+
+        _viewModel = viewModel;
+        BindingContext = _viewModel;
     }
-
-
 }

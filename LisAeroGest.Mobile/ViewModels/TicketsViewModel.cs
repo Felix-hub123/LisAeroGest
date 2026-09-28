@@ -11,12 +11,14 @@ namespace LisAeroGest.Mobile.ViewModels
     public partial class TicketsViewModel : ObservableObject
     {
         private readonly ApiService _apiService;
-        private readonly AuthService _authService;
+
+
+        // =========================================================
+        // ESTADO
+        // =========================================================
 
         [ObservableProperty]
         private bool _isBusy;
-
-        public ObservableCollection<TicketDto> Tickets { get; } = new();
 
         [ObservableProperty]
         private string _errorMessage = string.Empty;
@@ -24,21 +26,31 @@ namespace LisAeroGest.Mobile.ViewModels
         [ObservableProperty]
         private bool _hasError;
 
-        public TicketsViewModel(ApiService apiService, AuthService authService)
+
+        // =========================================================
+        // BILHETES
+        // =========================================================
+
+        public ObservableCollection<TicketDto> Tickets
+        {
+            get;
+        } = new();
+
+
+        // =========================================================
+        // CONSTRUTOR
+        // =========================================================
+
+        public TicketsViewModel(
+            ApiService apiService)
         {
             _apiService = apiService;
-            _authService = authService;
         }
 
-        [RelayCommand]
-        private async Task LogoutAsync()
-        {
-          
-            if (Shell.Current is AppShell shell)
-            {
-                await shell.LogoutAsync();
-            }
-        }
+
+        // =========================================================
+        // CARREGAR BILHETES
+        // =========================================================
 
         [RelayCommand]
         public async Task LoadTicketsAsync()
@@ -49,28 +61,72 @@ namespace LisAeroGest.Mobile.ViewModels
             try
             {
                 IsBusy = true;
+
                 HasError = false;
                 ErrorMessage = string.Empty;
 
-                var result = await _apiService.GetMyTicketsAsync();
+
+                var result =
+                    await _apiService
+                        .GetMyTicketsAsync();
+
+
                 Tickets.Clear();
 
-                if (result == null || !result.Success)
+
+                // =================================================
+                // ERRO
+                // =================================================
+
+                if (result == null ||
+                    !result.Success)
                 {
-                    ErrorMessage = result?.ErrorMessage
-                        ?? "Não foi possível carregar os bilhetes.";
-                    HasError = true;
+                    ShowError(
+                        result?.ErrorMessage ??
+                        "Não foi possível carregar os bilhetes.");
+
                     return;
                 }
 
-                foreach (var ticket in result.Data ?? new List<TicketDto>())
+
+                // =================================================
+                // ORDENAR BILHETES
+                //
+                // Próximas viagens aparecem primeiro.
+                // Depois aparecem as viagens anteriores.
+                // =================================================
+
+                var now = DateTime.Now;
+
+                var tickets =
+                    (result.Data ?? new List<TicketDto>())
+                    .OrderBy(ticket =>
+                        ticket.DepartureTime < now)
+                    .ThenBy(ticket =>
+                        ticket.DepartureTime < now
+                            ? DateTime.MaxValue
+                            : ticket.DepartureTime)
+                    .ThenByDescending(ticket =>
+                        ticket.DepartureTime < now
+                            ? ticket.DepartureTime
+                            : DateTime.MinValue)
+                    .ToList();
+
+
+                foreach (var ticket in tickets)
+                {
                     Tickets.Add(ticket);
+                }
             }
             catch (Exception ex)
             {
-                ErrorMessage = "Erro ao carregar bilhetes.";
-                HasError = true;
-                Debug.WriteLine(ex.Message);
+                Tickets.Clear();
+
+                Debug.WriteLine(
+                    $"[TicketsViewModel] {ex}");
+
+                ShowError(
+                    "Não foi possível carregar os bilhetes. Verifica a ligação e tenta novamente.");
             }
             finally
             {
@@ -78,15 +134,31 @@ namespace LisAeroGest.Mobile.ViewModels
             }
         }
 
-        [RelayCommand]
-        private async Task OpenTicketAsync(TicketDto? ticket)
-        {
-            if (ticket == null)
-                return;
 
-            if (ticket.Status is "Paid" or "CheckedIn")
+        // =========================================================
+        // ABRIR BILHETE
+        // =========================================================
+
+        [RelayCommand]
+        private async Task OpenTicketAsync(
+            TicketDto? ticket)
+        {
+            if (ticket == null ||
+                IsBusy)
             {
-            
+                return;
+            }
+
+
+            // =====================================================
+            // CHECK-IN CONCLUÍDO
+            // =====================================================
+
+            if (string.Equals(
+                    ticket.Status,
+                    "CheckedIn",
+                    StringComparison.OrdinalIgnoreCase))
+            {
                 await Shell.Current.GoToAsync(
                     nameof(CheckInPage),
                     new Dictionary<string, object>
@@ -97,10 +169,70 @@ namespace LisAeroGest.Mobile.ViewModels
                 return;
             }
 
+
+            // =====================================================
+            // BILHETE PAGO
+            // =====================================================
+
+            if (string.Equals(
+                    ticket.Status,
+                    "Paid",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                await Shell.Current.GoToAsync(
+                    nameof(CheckInPage),
+                    new Dictionary<string, object>
+                    {
+                        ["ticketId"] = ticket.Id
+                    });
+
+                return;
+            }
+
+
+            // =====================================================
+            // OUTROS ESTADOS
+            // =====================================================
+
             await Shell.Current.DisplayAlert(
                 "Bilhete",
-                $"Estado atual: {ticket.Status}.",
+                $"Estado atual: {FormatStatus(ticket.Status)}.",
                 "OK");
+        }
+
+
+        // =========================================================
+        // FORMATAR ESTADO
+        // =========================================================
+
+        private static string FormatStatus(
+            string? status)
+        {
+            if (string.IsNullOrWhiteSpace(status))
+                return "Desconhecido";
+
+
+            return status.ToLowerInvariant() switch
+            {
+                "paid" => "Pago",
+                "checkedin" => "Check-in concluído",
+                "confirmed" => "Confirmado",
+                "pending" => "Pendente",
+                "cancelled" => "Cancelado",
+                _ => status
+            };
+        }
+
+
+        // =========================================================
+        // ERRO
+        // =========================================================
+
+        private void ShowError(
+            string message)
+        {
+            ErrorMessage = message;
+            HasError = true;
         }
     }
 }

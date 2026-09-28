@@ -2,18 +2,36 @@ using LisAeroGest.Mobile.ViewModels;
 
 namespace LisAeroGest.Mobile.Views
 {
-    public partial class PaymentPage : ContentPage, IQueryAttributable
+    public partial class PaymentPage :
+        ContentPage,
+        IQueryAttributable
     {
-        public PaymentPage(PaymentViewModel viewModel)
+        private readonly PaymentViewModel _viewModel;
+
+
+        // =========================================================
+        // CONSTRUTOR
+        // =========================================================
+
+        public PaymentPage(
+            PaymentViewModel viewModel)
         {
             InitializeComponent();
-            BindingContext = viewModel;
+
+            _viewModel = viewModel;
+            BindingContext = _viewModel;
         }
 
-        public void ApplyQueryAttributes(IDictionary<string, object> query)
+
+        // =========================================================
+        // RECEBER PARÂMETROS
+        // =========================================================
+
+        public void ApplyQueryAttributes(
+            IDictionary<string, object> query)
         {
-            if (BindingContext is PaymentViewModel vm)
-                vm.ApplyQueryAttributes(query);
+            _viewModel.ApplyQueryAttributes(
+                query);
         }
     }
 }

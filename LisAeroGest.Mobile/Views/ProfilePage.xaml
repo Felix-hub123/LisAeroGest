@@ -1,36 +1,235 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
-             x:Class="LisAeroGest.Mobile.Views.ProfilePage"
-             x:DataType="vm:ProfileViewModel"
-             Title="Perfil"
-             Background="{AppThemeBinding Light={StaticResource AppBackgroundLightBrush}, Dark={StaticResource AppBackgroundGradientBrush}}">
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
+    x:Class="LisAeroGest.Mobile.Views.ProfilePage"
+    x:DataType="vm:ProfileViewModel"
+    Title="Perfil"
+    Background="{AppThemeBinding
+        Light={StaticResource AppBackgroundLightBrush},
+        Dark={StaticResource AppBackgroundGradientBrush}}">
+
     <ScrollView>
-        <VerticalStackLayout Padding="24,34,24,28" Spacing="18">
-            <Label Text="PERFIL" FontFamily="OpenSansSemibold" FontSize="15" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource TextSecondaryDark}}" />
-            <Border Style="{StaticResource CardElevatedStyle}">
-                <VerticalStackLayout Spacing="14">
-                    <Border Style="{StaticResource GlassIconBadgeStyle}"><Label Text="◉" FontSize="24" TextColor="{StaticResource AccentDark}" HorizontalOptions="Center" VerticalOptions="Center" /></Border>
-                    <Label Text="{Binding Email}" Style="{StaticResource Title2Style}" HorizontalTextAlignment="Center" />
-                    <Border Style="{StaticResource StatusBadgeStyle}" HorizontalOptions="Center" Padding="12,5"><Label Text="{Binding RoleLabel}" Style="{StaticResource FootnoteStyle}" TextColor="{StaticResource AccentDark}" /></Border>
+
+        <VerticalStackLayout
+            Padding="24,34,24,28"
+            Spacing="18">
+
+
+            <!-- =====================================================
+                 CABEÇALHO
+            ====================================================== -->
+
+            <VerticalStackLayout Spacing="3">
+
+                <Label
+                    Text="PERFIL"
+                    FontFamily="OpenSansSemibold"
+                    FontSize="14"
+                    TextColor="{AppThemeBinding
+                        Light={StaticResource TextSecondary},
+                        Dark={StaticResource TextSecondaryDark}}" />
+
+                <Label
+                    Text="A tua conta"
+                    Style="{StaticResource TitleStyle}" />
+
+            </VerticalStackLayout>
+
+
+            <!-- =====================================================
+                 CARREGAMENTO
+            ====================================================== -->
+
+            <ActivityIndicator
+                IsVisible="{Binding IsBusy}"
+                IsRunning="{Binding IsBusy}"
+                Color="{StaticResource AccentDark}"
+                HorizontalOptions="Center" />
+
+
+            <!-- =====================================================
+                 IDENTIFICAÇÃO
+            ====================================================== -->
+
+            <Border
+                Style="{StaticResource CardElevatedStyle}"
+                Padding="22">
+
+                <VerticalStackLayout
+                    Spacing="14">
+
+
+                    <!-- AVATAR -->
+
+                    <Border
+                        Style="{StaticResource GlassIconBadgeStyle}">
+
+                        <Label
+                            Text="◉"
+                            FontSize="24"
+                            TextColor="{StaticResource AccentDark}"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center" />
+
+                    </Border>
+
+
+                    <!-- EMAIL -->
+
+                    <Label
+                        Text="{Binding Email}"
+                        Style="{StaticResource Title2Style}"
+                        HorizontalTextAlignment="Center"
+                        LineBreakMode="TailTruncation" />
+
+
+                    <!-- ROLE -->
+
+                    <Border
+                        Style="{StaticResource StatusBadgeStyle}"
+                        HorizontalOptions="Center"
+                        Padding="12,5">
+
+                        <Label
+                            Text="{Binding RoleLabel}"
+                            Style="{StaticResource FootnoteStyle}"
+                            TextColor="{StaticResource AccentDark}" />
+
+                    </Border>
+
                 </VerticalStackLayout>
+
             </Border>
-            <Border Style="{StaticResource CardStyle}" Padding="18">
-                <Grid ColumnDefinitions="Auto,*">
-                    <Label Text="✓" FontSize="22" TextColor="{StaticResource AccentDark}" />
-                    <VerticalStackLayout Grid.Column="1" Margin="12,0,0,0">
-                        <Label Text="Conta protegida" Style="{StaticResource BodyEmphasisStyle}" />
-                        <Label Text="Mantém os teus dados de passageiro e reservas num só lugar." Style="{StaticResource CaptionStyle}" />
+
+
+            <!-- =====================================================
+                 SEGURANÇA / INFORMAÇÃO
+            ====================================================== -->
+
+            <Border
+                Style="{StaticResource CardStyle}"
+                Padding="18">
+
+                <Grid
+                    ColumnDefinitions="Auto,*"
+                    ColumnSpacing="12">
+
+                    <Label
+                        Text="✓"
+                        FontSize="22"
+                        TextColor="{StaticResource AccentDark}"
+                        VerticalOptions="Start" />
+
+
+                    <VerticalStackLayout
+                        Grid.Column="1"
+                        Spacing="3">
+
+                        <Label
+                            Text="Conta protegida"
+                            Style="{StaticResource BodyEmphasisStyle}" />
+
+                        <Label
+                            Text="{Binding AccountDescription}"
+                            Style="{StaticResource CaptionStyle}"
+                            LineBreakMode="WordWrap" />
+
                     </VerticalStackLayout>
+
                 </Grid>
+
             </Border>
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                <Button Text="⭐ Favoritos" Style="{StaticResource SecondaryButtonStyle}" Clicked="OnFavoritesClicked" />
-                <Button Grid.Column="1" Text="Histórico" Style="{StaticResource SecondaryButtonStyle}" Clicked="OnHistoryClicked" />
-            </Grid>
-            <Button Text="⚙ Preferências" Style="{StaticResource SecondaryButtonStyle}" Clicked="OnSettingsClicked" />
-            <Button Text="Terminar sessão" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding LogoutCommand}" />
+
+
+            <!-- =====================================================
+                 ÁREA DO PASSAGEIRO
+            ====================================================== -->
+
+            <VerticalStackLayout
+                IsVisible="{Binding IsPassenger}"
+                Spacing="12">
+
+                <Label
+                    Text="A MINHA CONTA"
+                    FontFamily="OpenSansSemibold"
+                    FontSize="11"
+                    TextColor="{AppThemeBinding
+                        Light={StaticResource TextSecondary},
+                        Dark={StaticResource TextSecondaryDark}}" />
+
+
+                <Grid
+                    ColumnDefinitions="*,*"
+                    ColumnSpacing="10">
+
+                    <Button
+                        Text="⭐ Favoritos"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Clicked="OnFavoritesClicked" />
+
+
+                    <Button
+                        Grid.Column="1"
+                        Text="Histórico"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Clicked="OnHistoryClicked" />
+
+                </Grid>
+
+
+                <Button
+                    Text="⚙ Preferências"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Clicked="OnSettingsClicked" />
+
+            </VerticalStackLayout>
+
+
+            <!-- =====================================================
+                 ÁREA DO FUNCIONÁRIO
+            ====================================================== -->
+
+            <Border
+                IsVisible="{Binding IsEmployee}"
+                Style="{StaticResource CardStyle}"
+                Padding="18">
+
+                <VerticalStackLayout Spacing="6">
+
+                    <Label
+                        Text="ÁREA OPERACIONAL"
+                        FontFamily="OpenSansSemibold"
+                        FontSize="11"
+                        TextColor="{StaticResource AccentDark}" />
+
+                    <Label
+                        Text="Perfil de operações"
+                        Style="{StaticResource BodyEmphasisStyle}" />
+
+                    <Label
+                        Text="Utiliza o Centro de Operações para consultar voos, passageiros, portas e comunicações."
+                        Style="{StaticResource CaptionStyle}"
+                        LineBreakMode="WordWrap" />
+
+                </VerticalStackLayout>
+
+            </Border>
+
+
+            <!-- =====================================================
+                 LOGOUT
+            ====================================================== -->
+
+            <Button
+                Text="Terminar sessão"
+                Style="{StaticResource SecondaryButtonStyle}"
+                Command="{Binding LogoutCommand}" />
+
         </VerticalStackLayout>
+
     </ScrollView>
+
 </ContentPage>

@@ -11,7 +11,6 @@ public partial class OperationsGatesViewModel : ObservableObject
 {
     private readonly ApiService _apiService;
 
-    // ID recebido através da página de operação.
     [ObservableProperty]
     private int _flightId;
 
@@ -36,11 +35,27 @@ public partial class OperationsGatesViewModel : ObservableObject
     [ObservableProperty]
     private bool _hasError;
 
+    [ObservableProperty]
+    private string _successMessage = string.Empty;
+
+    [ObservableProperty]
+    private bool _hasSuccess;
+
+
+    // =========================================================
+    // COLEÇÕES
+    // =========================================================
+
     public ObservableCollection<FlightDto> GatesFlights { get; }
         = new();
 
     public ObservableCollection<GateDto> AvailableGates { get; }
         = new();
+
+
+    // =========================================================
+    // PROPRIEDADES AUXILIARES
+    // =========================================================
 
     public string SelectedFlightTitle =>
         SelectedFlight == null
@@ -50,16 +65,25 @@ public partial class OperationsGatesViewModel : ObservableObject
               $"{SelectedFlight.Destination}";
 
     public string CurrentGate =>
-        string.IsNullOrWhiteSpace(
-            SelectedFlight?.Gate)
+        string.IsNullOrWhiteSpace(SelectedFlight?.Gate)
             ? "Sem porta"
             : SelectedFlight.Gate;
+
+
+    // =========================================================
+    // CONSTRUTOR
+    // =========================================================
 
     public OperationsGatesViewModel(
         ApiService apiService)
     {
         _apiService = apiService;
     }
+
+
+    // =========================================================
+    // ALTERAÇÕES DE PROPRIEDADES
+    // =========================================================
 
     partial void OnSelectedFlightChanged(
         FlightDto? value)
@@ -70,6 +94,49 @@ public partial class OperationsGatesViewModel : ObservableObject
         OnPropertyChanged(
             nameof(CurrentGate));
     }
+
+
+    // =========================================================
+    // LIMPAR MENSAGENS
+    // =========================================================
+
+    private void ClearMessages()
+    {
+        HasError = false;
+        ErrorMessage = string.Empty;
+
+        HasSuccess = false;
+        SuccessMessage = string.Empty;
+    }
+
+
+    // =========================================================
+    // MOSTRAR ERRO
+    // =========================================================
+
+    private void ShowError(string message)
+    {
+        HasSuccess = false;
+        SuccessMessage = string.Empty;
+
+        ErrorMessage = message;
+        HasError = true;
+    }
+
+
+    // =========================================================
+    // MOSTRAR SUCESSO
+    // =========================================================
+
+    private void ShowSuccess(string message)
+    {
+        HasError = false;
+        ErrorMessage = string.Empty;
+
+        SuccessMessage = message;
+        HasSuccess = true;
+    }
+
 
     // =========================================================
     // CARREGAR VOOS
@@ -101,6 +168,10 @@ public partial class OperationsGatesViewModel : ObservableObject
                     result.ErrorMessage ??
                     "Não foi possível carregar as portas.";
 
+                ShowError(
+                    result.ErrorMessage ??
+                    "Não foi possível carregar as portas.");
+
                 return;
             }
 
@@ -129,10 +200,10 @@ public partial class OperationsGatesViewModel : ObservableObject
                 _ => $"{flights.Count} voos disponíveis."
             };
 
-            // -------------------------------------------------
-            // Se veio da operação de um voo,
-            // abre diretamente esse voo.
-            // -------------------------------------------------
+
+            // =====================================================
+            // ABRIR DIRETAMENTE O VOO RECEBIDO
+            // =====================================================
 
             if (FlightId > 0)
             {
@@ -140,8 +211,6 @@ public partial class OperationsGatesViewModel : ObservableObject
                     GatesFlights.FirstOrDefault(
                         f => f.Id == FlightId);
 
-                // Limpar para não voltar a abrir
-                // automaticamente num refresh.
                 FlightId = 0;
 
                 if (selectedFlight != null)
@@ -151,10 +220,8 @@ public partial class OperationsGatesViewModel : ObservableObject
                 }
                 else
                 {
-                    ErrorMessage =
-                        "O voo selecionado não foi encontrado.";
-
-                    HasError = true;
+                    ShowError(
+                        "O voo selecionado não foi encontrado.");
                 }
             }
         }
@@ -168,10 +235,8 @@ public partial class OperationsGatesViewModel : ObservableObject
             StatusLabel =
                 "Não foi possível carregar as operações.";
 
-            ErrorMessage =
-                "Ocorreu um erro ao carregar os voos.";
-
-            HasError = true;
+            ShowError(
+                "Ocorreu um erro ao carregar os voos.");
         }
         finally
         {
@@ -179,8 +244,9 @@ public partial class OperationsGatesViewModel : ObservableObject
         }
     }
 
+
     // =========================================================
-    // CARREGAR EDITOR
+    // CARREGAR EDITOR DA PORTA
     // =========================================================
 
     private async Task LoadGateEditorAsync(
@@ -198,11 +264,9 @@ public partial class OperationsGatesViewModel : ObservableObject
 
         if (!result.Success)
         {
-            ErrorMessage =
+            ShowError(
                 result.ErrorMessage ??
-                "Não foi possível carregar as portas.";
-
-            HasError = true;
+                "Não foi possível carregar as portas.");
 
             return;
         }
@@ -226,8 +290,11 @@ public partial class OperationsGatesViewModel : ObservableObject
             AvailableGates.Add(gate);
         }
 
-        // Selecionar automaticamente
-        // a porta atual do voo.
+
+        // =====================================================
+        // SELECIONAR A PORTA ATUAL
+        // =====================================================
+
         SelectedGate =
             AvailableGates.FirstOrDefault(
                 g =>
@@ -238,6 +305,7 @@ public partial class OperationsGatesViewModel : ObservableObject
 
         IsGateEditorVisible = true;
     }
+
 
     // =========================================================
     // ABRIR EDITOR MANUALMENTE
@@ -254,6 +322,8 @@ public partial class OperationsGatesViewModel : ObservableObject
         {
             IsBusy = true;
 
+            ClearMessages();
+
             await LoadGateEditorAsync(flight);
         }
         catch (Exception ex)
@@ -261,16 +331,15 @@ public partial class OperationsGatesViewModel : ObservableObject
             Debug.WriteLine(
                 $"[OperationsGates] Load gates error: {ex}");
 
-            ErrorMessage =
-                "Não foi possível carregar as portas disponíveis.";
-
-            HasError = true;
+            ShowError(
+                "Não foi possível carregar as portas disponíveis.");
         }
         finally
         {
             IsBusy = false;
         }
     }
+
 
     // =========================================================
     // CANCELAR ALTERAÇÃO
@@ -288,8 +357,9 @@ public partial class OperationsGatesViewModel : ObservableObject
         ErrorMessage = string.Empty;
     }
 
+
     // =========================================================
-    // CONFIRMAR ALTERAÇÃO
+    // CONFIRMAR ALTERAÇÃO DA PORTA
     // =========================================================
 
     [RelayCommand]
@@ -298,52 +368,80 @@ public partial class OperationsGatesViewModel : ObservableObject
         if (IsBusy)
             return;
 
+
+        // =====================================================
+        // VALIDAR VOO
+        // =====================================================
+
         if (SelectedFlight == null)
         {
-            ErrorMessage =
-                "Nenhum voo foi selecionado.";
-
-            HasError = true;
+            ShowError(
+                "Nenhum voo foi selecionado.");
 
             return;
         }
+
+
+        // =====================================================
+        // VALIDAR PORTA
+        // =====================================================
 
         if (SelectedGate == null)
         {
-            ErrorMessage =
-                "Selecione a nova porta.";
-
-            HasError = true;
+            ShowError(
+                "Selecione a nova porta.");
 
             return;
         }
 
-        // Não permite escolher a mesma porta.
+
+        // =====================================================
+        // NÃO PERMITIR A MESMA PORTA
+        // =====================================================
+
         if (string.Equals(
             SelectedFlight.Gate,
             SelectedGate.GateNumber,
             StringComparison.OrdinalIgnoreCase))
         {
-            ErrorMessage =
-                "Esta já é a porta atribuída ao voo.";
-
-            HasError = true;
+            ShowError(
+                "Esta já é a porta atribuída ao voo.");
 
             return;
         }
 
+
+        // Guardamos os dados antes da alteração.
+        var flightNumber =
+            SelectedFlight.FlightNumber;
+
+        var oldGate =
+            CurrentGate;
+
+        var newGate =
+            SelectedGate.GateNumber;
+
+
+        // =====================================================
+        // CONFIRMAÇÃO
+        // =====================================================
+
         var confirmed =
             await Shell.Current.DisplayAlert(
                 "Alterar porta",
-                $"Alterar o voo " +
-                $"{SelectedFlight.FlightNumber} " +
-                $"da porta {CurrentGate} " +
-                $"para {SelectedGate.GateNumber}?",
+                $"Alterar o voo {flightNumber} " +
+                $"da porta {oldGate} " +
+                $"para {newGate}?",
                 "Alterar",
                 "Cancelar");
 
         if (!confirmed)
             return;
+
+
+        // =====================================================
+        // ALTERAR PORTA
+        // =====================================================
 
         try
         {
@@ -351,12 +449,6 @@ public partial class OperationsGatesViewModel : ObservableObject
 
             HasError = false;
             ErrorMessage = string.Empty;
-
-            var flightNumber =
-                SelectedFlight.FlightNumber;
-
-            var newGate =
-                SelectedGate.GateNumber;
 
             var result =
                 await _apiService
@@ -367,43 +459,53 @@ public partial class OperationsGatesViewModel : ObservableObject
             if (!result.Success ||
                 result.Data == null)
             {
-                ErrorMessage =
+                ShowError(
                     result.ErrorMessage ??
-                    "Não foi possível alterar a porta.";
-
-                HasError = true;
+                    "Não foi possível alterar a porta.");
 
                 return;
             }
 
-            IsGateEditorVisible = false;
 
-            await Shell.Current.DisplayAlert(
-                "Porta atualizada",
-                $"O voo {flightNumber} " +
-                $"foi atribuído à porta {newGate}.",
-                "OK");
+            // =================================================
+            // FECHAR EDITOR
+            // =================================================
+
+            IsGateEditorVisible = false;
 
             SelectedFlight = null;
             SelectedGate = null;
 
+
+            // =================================================
+            // ATUALIZAR LISTA
+            // =================================================
+
             await ReloadAfterChangeAsync();
+
+
+            // =================================================
+            // FEEDBACK VISUAL
+            // =================================================
+
+            ShowSuccess(
+                $"Porta atualizada: voo {flightNumber} " +
+                $"alterado de {oldGate} para {newGate}.");
         }
         catch (Exception ex)
         {
             Debug.WriteLine(
                 $"[OperationsGates] Change gate error: {ex}");
 
-            ErrorMessage =
-                "Ocorreu um erro ao alterar a porta.";
-
-            HasError = true;
+            ShowError(
+                "Ocorreu um erro ao alterar a porta.");
         }
         finally
         {
             IsBusy = false;
         }
     }
+
 
     // =========================================================
     // ATUALIZAR LISTA DEPOIS DA ALTERAÇÃO

@@ -2,132 +2,322 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LisAeroGest.Mobile.Models;
 using LisAeroGest.Mobile.Services;
+using System.Diagnostics;
 
-namespace LisAeroGest.Mobile.ViewModels;
-
-public partial class MyTripViewModel : ObservableObject
+namespace LisAeroGest.Mobile.ViewModels
 {
-    private readonly ApiService _apiService;
-
-    [ObservableProperty]
-    private string _statusLabel = "A carregar a tua viagem…";
-
-    // ── Trip Card ─────────────────────────────────────────────────────────────
-    [ObservableProperty]
-    private string _tripFlightNumber = "—";
-
-    [ObservableProperty]
-    private string _tripRoute = "—";
-
-    [ObservableProperty]
-    private string _tripStatus = "—";
-
-    [ObservableProperty]
-    private string _tripDeparture = "—";
-
-    [ObservableProperty]
-    private string _tripSeat = "—";
-
-    [ObservableProperty]
-    private string _tripSeatDetail = "Sem lugar atribuído";
-
-    [ObservableProperty]
-    private bool _tripCardIsVisible;
-
-    [ObservableProperty]
-    private bool _timelineSectionIsVisible;
-
-    [ObservableProperty]
-    private bool _emptyCardIsVisible;
-
-    [ObservableProperty]
-    private bool _checkInButtonIsVisible;
-
-    [ObservableProperty]
-    private string _checkInIconLabel = "→";
-
-    [ObservableProperty]
-    private string _checkInTitle = "Check-in disponível";
-
-    [ObservableProperty]
-    private string _checkInSubtitle = "Gera o teu cartão de embarque antes da partida.";
-
-    // Passageiro guardado para navegação
-    public TicketDto? CurrentTrip { get; private set; }
-
-    public MyTripViewModel(ApiService apiService)
+    public partial class MyTripViewModel : ObservableObject
     {
-        _apiService = apiService;
-    }
+        private readonly ApiService _apiService;
 
-    [RelayCommand]
-    public async Task LoadAsync()
-    {
-        StatusLabel = "A carregar a tua viagem…";
 
-        var result = await _apiService.GetMyTicketsAsync();
+        // =========================================================
+        // ESTADO
+        // =========================================================
 
-        if (!result.Success)
+        [ObservableProperty]
+        private bool _isBusy;
+
+        [ObservableProperty]
+        private string _errorMessage = string.Empty;
+
+        [ObservableProperty]
+        private bool _hasError;
+
+
+        // =========================================================
+        // VIAGEM
+        // =========================================================
+
+        [ObservableProperty]
+        private string _tripFlightNumber = "—";
+
+        [ObservableProperty]
+        private string _tripRoute = "—";
+
+        [ObservableProperty]
+        private string _tripStatus = "—";
+
+        [ObservableProperty]
+        private string _tripDeparture = "—";
+
+        [ObservableProperty]
+        private string _tripSeat = "—";
+
+        [ObservableProperty]
+        private string _tripSeatDetail = "Sem lugar atribuído";
+
+
+        // =========================================================
+        // VISIBILIDADE
+        // =========================================================
+
+        [ObservableProperty]
+        private bool _tripCardIsVisible;
+
+        [ObservableProperty]
+        private bool _timelineSectionIsVisible;
+
+        [ObservableProperty]
+        private bool _emptyCardIsVisible;
+
+        [ObservableProperty]
+        private bool _checkInButtonIsVisible;
+
+
+        // =========================================================
+        // CHECK-IN
+        // =========================================================
+
+        [ObservableProperty]
+        private string _checkInIconLabel = "→";
+
+        [ObservableProperty]
+        private string _checkInTitle = "Check-in disponível";
+
+        [ObservableProperty]
+        private string _checkInSubtitle =
+            "Confirma o teu check-in antes da partida.";
+
+
+        // =========================================================
+        // BILHETE ATUAL
+        // =========================================================
+
+        public TicketDto? CurrentTrip
         {
-            StatusLabel = result.ErrorMessage
-                ?? "Não foi possível carregar a tua viagem.";
-            ShowEmpty();
-            return;
+            get;
+            private set;
         }
 
-        // A viagem é o bilhete com partida mais próxima no futuro
-        CurrentTrip = (result.Data ?? new List<TicketDto>())
-            .Where(t => t.DepartureTime >= DateTime.Now)
-            .OrderBy(t => t.DepartureTime)
-            .FirstOrDefault();
 
-        if (CurrentTrip == null)
+        // =========================================================
+        // CONSTRUTOR
+        // =========================================================
+
+        public MyTripViewModel(
+            ApiService apiService)
         {
-            StatusLabel = "Ainda não tens nenhuma viagem agendada.";
-            ShowEmpty();
-            return;
+            _apiService = apiService;
         }
 
-        var isCheckedIn = CurrentTrip.Status == "CheckedIn";
 
-        TripCardIsVisible = true;
-        TimelineSectionIsVisible = true;
-        EmptyCardIsVisible = false;
+        // =========================================================
+        // CARREGAR VIAGEM
+        // =========================================================
 
-        TripFlightNumber = CurrentTrip.FlightNumber;
-        TripRoute = $"{CurrentTrip.Origin} → {CurrentTrip.Destination}";
-        TripStatus = CurrentTrip.Status.ToUpperInvariant();
-        TripDeparture = CurrentTrip.DepartureTime.ToString("dd/MM HH:mm");
-        TripSeat = string.IsNullOrWhiteSpace(CurrentTrip.SeatCode)
-            ? "—" : CurrentTrip.SeatCode;
-        TripSeatDetail = string.IsNullOrWhiteSpace(CurrentTrip.SeatCode)
-            ? "Sem lugar atribuído"
-            : $"Lugar {CurrentTrip.SeatCode} atribuído";
-
-        if (isCheckedIn)
+        [RelayCommand]
+        public async Task LoadAsync()
         {
-            CheckInIconLabel = "✓";
-            CheckInTitle = "Check-in confirmado";
-            CheckInSubtitle = "O teu cartão de embarque já está disponível na carteira.";
+            if (IsBusy)
+                return;
+
+
+            try
+            {
+                IsBusy = true;
+
+                HasError = false;
+                ErrorMessage = string.Empty;
+
+
+                // =================================================
+                // OBTER BILHETES
+                // =================================================
+
+                var result =
+                    await _apiService
+                        .GetMyTicketsAsync();
+
+
+                if (!result.Success)
+                {
+                    ShowEmpty();
+
+                    ShowError(
+                        result.ErrorMessage ??
+                        "Não foi possível carregar a tua viagem.");
+
+                    return;
+                }
+
+
+                // =================================================
+                // PRÓXIMA VIAGEM
+                // =================================================
+
+                CurrentTrip =
+                    (result.Data ?? new List<TicketDto>())
+                    .Where(ticket =>
+                        ticket.DepartureTime >= DateTime.Now)
+                    .OrderBy(ticket =>
+                        ticket.DepartureTime)
+                    .FirstOrDefault();
+
+
+                // =================================================
+                // SEM VIAGEM
+                // =================================================
+
+                if (CurrentTrip == null)
+                {
+                    ShowEmpty();
+                    return;
+                }
+
+
+                // =================================================
+                // DADOS DO VOO
+                // =================================================
+
+                TripFlightNumber =
+                    CurrentTrip.FlightNumber;
+
+                TripRoute =
+                    $"{CurrentTrip.Origin} → {CurrentTrip.Destination}";
+
+                TripStatus =
+                    FormatStatus(
+                        CurrentTrip.Status);
+
+                TripDeparture =
+                    CurrentTrip.DepartureTime
+                        .ToString("dd/MM/yyyy HH:mm");
+
+
+                // =================================================
+                // LUGAR
+                // =================================================
+
+                if (string.IsNullOrWhiteSpace(
+                        CurrentTrip.SeatCode))
+                {
+                    TripSeat = "—";
+
+                    TripSeatDetail =
+                        "Sem lugar atribuído";
+                }
+                else
+                {
+                    TripSeat =
+                        CurrentTrip.SeatCode;
+
+                    TripSeatDetail =
+                        $"Lugar {CurrentTrip.SeatCode} atribuído";
+                }
+
+
+                // =================================================
+                // CHECK-IN
+                // =================================================
+
+                var isCheckedIn =
+                    string.Equals(
+                        CurrentTrip.Status,
+                        "CheckedIn",
+                        StringComparison.OrdinalIgnoreCase);
+
+
+                if (isCheckedIn)
+                {
+                    CheckInIconLabel = "✓";
+
+                    CheckInTitle =
+                        "Check-in confirmado";
+
+                    CheckInSubtitle =
+                        "O teu check-in está concluído. Consulta os dados de embarque na carteira.";
+
+                    CheckInButtonIsVisible =
+                        false;
+                }
+                else
+                {
+                    CheckInIconLabel = "→";
+
+                    CheckInTitle =
+                        "Check-in disponível";
+
+                    CheckInSubtitle =
+                        "Confirma o teu check-in antes da partida.";
+
+                    CheckInButtonIsVisible =
+                        true;
+                }
+
+
+                // =================================================
+                // MOSTRAR VIAGEM
+                // =================================================
+
+                TripCardIsVisible = true;
+                TimelineSectionIsVisible = true;
+                EmptyCardIsVisible = false;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(
+                    $"[MyTripViewModel] {ex}");
+
+                ShowEmpty();
+
+                ShowError(
+                    "Não foi possível carregar a tua viagem. Verifica a ligação e tenta novamente.");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+
+        // =========================================================
+        // ESTADO VAZIO
+        // =========================================================
+
+        private void ShowEmpty()
+        {
+            TripCardIsVisible = false;
+            TimelineSectionIsVisible = false;
             CheckInButtonIsVisible = false;
+            EmptyCardIsVisible = true;
+
+            CurrentTrip = null;
         }
-        else
+
+
+        // =========================================================
+        // ERRO
+        // =========================================================
+
+        private void ShowError(
+            string message)
         {
-            CheckInIconLabel = "→";
-            CheckInTitle = "Check-in disponível";
-            CheckInSubtitle = "Gera o teu cartão de embarque antes da partida.";
-            CheckInButtonIsVisible = true;
+            ErrorMessage = message;
+            HasError = true;
         }
 
-        StatusLabel = "Dados atualizados a partir do servidor.";
-    }
 
-    private void ShowEmpty()
-    {
-        TripCardIsVisible = false;
-        TimelineSectionIsVisible = false;
-        CheckInButtonIsVisible = false;
-        EmptyCardIsVisible = true;
-        CurrentTrip = null;
+        // =========================================================
+        // FORMATAR ESTADO
+        // =========================================================
+
+        private static string FormatStatus(
+            string? status)
+        {
+            if (string.IsNullOrWhiteSpace(status))
+                return "CONFIRMADO";
+
+
+            return status.ToLowerInvariant() switch
+            {
+                "checkedin" => "CHECK-IN CONCLUÍDO",
+                "confirmed" => "CONFIRMADO",
+                "paid" => "PAGO",
+                "pending" => "PENDENTE",
+                "cancelled" => "CANCELADO",
+                _ => status.ToUpperInvariant()
+            };
+        }
     }
 }

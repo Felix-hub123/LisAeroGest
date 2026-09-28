@@ -1,52 +1,246 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
-             x:Class="LisAeroGest.Mobile.Views.SettingsPage"
-             x:DataType="vm:SettingsViewModel"
-             Title="Preferências"
-             Background="{AppThemeBinding Light={StaticResource AppBackgroundLightBrush}, Dark={StaticResource AppBackgroundGradientBrush}}">
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
+    x:Class="LisAeroGest.Mobile.Views.SettingsPage"
+    x:DataType="vm:SettingsViewModel"
+    Title="Preferências"
+    Background="{AppThemeBinding
+        Light={StaticResource AppBackgroundLightBrush},
+        Dark={StaticResource AppBackgroundGradientBrush}}">
+
     <ScrollView>
-        <VerticalStackLayout Padding="24,30,24,30" Spacing="18">
-            <Label Text="PREFERÊNCIAS" FontFamily="OpenSansSemibold" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource TextSecondaryDark}}" />
-            <Label Text="Personaliza a tua experiência" Style="{StaticResource TitleStyle}" />
 
-            <Border Style="{StaticResource CardElevatedStyle}" Padding="18">
-                <VerticalStackLayout Spacing="14">
-                    <Grid ColumnDefinitions="*,Auto">
-                        <VerticalStackLayout>
-                            <Label Text="Aparência" Style="{StaticResource BodyEmphasisStyle}" />
-                            <Label Text="Tema atual" Style="{StaticResource CaptionStyle}" />
+        <VerticalStackLayout
+            Padding="24,30,24,30"
+            Spacing="18">
+
+
+            <!-- =====================================================
+                 CABEÇALHO
+            ====================================================== -->
+
+            <VerticalStackLayout Spacing="3">
+
+                <Label
+                    Text="PREFERÊNCIAS"
+                    FontFamily="OpenSansSemibold"
+                    FontSize="14"
+                    TextColor="{AppThemeBinding
+                        Light={StaticResource TextSecondary},
+                        Dark={StaticResource TextSecondaryDark}}" />
+
+                <Label
+                    Text="Personaliza a tua experiência"
+                    Style="{StaticResource TitleStyle}" />
+
+            </VerticalStackLayout>
+
+
+            <!-- =====================================================
+                 FEEDBACK
+            ====================================================== -->
+
+            <Border
+                IsVisible="{Binding HasSuccess}"
+                Padding="14"
+                BackgroundColor="#1A22C55E"
+                Stroke="#22C55E"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 10">
+
+                <Label
+                    Text="{Binding SuccessMessage}"
+                    FontSize="13"
+                    TextColor="#22C55E"
+                    LineBreakMode="WordWrap" />
+
+            </Border>
+
+
+            <!-- =====================================================
+                 APARÊNCIA
+            ====================================================== -->
+
+            <Border
+                Style="{StaticResource CardElevatedStyle}"
+                Padding="18">
+
+                <VerticalStackLayout
+                    Spacing="14">
+
+
+                    <Grid
+                        ColumnDefinitions="*,Auto"
+                        ColumnSpacing="12">
+
+                        <VerticalStackLayout
+                            Spacing="3">
+
+                            <Label
+                                Text="Aparência"
+                                Style="{StaticResource BodyEmphasisStyle}" />
+
+                            <Label
+                                Text="Escolhe o tema utilizado pela aplicação."
+                                Style="{StaticResource CaptionStyle}" />
+
                         </VerticalStackLayout>
-                        <Label Grid.Column="1" Text="{Binding ThemeLabel}" TextColor="{StaticResource AccentDark}" VerticalOptions="Center" />
+
+
+                        <Border
+                            Grid.Column="1"
+                            Style="{StaticResource StatusBadgeStyle}"
+                            Padding="10,5"
+                            VerticalOptions="Center">
+
+                            <Label
+                                Text="{Binding ThemeLabel}"
+                                Style="{StaticResource FootnoteStyle}"
+                                TextColor="{StaticResource AccentDark}" />
+
+                        </Border>
+
                     </Grid>
-                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                        <Button Text="Sistema" Command="{Binding SetThemeCommand}" CommandParameter="system" Style="{StaticResource SecondaryButtonStyle}" />
-                        <Button Grid.Column="1" Text="Claro" Command="{Binding SetThemeCommand}" CommandParameter="light" Style="{StaticResource SecondaryButtonStyle}" />
-                        <Button Grid.Column="2" Text="Escuro" Command="{Binding SetThemeCommand}" CommandParameter="dark" Style="{StaticResource SecondaryButtonStyle}" />
+
+
+                    <!-- TEMAS -->
+
+                    <Grid
+                        ColumnDefinitions="*,*,*"
+                        ColumnSpacing="8">
+
+                        <Button
+                            Text="Sistema"
+                            Command="{Binding SetThemeCommand}"
+                            CommandParameter="system"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+
+                        <Button
+                            Grid.Column="1"
+                            Text="Claro"
+                            Command="{Binding SetThemeCommand}"
+                            CommandParameter="light"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+
+                        <Button
+                            Grid.Column="2"
+                            Text="Escuro"
+                            Command="{Binding SetThemeCommand}"
+                            CommandParameter="dark"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+
                     </Grid>
+
                 </VerticalStackLayout>
+
             </Border>
 
-            <Border Style="{StaticResource CardStyle}" Padding="18">
-                <Grid ColumnDefinitions="*,Auto">
-                    <VerticalStackLayout Spacing="3">
-                        <Label Text="Notificações" Style="{StaticResource BodyEmphasisStyle}" />
-                        <Label Text="Permitir alertas e atualizações da viagem." Style="{StaticResource CaptionStyle}" />
+
+            <!-- =====================================================
+                 ALERTAS
+            ====================================================== -->
+
+            <Border
+                Style="{StaticResource CardStyle}"
+                Padding="18">
+
+                <Grid
+                    ColumnDefinitions="*,Auto"
+                    ColumnSpacing="16">
+
+                    <VerticalStackLayout
+                        Spacing="4">
+
+                        <Label
+                            Text="Alertas"
+                            Style="{StaticResource BodyEmphasisStyle}" />
+
+                        <Label
+                            Text="Define se pretendes receber alertas da aplicação neste dispositivo."
+                            Style="{StaticResource CaptionStyle}"
+                            LineBreakMode="WordWrap" />
+
                     </VerticalStackLayout>
-                    <Switch Grid.Column="1" IsToggled="{Binding NotificationsEnabled}" VerticalOptions="Center" />
+
+
+                    <Switch
+                        Grid.Column="1"
+                        IsToggled="{Binding NotificationsEnabled}"
+                        VerticalOptions="Center" />
+
                 </Grid>
+
             </Border>
 
-            <Border Style="{StaticResource CardStyle}" Padding="18">
-                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-                    <Label Text="✓" FontSize="22" TextColor="{StaticResource AccentDark}" />
-                    <VerticalStackLayout Grid.Column="1">
-                        <Label Text="As preferências são guardadas neste dispositivo." Style="{StaticResource BodyEmphasisStyle}" />
-                        <Label Text="Funcionam tanto no Android Emulator como no Windows Machine." Style="{StaticResource CaptionStyle}" />
+
+            <!-- =====================================================
+                 INFORMAÇÃO
+            ====================================================== -->
+
+            <Border
+                Style="{StaticResource CardStyle}"
+                Padding="18">
+
+                <Grid
+                    ColumnDefinitions="Auto,*"
+                    ColumnSpacing="12">
+
+                    <Label
+                        Text="✓"
+                        FontSize="22"
+                        TextColor="{StaticResource AccentDark}"
+                        VerticalOptions="Start" />
+
+
+                    <VerticalStackLayout
+                        Grid.Column="1"
+                        Spacing="4">
+
+                        <Label
+                            Text="Preferências guardadas localmente"
+                            Style="{StaticResource BodyEmphasisStyle}" />
+
+                        <Label
+                            Text="O tema e a preferência de alertas ficam guardados neste dispositivo."
+                            Style="{StaticResource CaptionStyle}"
+                            LineBreakMode="WordWrap" />
+
                     </VerticalStackLayout>
+
                 </Grid>
+
             </Border>
+
+
+            <!-- =====================================================
+                 CENTRAL DE NOTIFICAÇÕES
+            ====================================================== -->
+
+            <Border
+                Style="{StaticResource CardStyle}"
+                Padding="18">
+
+                <VerticalStackLayout
+                    Spacing="4">
+
+                    <Label
+                        Text="Central de Notificações"
+                        Style="{StaticResource BodyEmphasisStyle}" />
+
+                    <Label
+                        Text="Mesmo com os alertas desativados, podes consultar as comunicações e notificações recebidas na aplicação."
+                        Style="{StaticResource CaptionStyle}"
+                        LineBreakMode="WordWrap" />
+
+                </VerticalStackLayout>
+
+            </Border>
+
         </VerticalStackLayout>
+
     </ScrollView>
+
 </ContentPage>

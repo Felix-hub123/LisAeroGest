@@ -3,7 +3,9 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
     x:Class="LisAeroGest.Mobile.Views.HomePage"
+    x:DataType="vm:HomeViewModel"
     Title="Início"
     Shell.NavBarIsVisible="False"
     Background="{AppThemeBinding
@@ -11,8 +13,8 @@
         Dark={StaticResource AppBackgroundGradientBrush}}">
 
     <RefreshView
-        x:Name="Refresh"
-        Refreshing="OnRefreshing">
+        Command="{Binding LoadCommand}"
+        IsRefreshing="{Binding IsBusy}">
 
         <ScrollView>
 
@@ -20,9 +22,10 @@
                 Padding="20,32,20,40"
                 Spacing="22">
 
-                <!-- ================================= -->
-                <!-- CABEÇALHO                         -->
-                <!-- ================================= -->
+
+                <!-- =================================================
+                     CABEÇALHO
+                ================================================== -->
 
                 <Grid ColumnDefinitions="*,Auto">
 
@@ -39,6 +42,7 @@
                             Style="{StaticResource CaptionStyle}" />
 
                     </VerticalStackLayout>
+
 
                     <VerticalStackLayout
                         Grid.Column="1"
@@ -63,19 +67,39 @@
                 </Grid>
 
 
-                <!-- ================================= -->
-                <!-- STATUS                            -->
-                <!-- ================================= -->
+                <!-- =================================================
+                     STATUS
+                ================================================== -->
 
                 <Label
-                    x:Name="StatusLabel"
                     Text="{Binding StatusLabel}"
                     Style="{StaticResource FootnoteStyle}" />
 
 
-                <!-- ================================= -->
-                <!-- PESQUISAR VOO                     -->
-                <!-- ================================= -->
+                <!-- =================================================
+                     ERRO
+                ================================================== -->
+
+                <Border
+                    IsVisible="{Binding HasError}"
+                    Padding="14"
+                    BackgroundColor="#1AEF4444"
+                    Stroke="#EF4444"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 10">
+
+                    <Label
+                        Text="{Binding ErrorMessage}"
+                        FontSize="13"
+                        TextColor="#EF4444"
+                        LineBreakMode="WordWrap" />
+
+                </Border>
+
+
+                <!-- =================================================
+                     PESQUISAR VOOS
+                ================================================== -->
 
                 <Border
                     Style="{StaticResource CardElevatedStyle}"
@@ -100,6 +124,7 @@
 
                             </VerticalStackLayout>
 
+
                             <Label
                                 Grid.Column="1"
                                 Text="✈"
@@ -109,9 +134,11 @@
 
                         </Grid>
 
+
                         <Label
                             Text="Encontra um voo e prepara a tua próxima viagem."
                             Style="{StaticResource CaptionStyle}" />
+
 
                         <Button
                             Text="Pesquisar voos  →"
@@ -123,17 +150,17 @@
                 </Border>
 
 
-                <!-- ================================= -->
-                <!-- PRÓXIMO VOO                       -->
-                <!-- ================================= -->
+                <!-- =================================================
+                     PRÓXIMA VIAGEM
+                ================================================== -->
 
                 <Label
-                    Text="PRÓXIMO VOO"
+                    Text="PRÓXIMA VIAGEM"
                     FontFamily="OpenSansSemibold"
                     FontSize="14" />
 
 
-                <!-- Existe um próximo voo -->
+                <!-- EXISTE PRÓXIMA VIAGEM -->
 
                 <Border
                     Style="{StaticResource CardElevatedStyle}"
@@ -142,7 +169,8 @@
 
                     <VerticalStackLayout Spacing="16">
 
-                        <!-- Número do voo + data -->
+
+                        <!-- VOO + DATA -->
 
                         <Grid ColumnDefinitions="*,Auto">
 
@@ -152,11 +180,13 @@
                                 FontSize="22"
                                 VerticalOptions="Center" />
 
+
                             <Border
                                 Grid.Column="1"
                                 Padding="10,4"
                                 Stroke="{StaticResource AccentDark}"
-                                StrokeThickness="1">
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 8">
 
                                 <Label
                                     Text="{Binding FlightOneDate}"
@@ -168,13 +198,11 @@
                         </Grid>
 
 
-                        <!-- Origem -> Destino -->
+                        <!-- ROTA -->
 
                         <Grid
                             ColumnDefinitions="*,Auto,*"
                             ColumnSpacing="15">
-
-                            <!-- Origem -->
 
                             <VerticalStackLayout Spacing="2">
 
@@ -190,8 +218,6 @@
                             </VerticalStackLayout>
 
 
-                            <!-- Seta -->
-
                             <Label
                                 Grid.Column="1"
                                 Text="→"
@@ -199,8 +225,6 @@
                                 TextColor="{StaticResource AccentDark}"
                                 VerticalOptions="Center" />
 
-
-                            <!-- Destino -->
 
                             <VerticalStackLayout
                                 Grid.Column="2"
@@ -222,8 +246,6 @@
                         </Grid>
 
 
-                        <!-- Separador -->
-
                         <BoxView
                             HeightRequest="1"
                             BackgroundColor="{AppThemeBinding
@@ -231,9 +253,10 @@
                                 Dark={StaticResource BorderDark}}" />
 
 
-                        <!-- Hora + Porta -->
+                        <!-- HORA + PORTA -->
 
-                        <Grid ColumnDefinitions="*,*">
+                        <Grid
+                            ColumnDefinitions="*,*">
 
                             <VerticalStackLayout>
 
@@ -273,9 +296,9 @@
                 </Border>
 
 
-                <!-- ================================= -->
-                <!-- NÃO EXISTE PRÓXIMO VOO            -->
-                <!-- ================================= -->
+                <!-- =================================================
+                     SEM PRÓXIMA VIAGEM
+                ================================================== -->
 
                 <Border
                     Style="{StaticResource CardStyle}"
@@ -293,7 +316,7 @@
                             HorizontalOptions="Center" />
 
                         <Label
-                            Text="Não tens voos próximos"
+                            Text="Não tens viagens próximas"
                             FontFamily="OpenSansSemibold"
                             FontSize="17"
                             HorizontalTextAlignment="Center" />
@@ -308,9 +331,9 @@
                 </Border>
 
 
-                <!-- ================================= -->
-                <!-- ACESSO RÁPIDO                     -->
-                <!-- ================================= -->
+                <!-- =================================================
+                     ACESSO RÁPIDO
+                ================================================== -->
 
                 <Label
                     Text="ACESSO RÁPIDO"
@@ -322,7 +345,8 @@
                     ColumnDefinitions="*,*"
                     ColumnSpacing="12">
 
-                    <!-- Carteira -->
+
+                    <!-- CARTEIRA -->
 
                     <Border
                         Style="{StaticResource CardStyle}"
@@ -334,6 +358,7 @@
                                 Tapped="OnVerBilhetesClicked" />
 
                         </Border.GestureRecognizers>
+
 
                         <VerticalStackLayout Spacing="7">
 
@@ -355,7 +380,7 @@
                     </Border>
 
 
-                    <!-- Nova viagem -->
+                    <!-- NOVA VIAGEM -->
 
                     <Border
                         Grid.Column="1"
@@ -368,6 +393,7 @@
                                 Tapped="OnComprarVooClicked" />
 
                         </Border.GestureRecognizers>
+
 
                         <VerticalStackLayout Spacing="7">
 
@@ -392,9 +418,9 @@
                 </Grid>
 
 
-                <!-- ================================= -->
-                <!-- CARTÃO DE EMBARQUE                -->
-                <!-- ================================= -->
+                <!-- =================================================
+                     CARTÃO DE EMBARQUE
+                ================================================== -->
 
                 <Grid ColumnDefinitions="*,Auto">
 
@@ -403,6 +429,7 @@
                         FontFamily="OpenSansSemibold"
                         FontSize="14"
                         VerticalOptions="Center" />
+
 
                     <Button
                         Grid.Column="1"
@@ -415,12 +442,11 @@
                 </Grid>
 
 
-                <!-- ================================= -->
-                <!-- BOARDING PASS EXISTENTE           -->
-                <!-- ================================= -->
+                <!-- =================================================
+                     CHECK-IN CONCLUÍDO
+                ================================================== -->
 
                 <Border
-                    x:Name="BoardingSummary"
                     Style="{StaticResource CardElevatedStyle}"
                     Stroke="{StaticResource AccentDark}"
                     StrokeThickness="1.5"
@@ -428,6 +454,7 @@
                     IsVisible="{Binding BoardingSummaryIsVisible}">
 
                     <VerticalStackLayout Spacing="14">
+
 
                         <Grid ColumnDefinitions="*,Auto">
 
@@ -440,12 +467,12 @@
                                     TextColor="{StaticResource AccentDark}" />
 
                                 <Label
-                                    x:Name="BoardingFlight"
                                     Text="{Binding BoardingFlight}"
                                     FontFamily="OpenSansSemibold"
                                     FontSize="23" />
 
                             </VerticalStackLayout>
+
 
                             <Label
                                 Grid.Column="1"
@@ -458,8 +485,6 @@
 
 
                         <Grid ColumnDefinitions="*,*">
-
-                            <!-- Estado -->
 
                             <VerticalStackLayout>
 
@@ -476,8 +501,6 @@
                             </VerticalStackLayout>
 
 
-                            <!-- Lugar -->
-
                             <VerticalStackLayout
                                 Grid.Column="1">
 
@@ -487,7 +510,6 @@
                                     HorizontalTextAlignment="End" />
 
                                 <Label
-                                    x:Name="BoardingSeat"
                                     Text="{Binding BoardingSeat}"
                                     FontFamily="OpenSansSemibold"
                                     FontSize="18"
@@ -499,7 +521,7 @@
 
 
                         <Label
-                            Text="Consulta o cartão de embarque completo na carteira."
+                            Text="Consulta os dados de embarque completos na carteira."
                             Style="{StaticResource CaptionStyle}" />
 
                     </VerticalStackLayout>
@@ -507,9 +529,9 @@
                 </Border>
 
 
-                <!-- ================================= -->
-                <!-- SEM BOARDING PASS                 -->
-                <!-- ================================= -->
+                <!-- =================================================
+                     SEM CHECK-IN
+                ================================================== -->
 
                 <Border
                     Style="{StaticResource CardStyle}"
@@ -519,12 +541,12 @@
                     <VerticalStackLayout Spacing="8">
 
                         <Label
-                            Text="Ainda não tens cartão de embarque"
+                            Text="Ainda não tens dados de embarque"
                             FontFamily="OpenSansSemibold"
                             FontSize="16" />
 
                         <Label
-                            Text="Depois de realizares o check-in, o teu cartão aparecerá aqui."
+                            Text="Depois de realizares o check-in, os teus dados de embarque aparecerão aqui."
                             Style="{StaticResource CaptionStyle}" />
 
                         <Button

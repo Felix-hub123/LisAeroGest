@@ -5,32 +5,58 @@ namespace LisAeroGest.Mobile.Views
 {
     public partial class TicketsPage : ContentPage
     {
-        public TicketsPage(TicketsViewModel viewModel)
+        private readonly TicketsViewModel _viewModel;
+
+
+        // =========================================================
+        // CONSTRUTOR
+        // =========================================================
+
+        public TicketsPage(
+            TicketsViewModel viewModel)
         {
             InitializeComponent();
-            BindingContext = viewModel;
+
+            _viewModel = viewModel;
+            BindingContext = _viewModel;
         }
+
+
+        // =========================================================
+        // CARREGAR BILHETES
+        // =========================================================
 
         protected override async void OnAppearing()
         {
             base.OnAppearing();
-            if (BindingContext is TicketsViewModel vm)
-                await vm.LoadTicketsCommand.ExecuteAsync(null);
+
+            await _viewModel
+                .LoadTicketsCommand
+                .ExecuteAsync(null);
         }
 
-        private async void OnCheckInClicked(object sender, EventArgs e)
+
+        // =========================================================
+        // CHECK-IN
+        // =========================================================
+
+        private async void OnCheckInClicked(
+            object sender,
+            EventArgs e)
         {
-            if (sender is Button btn && btn.BindingContext is TicketDto ticket)
+            if (sender is not Button button ||
+                button.BindingContext is not TicketDto ticket)
             {
-                await Shell.Current.GoToAsync(
-                    nameof(CheckInPage),
-                    new Dictionary<string, object>
-                    {
-                        ["ticketId"] = ticket.Id
-                    });
+                return;
             }
+
+
+            await Shell.Current.GoToAsync(
+                nameof(CheckInPage),
+                new Dictionary<string, object>
+                {
+                    ["ticketId"] = ticket.Id
+                });
         }
-
-
     }
 }

@@ -17,7 +17,10 @@
             Padding="24,28,24,35"
             Spacing="18">
 
-            <!-- CABEÇALHO -->
+
+            <!-- =====================================================
+                 CABEÇALHO
+            ====================================================== -->
 
             <VerticalStackLayout Spacing="5">
 
@@ -38,35 +41,125 @@
             </VerticalStackLayout>
 
 
-            <!-- CARREGAMENTO -->
+            <!-- =====================================================
+                 CARREGAMENTO
+            ====================================================== -->
 
-            <ActivityIndicator
-                IsRunning="{Binding IsBusy}"
+            <HorizontalStackLayout
                 IsVisible="{Binding IsBusy}"
-                Color="{StaticResource AccentDark}" />
+                HorizontalOptions="Center"
+                Spacing="8">
 
-
-            <!-- ERRO -->
-
-            <Border
-                IsVisible="{Binding HasError}"
-                BackgroundColor="#33C62828"
-                Stroke="#C62828"
-                StrokeThickness="1"
-                StrokeShape="RoundRectangle 10"
-                Padding="12">
+                <ActivityIndicator
+                    IsRunning="{Binding IsBusy}"
+                    Color="{StaticResource AccentDark}"
+                    WidthRequest="22"
+                    HeightRequest="22" />
 
                 <Label
-                    Text="{Binding ErrorMessage}"
+                    Text="A processar..."
                     FontSize="12"
-                    TextColor="{AppThemeBinding
-                        Light=#B71C1C,
-                        Dark=#FF8A80}" />
+                    Opacity="0.7"
+                    VerticalOptions="Center" />
+
+            </HorizontalStackLayout>
+
+
+            <!-- =====================================================
+                 SUCESSO
+            ====================================================== -->
+
+            <Border
+                IsVisible="{Binding HasSuccess}"
+                Padding="14"
+                BackgroundColor="#1A22C55E"
+                Stroke="#22C55E"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 10">
+
+                <Grid
+                    ColumnDefinitions="Auto,*"
+                    ColumnSpacing="10">
+
+                    <Label
+                        Text="✓"
+                        FontSize="20"
+                        FontFamily="OpenSansSemibold"
+                        TextColor="#22C55E"
+                        VerticalOptions="Center" />
+
+                    <VerticalStackLayout
+                        Grid.Column="1"
+                        Spacing="2">
+
+                        <Label
+                            Text="Comunicação enviada"
+                            FontSize="13"
+                            FontFamily="OpenSansSemibold"
+                            TextColor="#22C55E" />
+
+                        <Label
+                            Text="{Binding SuccessMessage}"
+                            FontSize="12"
+                            TextColor="#22C55E"
+                            LineBreakMode="WordWrap" />
+
+                    </VerticalStackLayout>
+
+                </Grid>
 
             </Border>
 
 
-            <!-- SELECIONAR VOO -->
+            <!-- =====================================================
+                 ERRO
+            ====================================================== -->
+
+            <Border
+                IsVisible="{Binding HasError}"
+                Padding="14"
+                BackgroundColor="#1AEF4444"
+                Stroke="#EF4444"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 10">
+
+                <Grid
+                    ColumnDefinitions="Auto,*"
+                    ColumnSpacing="10">
+
+                    <Label
+                        Text="!"
+                        FontSize="20"
+                        FontFamily="OpenSansSemibold"
+                        TextColor="#EF4444"
+                        VerticalOptions="Center" />
+
+                    <VerticalStackLayout
+                        Grid.Column="1"
+                        Spacing="2">
+
+                        <Label
+                            Text="Não foi possível concluir"
+                            FontSize="13"
+                            FontFamily="OpenSansSemibold"
+                            TextColor="#EF4444" />
+
+                        <Label
+                            Text="{Binding ErrorMessage}"
+                            FontSize="12"
+                            TextColor="#EF4444"
+                            LineBreakMode="WordWrap" />
+
+                    </VerticalStackLayout>
+
+                </Grid>
+
+            </Border>
+
+
+            <!-- =====================================================
+                 SELECIONAR VOO
+            ====================================================== -->
 
             <Border Style="{StaticResource CardElevatedStyle}">
 
@@ -92,7 +185,9 @@
             </Border>
 
 
-            <!-- COMUNICAÇÃO -->
+            <!-- =====================================================
+                 COMUNICAÇÃO
+            ====================================================== -->
 
             <Border Style="{StaticResource CardStyle}">
 
@@ -103,7 +198,9 @@
                         Style="{StaticResource Title2Style}" />
 
 
-                    <!-- TIPO -->
+                    <!-- =================================================
+                         TIPO
+                    ================================================== -->
 
                     <VerticalStackLayout Spacing="6">
 
@@ -119,7 +216,9 @@
                     </VerticalStackLayout>
 
 
-                    <!-- MENSAGEM -->
+                    <!-- =================================================
+                         MENSAGEM
+                    ================================================== -->
 
                     <VerticalStackLayout Spacing="6">
 
@@ -127,12 +226,19 @@
                             Text="Mensagem"
                             Style="{StaticResource FootnoteStyle}" />
 
-                        <Editor
-                            Text="{Binding Message}"
-                            Placeholder="Escreva o aviso para os passageiros..."
-                            AutoSize="TextChanges"
-                            MinimumHeightRequest="120"
-                            MaxLength="500" />
+                        <Border
+                            Style="{StaticResource InputCardStyle}"
+                            Padding="8">
+
+                            <Editor
+                                Text="{Binding Message}"
+                                Placeholder="Escreva o aviso para os passageiros..."
+                                AutoSize="TextChanges"
+                                MinimumHeightRequest="120"
+                                MaxLength="500"
+                                BackgroundColor="Transparent" />
+
+                        </Border>
 
                         <Label
                             Text="Máximo de 500 caracteres."
@@ -145,7 +251,9 @@
             </Border>
 
 
-            <!-- RESULTADO -->
+            <!-- =====================================================
+                 ESTADO
+            ====================================================== -->
 
             <Label
                 Text="{Binding StatusLabel}"
@@ -155,7 +263,39 @@
                 HorizontalTextAlignment="Center" />
 
 
-            <!-- ENVIAR -->
+            <!-- =====================================================
+                 INFORMAÇÃO
+            ====================================================== -->
+
+            <Border
+                IsVisible="{Binding HasSelectedFlight}"
+                Style="{StaticResource CardStyle}"
+                Padding="13">
+
+                <Grid
+                    ColumnDefinitions="Auto,*"
+                    ColumnSpacing="10">
+
+                    <Label
+                        Text="📢"
+                        FontSize="20"
+                        VerticalOptions="Center" />
+
+                    <Label
+                        Grid.Column="1"
+                        Text="A comunicação será enviada aos passageiros associados ao voo selecionado."
+                        Style="{StaticResource CaptionStyle}"
+                        LineBreakMode="WordWrap"
+                        VerticalOptions="Center" />
+
+                </Grid>
+
+            </Border>
+
+
+            <!-- =====================================================
+                 ENVIAR
+            ====================================================== -->
 
             <Button
                 Text="📢  Enviar aos passageiros"

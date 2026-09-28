@@ -10,8 +10,18 @@ namespace LisAeroGest.Mobile.ViewModels
     {
         private readonly ApiService _apiService;
 
+
+        // =========================================================
+        // BILHETE
+        // =========================================================
+
         [ObservableProperty]
         private int _ticketId;
+
+
+        // =========================================================
+        // ESTADO
+        // =========================================================
 
         [ObservableProperty]
         private bool _isBusy;
@@ -19,11 +29,32 @@ namespace LisAeroGest.Mobile.ViewModels
         [ObservableProperty]
         private bool _checkInDone;
 
+
+        // =========================================================
+        // ERRO
+        // =========================================================
+
         [ObservableProperty]
         private string _errorMessage = string.Empty;
 
         [ObservableProperty]
         private bool _hasError;
+
+
+        // =========================================================
+        // SUCESSO
+        // =========================================================
+
+        [ObservableProperty]
+        private string _successMessage = string.Empty;
+
+        [ObservableProperty]
+        private bool _hasSuccess;
+
+
+        // =========================================================
+        // CARTÃO DE EMBARQUE
+        // =========================================================
 
         [ObservableProperty]
         private string _flightNumber = string.Empty;
@@ -34,93 +65,177 @@ namespace LisAeroGest.Mobile.ViewModels
         [ObservableProperty]
         private int _sequenceNumber;
 
-        [ObservableProperty]
-        private ImageSource? _qrCodeImage;
 
-        /// <summary>
-        /// Indica se o passageiro ainda não realizou o check-in.
-        /// Utilizado pelo XAML para mostrar o botão de check-in.
-        /// </summary>
-        public bool NotCheckedIn => !CheckInDone;
+        // =========================================================
+        // PROPRIEDADES AUXILIARES
+        // =========================================================
 
-        public CheckInViewModel(ApiService apiService)
+        public bool NotCheckedIn =>
+            !CheckInDone;
+
+
+        // =========================================================
+        // CONSTRUTOR
+        // =========================================================
+
+        public CheckInViewModel(
+            ApiService apiService)
         {
             _apiService = apiService;
         }
 
-        /// <summary>
-        /// É chamado automaticamente quando o TicketId é recebido
-        /// através da navegação do Shell.
-        /// </summary>
-        partial void OnTicketIdChanged(int value)
+
+        // =========================================================
+        // RECEBER TICKET ID
+        // =========================================================
+
+        partial void OnTicketIdChanged(
+            int value)
         {
             if (value <= 0)
                 return;
 
-            MainThread.BeginInvokeOnMainThread(async () =>
-            {
-                await LoadBoardingPassAsync();
-            });
+            MainThread.BeginInvokeOnMainThread(
+                async () =>
+                {
+                    await LoadBoardingPassAsync();
+                });
         }
 
-        /// <summary>
-        /// Atualiza a propriedade NotCheckedIn sempre que
-        /// CheckInDone mudar.
-        /// </summary>
-        partial void OnCheckInDoneChanged(bool value)
+
+        // =========================================================
+        // ALTERAÇÃO DO ESTADO DO CHECK-IN
+        // =========================================================
+
+        partial void OnCheckInDoneChanged(
+            bool value)
         {
-            OnPropertyChanged(nameof(NotCheckedIn));
+            OnPropertyChanged(
+                nameof(NotCheckedIn));
         }
 
-        /// <summary>
-        /// Procura no servidor um cartão de embarque
-        /// já existente para este bilhete.
-        /// </summary>
+
+        // =========================================================
+        // LIMPAR FEEDBACK
+        // =========================================================
+
+        private void ClearFeedback()
+        {
+            HasError = false;
+            ErrorMessage = string.Empty;
+
+            HasSuccess = false;
+            SuccessMessage = string.Empty;
+        }
+
+
+        // =========================================================
+        // MOSTRAR ERRO
+        // =========================================================
+
+        private void ShowError(
+            string message)
+        {
+            HasSuccess = false;
+            SuccessMessage = string.Empty;
+
+            ErrorMessage = message;
+            HasError = true;
+        }
+
+
+        // =========================================================
+        // MOSTRAR SUCESSO
+        // =========================================================
+
+        private void ShowSuccess(
+            string message)
+        {
+            HasError = false;
+            ErrorMessage = string.Empty;
+
+            SuccessMessage = message;
+            HasSuccess = true;
+        }
+
+
+        // =========================================================
+        // CARREGAR CARTÃO DE EMBARQUE
+        // =========================================================
+
         private async Task LoadBoardingPassAsync()
         {
-            if (TicketId <= 0 || IsBusy)
+            if (TicketId <= 0 ||
+                IsBusy)
+            {
                 return;
+            }
 
             try
             {
                 IsBusy = true;
-                HasError = false;
-                ErrorMessage = string.Empty;
+
+                ClearFeedback();
 
                 var result =
-                    await _apiService.GetBoardingPassAsync(TicketId);
+                    await _apiService
+                        .GetBoardingPassAsync(
+                            TicketId);
 
-                if (result.Success && result.Data != null)
+
+                // =================================================
+                // CHECK-IN JÁ REALIZADO
+                // =================================================
+
+                if (result.Success &&
+                    result.Data != null)
                 {
-                    FlightNumber = result.Data.FlightNumber;
-                    Gate = result.Data.Gate;
-                    SequenceNumber = result.Data.SequenceNumber;
+                    FlightNumber =
+                        result.Data.FlightNumber;
 
-                    GenerateQrCode(result.Data.QRData);
+                    Gate =
+                        string.IsNullOrWhiteSpace(
+                            result.Data.Gate)
+                            ? "Por atribuir"
+                            : result.Data.Gate;
+
+                    SequenceNumber =
+                        result.Data.SequenceNumber;
 
                     CheckInDone = true;
 
                     Debug.WriteLine(
-                        $"[CheckInViewModel] Boarding pass encontrado para Ticket {TicketId}.");
-                }
-                else
-                {
-                   
-                    CheckInDone = false;
-                    QrCodeImage = null;
+                        $"[CheckIn] Cartão encontrado " +
+                        $"para Ticket {TicketId}.");
 
-                    Debug.WriteLine(
-                        $"[CheckInViewModel] Boarding pass não encontrado para Ticket {TicketId}. " +
-                        $"Resposta: {result.ErrorMessage}");
+                    return;
                 }
+
+
+                // =================================================
+                // CHECK-IN AINDA NÃO REALIZADO
+                // =================================================
+
+                CheckInDone = false;
+
+                FlightNumber = string.Empty;
+                Gate = string.Empty;
+                SequenceNumber = 0;
+
+                Debug.WriteLine(
+                    $"[CheckIn] Cartão ainda não disponível " +
+                    $"para Ticket {TicketId}. " +
+                    $"Resposta: {result.ErrorMessage}");
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(
-                    $"[CheckInViewModel] Erro ao carregar BoardingPass: {ex.Message}");
+                    $"[CheckIn] Erro ao carregar cartão: {ex}");
 
                 CheckInDone = false;
-                QrCodeImage = null;
+
+                ShowError(
+                    "Não foi possível consultar o estado do check-in.");
             }
             finally
             {
@@ -128,101 +243,114 @@ namespace LisAeroGest.Mobile.ViewModels
             }
         }
 
-        /// <summary>
-        /// Realiza o check-in do passageiro.
-        /// </summary>
+
+        // =========================================================
+        // REALIZAR CHECK-IN
+        // =========================================================
+
         [RelayCommand]
         public async Task ConfirmCheckInAsync()
         {
             if (IsBusy)
                 return;
 
+
+            // =====================================================
+            // VALIDAR BILHETE
+            // =====================================================
+
             if (TicketId <= 0)
             {
-                ErrorMessage = "Bilhete inválido.";
-                HasError = true;
+                ShowError(
+                    "Bilhete inválido.");
+
                 return;
             }
+
+
+            // =====================================================
+            // CONFIRMAR OPERAÇÃO
+            // =====================================================
+
+            var confirmed =
+                await Shell.Current.DisplayAlert(
+                    "Confirmar check-in",
+                    "Confirmas que pretendes realizar o check-in para este voo?",
+                    "Fazer check-in",
+                    "Cancelar");
+
+            if (!confirmed)
+                return;
+
+
+            // =====================================================
+            // FAZER CHECK-IN
+            // =====================================================
 
             try
             {
                 IsBusy = true;
-                HasError = false;
-                ErrorMessage = string.Empty;
+
+                ClearFeedback();
 
                 var result =
-                    await _apiService.DoCheckInAsync(TicketId);
+                    await _apiService
+                        .DoCheckInAsync(
+                            TicketId);
 
-                if (result.Success)
+
+                // =================================================
+                // ERRO DA API
+                // =================================================
+
+                if (!result.Success)
                 {
-                    FlightNumber = result.FlightNumber;
-                    Gate = result.Gate;
-                    SequenceNumber = result.SequenceNumber;
-
-                    GenerateQrCode(result.QRData);
-
-                    CheckInDone = true;
-                }
-                else
-                {
-                    ErrorMessage =
+                    ShowError(
                         result.ErrorMessage ??
-                        "Não foi possível fazer o check-in.";
+                        "Não foi possível fazer o check-in.");
 
-                    HasError = true;
+                    return;
                 }
+
+
+                // =================================================
+                // ATUALIZAR CARTÃO
+                // =================================================
+
+                FlightNumber =
+                    result.FlightNumber;
+
+                Gate =
+                    string.IsNullOrWhiteSpace(
+                        result.Gate)
+                        ? "Por atribuir"
+                        : result.Gate;
+
+                SequenceNumber =
+                    result.SequenceNumber;
+
+                CheckInDone = true;
+
+
+                // =================================================
+                // FEEDBACK
+                // =================================================
+
+                ShowSuccess(
+                    $"Check-in realizado com sucesso para o voo " +
+                    $"{FlightNumber}.");
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(
-                    $"[CheckInViewModel] Erro no check-in: {ex.Message}");
+                    $"[CheckIn] Erro no check-in: {ex}");
 
-                ErrorMessage =
-                    "Ocorreu um erro de ligação ao servidor.";
-
-                HasError = true;
+                ShowError(
+                    "Ocorreu um erro de ligação ao servidor.");
             }
             finally
             {
                 IsBusy = false;
-            }
-        }
-
-        /// <summary>
-        /// Gera a imagem QR Code a partir dos dados
-        /// recebidos do servidor.
-        /// </summary>
-        private void GenerateQrCode(string? qrData)
-        {
-            if (string.IsNullOrWhiteSpace(qrData))
-            {
-                QrCodeImage = null;
-                return;
-            }
-
-            try
-            {
-                var qrBytes =
-                    Helpers.QrCodeGenerator.GeneratePng(
-                        qrData,
-                        400);
-
-                if (qrBytes.Length == 0)
-                {
-                    QrCodeImage = null;
-                    return;
-                }
-
-                QrCodeImage =
-                    ImageSource.FromStream(
-                        () => new MemoryStream(qrBytes));
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(
-                    $"[CheckInViewModel] Erro ao gerar QR Code: {ex.Message}");
-
-                QrCodeImage = null;
             }
         }
     }

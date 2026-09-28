@@ -1,44 +1,72 @@
 using LisAeroGest.Mobile.ViewModels;
 
-namespace LisAeroGest.Mobile.Views;
-
-public partial class MyTripPage : ContentPage
+namespace LisAeroGest.Mobile.Views
 {
-    private readonly MyTripViewModel _viewModel;
-
-    public MyTripPage(MyTripViewModel viewModel)
+    public partial class MyTripPage : ContentPage
     {
-        InitializeComponent();
-        _viewModel = viewModel;
-        BindingContext = _viewModel;
-    }
+        private readonly MyTripViewModel _viewModel;
 
-    protected override async void OnAppearing()
-    {
-        base.OnAppearing();
-        await _viewModel.LoadCommand.ExecuteAsync(null);
-    }
 
-    private async void OnRefreshing(object sender, EventArgs e)
-    {
-        await _viewModel.LoadCommand.ExecuteAsync(null);
-        Refresh.IsRefreshing = false;
-    }
+        // =========================================================
+        // CONSTRUTOR
+        // =========================================================
 
-    private async void OnVerBilhetesClicked(object sender, EventArgs e)
-    {
-        await Shell.Current.GoToAsync("//TicketsPage");
-    }
+        public MyTripPage(
+            MyTripViewModel viewModel)
+        {
+            InitializeComponent();
 
-    private async void OnCheckInClicked(object sender, EventArgs e)
-    {
-        if (_viewModel.CurrentTrip == null) return;
+            _viewModel = viewModel;
+            BindingContext = _viewModel;
+        }
 
-        await Shell.Current.GoToAsync(
-            nameof(CheckInPage),
-            new Dictionary<string, object>
-            {
-                ["ticketId"] = _viewModel.CurrentTrip.Id
-            });
+
+        // =========================================================
+        // CARREGAR VIAGEM
+        // =========================================================
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+
+            await _viewModel
+                .LoadCommand
+                .ExecuteAsync(null);
+        }
+
+
+        // =========================================================
+        // CARTEIRA
+        // =========================================================
+
+        private async void OnVerBilhetesClicked(
+            object sender,
+            EventArgs e)
+        {
+            await Shell.Current.GoToAsync(
+                "//TicketsPage");
+        }
+
+
+        // =========================================================
+        // CHECK-IN
+        // =========================================================
+
+        private async void OnCheckInClicked(
+            object sender,
+            EventArgs e)
+        {
+            if (_viewModel.CurrentTrip == null)
+                return;
+
+
+            await Shell.Current.GoToAsync(
+                nameof(CheckInPage),
+                new Dictionary<string, object>
+                {
+                    ["ticketId"] =
+                        _viewModel.CurrentTrip.Id
+                });
+        }
     }
 }

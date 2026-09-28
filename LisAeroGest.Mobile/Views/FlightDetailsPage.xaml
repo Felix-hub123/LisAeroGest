@@ -17,240 +17,340 @@
             Padding="20"
             Spacing="16">
 
-            <!-- LOADING -->
 
-            <ActivityIndicator
-                IsRunning="{Binding IsBusy}"
+            <!-- =====================================================
+                 CARREGAMENTO
+            ====================================================== -->
+
+            <HorizontalStackLayout
                 IsVisible="{Binding IsBusy}"
-                HorizontalOptions="Center" />
+                HorizontalOptions="Center"
+                Spacing="8">
+
+                <ActivityIndicator
+                    IsRunning="{Binding IsBusy}"
+                    Color="{StaticResource AccentDark}" />
+
+                <Label
+                    Text="A carregar voo..."
+                    Style="{StaticResource CaptionStyle}"
+                    VerticalOptions="Center" />
+
+            </HorizontalStackLayout>
 
 
-            <!-- ERROR -->
+            <!-- =====================================================
+                 ERRO
+            ====================================================== -->
 
-            <Label
-                Text="{Binding ErrorMessage}"
-                TextColor="{AppThemeBinding
-                    Light={StaticResource Error},
-                    Dark={StaticResource ErrorDark}}"
-                HorizontalOptions="Center" />
+            <Border
+                IsVisible="{Binding HasError}"
+                Padding="14"
+                BackgroundColor="#1AEF4444"
+                Stroke="#EF4444"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 10">
+
+                <Label
+                    Text="{Binding ErrorMessage}"
+                    TextColor="#EF4444"
+                    FontSize="13"
+                    LineBreakMode="WordWrap" />
+
+            </Border>
 
 
-            <!-- FLIGHT DETAILS -->
+            <!-- =====================================================
+                 SUCESSO
+            ====================================================== -->
+
+            <Border
+                IsVisible="{Binding HasSuccess}"
+                Padding="14"
+                BackgroundColor="#1A22C55E"
+                Stroke="#22C55E"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 10">
+
+                <Label
+                    Text="{Binding SuccessMessage}"
+                    TextColor="#22C55E"
+                    FontSize="13"
+                    LineBreakMode="WordWrap" />
+
+            </Border>
+
+
+            <!-- =====================================================
+                 DETALHES DO VOO
+            ====================================================== -->
 
             <VerticalStackLayout
                 IsVisible="{Binding HasFlight}"
-                Spacing="14">
-
-                <Label
-                    Text="{Binding Flight.FlightNumber}"
-                    FontSize="28"
-                    FontAttributes="Bold"
-                    HorizontalOptions="Center"
-                    TextColor="{StaticResource AccentDark}" />
-
-                <Label
-                    Text="{Binding Flight.Status}"
-                    FontSize="16"
-                    HorizontalOptions="Center" />
+                Spacing="16">
 
 
-                <!-- ROUTE -->
+                <!-- VOO -->
 
-                <Grid
-                    ColumnDefinitions="*,Auto,*"
-                    ColumnSpacing="12">
-
-                    <VerticalStackLayout Grid.Column="0">
-
-                        <Label
-                            Text="Origem"
-                            FontSize="12" />
-
-                        <Label
-                            Text="{Binding Flight.Origin}"
-                            FontAttributes="Bold" />
-
-                        <Label
-                            Text="{Binding Flight.OriginCode}" />
-
-                    </VerticalStackLayout>
-
+                <VerticalStackLayout
+                    Spacing="4">
 
                     <Label
-                        Grid.Column="1"
-                        Text="→"
-                        FontSize="26"
-                        VerticalOptions="Center"
+                        Text="{Binding Flight.FlightNumber}"
+                        FontSize="28"
+                        FontAttributes="Bold"
+                        HorizontalOptions="Center"
                         TextColor="{StaticResource AccentDark}" />
 
+                    <Label
+                        Text="{Binding Flight.Status}"
+                        FontSize="16"
+                        HorizontalOptions="Center" />
 
-                    <VerticalStackLayout Grid.Column="2">
-
-                        <Label
-                            Text="Destino"
-                            FontSize="12" />
-
-                        <Label
-                            Text="{Binding Flight.Destination}"
-                            FontAttributes="Bold" />
-
-                        <Label
-                            Text="{Binding Flight.DestinationCode}" />
-
-                    </VerticalStackLayout>
-
-                </Grid>
+                </VerticalStackLayout>
 
 
-                <BoxView
-                    HeightRequest="1"
-                    BackgroundColor="{AppThemeBinding
-                        Light={StaticResource Border},
-                        Dark={StaticResource BorderDark}}" />
+                <!-- =================================================
+                     ROTA
+                ================================================== -->
+
+                <Border
+                    Style="{StaticResource CardStyle}"
+                    Padding="18">
+
+                    <Grid
+                        ColumnDefinitions="*,Auto,*"
+                        ColumnSpacing="12">
+
+                        <!-- ORIGEM -->
+
+                        <VerticalStackLayout
+                            Grid.Column="0"
+                            Spacing="3">
+
+                            <Label
+                                Text="ORIGEM"
+                                Style="{StaticResource FootnoteStyle}" />
+
+                            <Label
+                                Text="{Binding Flight.OriginCode}"
+                                FontSize="24"
+                                FontFamily="OpenSansSemibold" />
+
+                            <Label
+                                Text="{Binding Flight.Origin}"
+                                Style="{StaticResource CaptionStyle}" />
+
+                        </VerticalStackLayout>
 
 
-                <!-- INFORMATION -->
-
-                <Grid
-                    ColumnDefinitions="*,*"
-                    RowDefinitions="Auto,Auto,Auto,Auto"
-                    ColumnSpacing="12"
-                    RowSpacing="12">
-
-                    <!-- DEPARTURE -->
-
-                    <VerticalStackLayout
-                        Grid.Row="0"
-                        Grid.Column="0">
-
-                        <Label
-                            Text="Partida"
-                            FontSize="12" />
-
-                        <Label
-                            Text="{Binding Flight.DepartureTime,
-                                StringFormat='{0:dd/MM/yyyy HH:mm}'}"
-                            FontAttributes="Bold" />
-
-                    </VerticalStackLayout>
-
-
-                    <!-- ARRIVAL -->
-
-                    <VerticalStackLayout
-                        Grid.Row="0"
-                        Grid.Column="1">
+                        <!-- SETA -->
 
                         <Label
-                            Text="Chegada"
-                            FontSize="12" />
-
-                        <Label
-                            Text="{Binding Flight.ArrivalTime,
-                                StringFormat='{0:dd/MM/yyyy HH:mm}'}"
-                            FontAttributes="Bold" />
-
-                    </VerticalStackLayout>
-
-
-                    <!-- AIRLINE -->
-
-                    <VerticalStackLayout
-                        Grid.Row="1"
-                        Grid.Column="0">
-
-                        <Label
-                            Text="Companhia"
-                            FontSize="12" />
-
-                        <Label
-                            Text="{Binding Flight.AirlineName}"
-                            FontAttributes="Bold" />
-
-                    </VerticalStackLayout>
-
-
-                    <!-- GATE -->
-
-                    <VerticalStackLayout
-                        Grid.Row="1"
-                        Grid.Column="1">
-
-                        <Label
-                            Text="Gate"
-                            FontSize="12" />
-
-                        <Label
-                            Text="{Binding Flight.Gate}"
-                            FontAttributes="Bold" />
-
-                    </VerticalStackLayout>
-
-
-                    <!-- AIRCRAFT -->
-
-                    <VerticalStackLayout
-                        Grid.Row="2"
-                        Grid.Column="0">
-
-                        <Label
-                            Text="Aeronave"
-                            FontSize="12" />
-
-                        <Label
-                            Text="{Binding Flight.AircraftModel}"
-                            FontAttributes="Bold" />
-
-                    </VerticalStackLayout>
-
-
-                    <!-- DURATION -->
-
-                    <VerticalStackLayout
-                        Grid.Row="2"
-                        Grid.Column="1">
-
-                        <Label
-                            Text="Duração"
-                            FontSize="12" />
-
-                        <Label
-                            Text="{Binding Flight.DurationLabel}"
-                            FontAttributes="Bold" />
-
-                    </VerticalStackLayout>
-
-
-                    <!-- PRICE -->
-
-                    <VerticalStackLayout
-                        Grid.Row="3"
-                        Grid.Column="0">
-
-                        <Label
-                            Text="Preço base"
-                            FontSize="12" />
-
-                        <Label
-                            Text="{Binding Flight.PriceLabel}"
-                            FontAttributes="Bold"
+                            Grid.Column="1"
+                            Text="→"
+                            FontSize="26"
+                            VerticalOptions="Center"
                             TextColor="{StaticResource AccentDark}" />
 
-                    </VerticalStackLayout>
 
-                </Grid>
+                        <!-- DESTINO -->
+
+                        <VerticalStackLayout
+                            Grid.Column="2"
+                            Spacing="3">
+
+                            <Label
+                                Text="DESTINO"
+                                Style="{StaticResource FootnoteStyle}"
+                                HorizontalTextAlignment="End" />
+
+                            <Label
+                                Text="{Binding Flight.DestinationCode}"
+                                FontSize="24"
+                                FontFamily="OpenSansSemibold"
+                                HorizontalTextAlignment="End" />
+
+                            <Label
+                                Text="{Binding Flight.Destination}"
+                                Style="{StaticResource CaptionStyle}"
+                                HorizontalTextAlignment="End" />
+
+                        </VerticalStackLayout>
+
+                    </Grid>
+
+                </Border>
 
 
-                <!-- ACTIONS -->
+                <!-- =================================================
+                     INFORMAÇÕES
+                ================================================== -->
+
+                <Border
+                    Style="{StaticResource CardStyle}"
+                    Padding="18">
+
+                    <Grid
+                        ColumnDefinitions="*,*"
+                        RowDefinitions="Auto,Auto,Auto,Auto"
+                        ColumnSpacing="18"
+                        RowSpacing="16">
+
+
+                        <!-- PARTIDA -->
+
+                        <VerticalStackLayout
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Spacing="3">
+
+                            <Label
+                                Text="PARTIDA"
+                                Style="{StaticResource FootnoteStyle}" />
+
+                            <Label
+                                Text="{Binding Flight.DepartureTime,
+                                    StringFormat='{0:dd/MM/yyyy HH:mm}'}"
+                                FontAttributes="Bold" />
+
+                        </VerticalStackLayout>
+
+
+                        <!-- CHEGADA -->
+
+                        <VerticalStackLayout
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Spacing="3">
+
+                            <Label
+                                Text="CHEGADA"
+                                Style="{StaticResource FootnoteStyle}" />
+
+                            <Label
+                                Text="{Binding Flight.ArrivalTime,
+                                    StringFormat='{0:dd/MM/yyyy HH:mm}'}"
+                                FontAttributes="Bold" />
+
+                        </VerticalStackLayout>
+
+
+                        <!-- COMPANHIA -->
+
+                        <VerticalStackLayout
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Spacing="3">
+
+                            <Label
+                                Text="COMPANHIA"
+                                Style="{StaticResource FootnoteStyle}" />
+
+                            <Label
+                                Text="{Binding Flight.AirlineName}"
+                                FontAttributes="Bold" />
+
+                        </VerticalStackLayout>
+
+
+                        <!-- PORTA -->
+
+                        <VerticalStackLayout
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Spacing="3">
+
+                            <Label
+                                Text="PORTA"
+                                Style="{StaticResource FootnoteStyle}" />
+
+                            <Label
+                                Text="{Binding Flight.Gate}"
+                                FontAttributes="Bold"
+                                TextColor="{StaticResource AccentDark}" />
+
+                        </VerticalStackLayout>
+
+
+                        <!-- AERONAVE -->
+
+                        <VerticalStackLayout
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Spacing="3">
+
+                            <Label
+                                Text="AERONAVE"
+                                Style="{StaticResource FootnoteStyle}" />
+
+                            <Label
+                                Text="{Binding Flight.AircraftModel}"
+                                FontAttributes="Bold" />
+
+                        </VerticalStackLayout>
+
+
+                        <!-- DURAÇÃO -->
+
+                        <VerticalStackLayout
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Spacing="3">
+
+                            <Label
+                                Text="DURAÇÃO"
+                                Style="{StaticResource FootnoteStyle}" />
+
+                            <Label
+                                Text="{Binding Flight.DurationLabel}"
+                                FontAttributes="Bold" />
+
+                        </VerticalStackLayout>
+
+
+                        <!-- PREÇO -->
+
+                        <VerticalStackLayout
+                            Grid.Row="3"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            Spacing="3">
+
+                            <Label
+                                Text="PREÇO BASE"
+                                Style="{StaticResource FootnoteStyle}" />
+
+                            <Label
+                                Text="{Binding Flight.PriceLabel}"
+                                FontSize="20"
+                                FontAttributes="Bold"
+                                TextColor="{StaticResource AccentDark}" />
+
+                        </VerticalStackLayout>
+
+                    </Grid>
+
+                </Border>
+
+
+                <!-- =================================================
+                     AÇÕES
+                ================================================== -->
 
                 <Grid
                     ColumnDefinitions="*,*"
                     ColumnSpacing="10">
 
+                    <!-- FAVORITO -->
+
                     <Button
-                        Text="☆ Favorito"
+                        Text="{Binding FavoriteButtonText}"
                         Command="{Binding ToggleFavoriteCommand}"
                         Style="{StaticResource SecondaryButtonStyle}" />
+
+
+                    <!-- RESERVAR -->
 
                     <Button
                         Grid.Column="1"
@@ -262,11 +362,14 @@
             </VerticalStackLayout>
 
 
-            <!-- REFRESH -->
+            <!-- =====================================================
+                 ATUALIZAR
+            ====================================================== -->
 
             <Button
-                Text="Actualizar"
+                Text="Atualizar"
                 Command="{Binding LoadCommand}"
+                Style="{StaticResource SecondaryButtonStyle}"
                 IsEnabled="{Binding IsBusy,
                     Converter={StaticResource InvertedBoolConverter}}" />
 

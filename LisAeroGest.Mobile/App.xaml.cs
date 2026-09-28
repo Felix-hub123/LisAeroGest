@@ -1,39 +1,64 @@
 using LisAeroGest.Mobile.Services;
 using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics;
 
 namespace LisAeroGest.Mobile
 {
     public partial class App : Application
     {
-        private readonly AuthService _authService;
         private readonly IServiceProvider _serviceProvider;
         private readonly AppPreferencesService _preferences;
 
+
+        // =========================================================
+        // CONSTRUTOR
+        // =========================================================
+
         public App(
-            AuthService authService,
             IServiceProvider serviceProvider,
             AppPreferencesService preferences)
         {
             InitializeComponent();
 
-            _authService = authService;
-            _serviceProvider = serviceProvider;
-            _preferences = preferences;
+            _serviceProvider =
+                serviceProvider;
 
-            // Escuro/glassmorphism é o tema principal da app — não segue
-            // o tema do sistema, para a identidade visual ser consistente
-            // em qualquer dispositivo.
+            _preferences =
+                preferences;
+
+
+            // =====================================================
+            // TEMA
+            // =====================================================
+
             _preferences.ApplyTheme();
 
+
+            // =====================================================
+            // SHELL
+            // =====================================================
+
             MainPage =
-                _serviceProvider.GetRequiredService<AppShell>();
+                _serviceProvider
+                    .GetRequiredService<AppShell>();
         }
+
+
+        // =========================================================
+        // JANELA
+        // =========================================================
 
         protected override Window CreateWindow(
             IActivationState? activationState)
         {
-            return new Window(MainPage);
+            return new Window(
+                MainPage);
         }
+
+
+        // =========================================================
+        // INICIALIZAÇÃO
+        // =========================================================
 
         protected override async void OnStart()
         {
@@ -43,12 +68,13 @@ namespace LisAeroGest.Mobile
             {
                 if (MainPage is AppShell shell)
                 {
-                    await shell.ConfigureAuthenticationAsync();
+                    await shell
+                        .ConfigureAuthenticationAsync();
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(
+                Debug.WriteLine(
                     $"[App] Erro ao iniciar: {ex}");
             }
         }

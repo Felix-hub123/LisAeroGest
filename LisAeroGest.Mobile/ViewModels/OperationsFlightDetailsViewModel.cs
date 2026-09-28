@@ -27,6 +27,9 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
     private string _errorMessage = string.Empty;
 
     [ObservableProperty]
+    private string _successMessage = string.Empty;
+
+    [ObservableProperty]
     private EmployeeFlightOperationDto? _operation;
 
 
@@ -58,6 +61,9 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
 
     public bool HasError =>
         !string.IsNullOrWhiteSpace(ErrorMessage);
+
+    public bool HasSuccess =>
+    !string.IsNullOrWhiteSpace(SuccessMessage);
 
     public bool HasOperation =>
         Operation != null;
@@ -106,6 +112,11 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
     partial void OnErrorMessageChanged(string value)
     {
         OnPropertyChanged(nameof(HasError));
+    }
+
+    partial void OnSuccessMessageChanged(string value)
+    {
+        OnPropertyChanged(nameof(HasSuccess));
     }
 
     partial void OnOperationChanged(
@@ -344,17 +355,18 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
 
     [RelayCommand]
     private async Task CheckInPassengerAsync(
-        EmployeeFlightPassengerDto? passenger)
+      EmployeeFlightPassengerDto? passenger)
     {
-        if (passenger == null)
+        if (passenger == null || IsBusy)
             return;
+
+        SuccessMessage = string.Empty;
+        ErrorMessage = string.Empty;
 
         if (!passenger.CanCheckIn)
         {
-            await Shell.Current.DisplayAlert(
-                "Check-in",
-                "Este passageiro não está disponível para check-in.",
-                "OK");
+            ErrorMessage =
+                "Este passageiro não está disponível para check-in.";
 
             return;
         }
@@ -379,34 +391,30 @@ public partial class OperationsFlightDetailsViewModel : ObservableObject
 
             if (!result.Success)
             {
-                await Shell.Current.DisplayAlert(
-                    "Erro",
+                ErrorMessage =
                     result.ErrorMessage ??
-                    "Não foi possível realizar o check-in.",
-                    "OK");
+                    "Não foi possível realizar o check-in.";
 
                 return;
             }
 
-            await Shell.Current.DisplayAlert(
-                "Check-in concluído",
-                $"Check-in de {passenger.PassengerName} " +
-                "realizado com sucesso.",
-                "OK");
+            SuccessMessage =
+                $"Check-in de {passenger.PassengerName} realizado com sucesso.";
         }
-        catch (Exception)
+        catch
         {
-            await Shell.Current.DisplayAlert(
-                "Erro",
-                "Ocorreu um erro ao realizar o check-in.",
-                "OK");
+            ErrorMessage =
+                "Ocorreu um erro ao realizar o check-in.";
         }
         finally
         {
             IsBusy = false;
         }
 
-        await LoadAsync();
+        if (!string.IsNullOrWhiteSpace(SuccessMessage))
+        {
+            await LoadAsync();
+        }
     }
 
 

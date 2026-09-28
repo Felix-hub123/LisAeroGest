@@ -6,33 +6,63 @@ public partial class HomePage : ContentPage
 {
     private readonly HomeViewModel _viewModel;
 
-    public HomePage(HomeViewModel viewModel)
+
+    // =========================================================
+    // CONSTRUTOR
+    // =========================================================
+
+    public HomePage(
+        HomeViewModel viewModel)
     {
         InitializeComponent();
+
         _viewModel = viewModel;
         BindingContext = _viewModel;
     }
 
+
+    // =========================================================
+    // CARREGAR HOME
+    // =========================================================
+
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        DateLabel.Text = DateTime.Now.ToString("dd MMM yyyy");
-        await _viewModel.LoadCommand.ExecuteAsync(null);
+
+
+        DateLabel.Text =
+            DateTime.Now.ToString(
+                "dd MMM yyyy");
+
+
+        await _viewModel
+            .LoadCommand
+            .ExecuteAsync(null);
     }
 
-    private async void OnRefreshing(object sender, EventArgs e)
+
+    // =========================================================
+    // CARTEIRA
+    // =========================================================
+
+    private async void OnVerBilhetesClicked(
+        object sender,
+        EventArgs e)
     {
-        await _viewModel.LoadCommand.ExecuteAsync(null);
-        Refresh.IsRefreshing = false;
+        await Shell.Current.GoToAsync(
+            "//TicketsPage");
     }
 
-    private async void OnVerBilhetesClicked(object sender, EventArgs e)
-    {
-        await Shell.Current.GoToAsync("//TicketsPage");
-    }
 
-    private async void OnComprarVooClicked(object sender, EventArgs e)
+    // =========================================================
+    // PESQUISAR VOOS
+    // =========================================================
+
+    private async void OnComprarVooClicked(
+        object sender,
+        EventArgs e)
     {
-        await Shell.Current.GoToAsync(nameof(PassengerFlightsPage));
+        await Shell.Current.GoToAsync(
+            nameof(PassengerFlightsPage));
     }
 }

@@ -1,21 +1,27 @@
 using LisAeroGest.Mobile.ViewModels;
 
-namespace LisAeroGest.Mobile.Views;
-
-public partial class SettingsPage : ContentPage
+namespace LisAeroGest.Mobile.Views
 {
-    private readonly SettingsViewModel _viewModel;
-
-    public SettingsPage(SettingsViewModel viewModel)
+    public partial class SettingsPage : ContentPage
     {
-        InitializeComponent();
-        _viewModel = viewModel;
-        BindingContext = _viewModel;
-    }
+        private readonly SettingsViewModel _viewModel;
 
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
-        _viewModel.Load();
+
+        public SettingsPage(
+            SettingsViewModel viewModel)
+        {
+            InitializeComponent();
+
+            _viewModel = viewModel;
+            BindingContext = _viewModel;
+        }
+
+
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+
+            _viewModel.Load();
+        }
     }
 }

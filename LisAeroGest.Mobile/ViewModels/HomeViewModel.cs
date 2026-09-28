@@ -10,18 +10,33 @@ public partial class HomeViewModel : ObservableObject
 {
     private readonly ApiService _apiService;
 
+
+    // =========================================================
+    // ESTADO
+    // =========================================================
+
     [ObservableProperty]
     private bool _isBusy;
 
     [ObservableProperty]
     private string _statusLabel = "A carregar a tua viagem…";
 
-    // ─────────────────────────────────────────────
-    // PRÓXIMOS VOOS
-    // ─────────────────────────────────────────────
+    [ObservableProperty]
+    private bool _hasError;
+
+    [ObservableProperty]
+    private string _errorMessage = string.Empty;
+
+
+    // =========================================================
+    // PRÓXIMA VIAGEM DO PASSAGEIRO
+    // =========================================================
 
     [ObservableProperty]
     private bool _hasUpcomingFlights;
+
+    [ObservableProperty]
+    private bool _hasNoUpcomingFlights = true;
 
     [ObservableProperty]
     private string _flightOneNumber = string.Empty;
@@ -41,9 +56,10 @@ public partial class HomeViewModel : ObservableObject
     [ObservableProperty]
     private string _flightOneGate = string.Empty;
 
-    // ─────────────────────────────────────────────
-    // BOARDING PASS
-    // ─────────────────────────────────────────────
+
+    // =========================================================
+    // CARTÃO DE EMBARQUE
+    // =========================================================
 
     [ObservableProperty]
     private string _boardingFlight = "—";
@@ -57,14 +73,20 @@ public partial class HomeViewModel : ObservableObject
     [ObservableProperty]
     private bool _noBoardingLabelIsVisible = true;
 
+
+    // =========================================================
+    // CONSTRUTOR
+    // =========================================================
+
     public HomeViewModel(ApiService apiService)
     {
         _apiService = apiService;
     }
 
-    // ─────────────────────────────────────────────
+
+    // =========================================================
     // CARREGAR HOME
-    // ─────────────────────────────────────────────
+    // =========================================================
 
     [RelayCommand]
     public async Task LoadAsync()
@@ -76,7 +98,15 @@ public partial class HomeViewModel : ObservableObject
         {
             IsBusy = true;
 
+            HasError = false;
+            ErrorMessage = string.Empty;
+
             StatusLabel = "A carregar a tua viagem…";
+
+
+            // =================================================
+            // CARREGAR VOOS + BILHETES
+            // =================================================
 
             var departuresTask =
                 _apiService.GetDeparturesAsync();
@@ -84,98 +114,147 @@ public partial class HomeViewModel : ObservableObject
             var ticketsTask =
                 _apiService.GetMyTicketsAsync();
 
+
             await Task.WhenAll(
                 departuresTask,
                 ticketsTask);
 
-            var departures =
+
+            var departuresResult =
                 await departuresTask;
 
-            var tickets =
+            var ticketsResult =
                 await ticketsTask;
+
 
             Debug.WriteLine(
                 $"[HomeViewModel] Departures: " +
-                $"Success={departures.Success}, " +
-                $"Count={departures.Data?.Count ?? 0}");
+                $"Success={departuresResult.Success}, " +
+                $"Count={departuresResult.Data?.Count ?? 0}");
 
             Debug.WriteLine(
                 $"[HomeViewModel] Tickets: " +
-                $"Success={tickets.Success}, " +
-                $"Count={tickets.Data?.Count ?? 0}");
+                $"Success={ticketsResult.Success}, " +
+                $"Count={ticketsResult.Data?.Count ?? 0}");
 
-            // ─────────────────────────────────────
-            // PRÓXIMO VOO
-            // ─────────────────────────────────────
+
+            // =================================================
+            // VERIFICAR BILHETES
+            // =================================================
+
+            if (!ticketsResult.Success)
+            {
+                ClearUpcomingFlight();
+                ClearBoardingPass();
+
+                ShowError(
+                    ticketsResult.ErrorMessage ??
+                    "Não foi possível carregar as tuas viagens.");
+
+                StatusLabel =
+                    "Não foi possível atualizar as tuas viagens.";
+
+                return;
+            }
+
+
+            var tickets =
+                ticketsResult.Data ??
+                new List<TicketDto>();
 
             var now = DateTime.Now;
 
-            var nextFlight =
-                (departures.Data ?? new List<FlightDto>())
-                .Where(f =>
-                    f.DepartureTime > now &&
-                    !string.Equals(
-                        f.Status,
-                        "Cancelled",
-                        StringComparison.OrdinalIgnoreCase) &&
-                    !string.Equals(
-                        f.Status,
-                        "Departed",
-                        StringComparison.OrdinalIgnoreCase))
-                .OrderBy(f => f.DepartureTime)
-                .FirstOrDefault();
 
-            SetUpcomingFlight(nextFlight);
+            // =================================================
+            // PRÓXIMA VIAGEM DO PASSAGEIRO
+            //
+            // IMPORTANTE:
+            // Não usamos simplesmente o próximo voo do aeroporto.
+            // Primeiro procuramos o próximo BILHETE do passageiro.
+            // =================================================
 
-            // ─────────────────────────────────────
-            // BOARDING PASS
-            // ─────────────────────────────────────
+            var nextTicket =
+                tickets
+                    .Where(ticket =>
+                        ticket.DepartureTime >= now &&
+                        !string.Equals(
+                            ticket.Status,
+                            "Cancelled",
+                            StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(ticket =>
+                        ticket.DepartureTime)
+                    .FirstOrDefault();
+
+
+            if (nextTicket == null)
+            {
+                ClearUpcomingFlight();
+            }
+            else
+            {
+                // Procurar o mesmo voo na lista operacional
+                // para obter informação atualizada, como a porta.
+
+                FlightDto? matchingFlight = null;
+
+                if (departuresResult.Success)
+                {
+                    matchingFlight =
+                        (departuresResult.Data ??
+                         new List<FlightDto>())
+                        .FirstOrDefault(flight =>
+                            string.Equals(
+                                flight.FlightNumber,
+                                nextTicket.FlightNumber,
+                                StringComparison.OrdinalIgnoreCase));
+                }
+
+
+                SetUpcomingFlight(
+                    nextTicket,
+                    matchingFlight);
+            }
+
+
+            // =================================================
+            // CARTÃO DE EMBARQUE
+            //
+            // Mostrar o próximo bilhete com check-in concluído.
+            // =================================================
 
             var boarding =
-                (tickets.Data ?? new List<TicketDto>())
-                .Where(t =>
-                    string.Equals(
-                        t.Status,
-                        "CheckedIn",
-                        StringComparison.OrdinalIgnoreCase)
-                    ||
-                    t.BoardingPassId.HasValue)
-                .OrderByDescending(t => t.Id)
-                .FirstOrDefault();
+                tickets
+                    .Where(ticket =>
+                        ticket.DepartureTime >= now &&
+                        (
+                            string.Equals(
+                                ticket.Status,
+                                "CheckedIn",
+                                StringComparison.OrdinalIgnoreCase)
+                            ||
+                            ticket.BoardingPassId.HasValue
+                        ))
+                    .OrderBy(ticket =>
+                        ticket.DepartureTime)
+                    .FirstOrDefault();
 
-            BoardingSummaryIsVisible =
-                boarding != null;
 
-            NoBoardingLabelIsVisible =
-                boarding == null;
+            SetBoardingPass(boarding);
 
-            if (boarding != null)
-            {
-                BoardingFlight =
-                    boarding.FlightNumber;
 
-                BoardingSeat =
-                    string.IsNullOrWhiteSpace(
-                        boarding.SeatCode)
-                    ? "—"
-                    : boarding.SeatCode;
-            }
-            else
-            {
-                BoardingFlight = "—";
-                BoardingSeat = "—";
-            }
+            // =================================================
+            // STATUS
+            // =================================================
 
-            if (!departures.Success &&
-                !tickets.Success)
-            {
-                StatusLabel =
-                    "Não foi possível atualizar os dados.";
-            }
-            else
+            if (nextTicket != null)
             {
                 StatusLabel =
                     "Tudo pronto para a tua próxima viagem.";
+            }
+            else
+            {
+                StatusLabel =
+                    "Ainda não tens nenhuma viagem agendada.";
             }
         }
         catch (Exception ex)
@@ -183,10 +262,14 @@ public partial class HomeViewModel : ObservableObject
             Debug.WriteLine(
                 $"[HomeViewModel] Erro: {ex}");
 
+            ClearUpcomingFlight();
+            ClearBoardingPass();
+
             StatusLabel =
                 "Não foi possível carregar os dados.";
 
-            HasUpcomingFlights = false;
+            ShowError(
+                "Não foi possível atualizar a página inicial. Verifica a ligação e tenta novamente.");
         }
         finally
         {
@@ -194,49 +277,127 @@ public partial class HomeViewModel : ObservableObject
         }
     }
 
+
+    // =========================================================
+    // DEFINIR PRÓXIMA VIAGEM
+    // =========================================================
+
     private void SetUpcomingFlight(
+        TicketDto ticket,
         FlightDto? flight)
     {
-        if (flight == null)
-        {
-            HasUpcomingFlights = false;
-
-            FlightOneNumber = string.Empty;
-            FlightOneOrigin = string.Empty;
-            FlightOneDestination = string.Empty;
-            FlightOneDate = string.Empty;
-            FlightOneTime = string.Empty;
-            FlightOneGate = string.Empty;
-
-            return;
-        }
-
         HasUpcomingFlights = true;
+        HasNoUpcomingFlights = false;
+
 
         FlightOneNumber =
-            flight.FlightNumber;
+            ticket.FlightNumber;
+
 
         FlightOneOrigin =
-      string.IsNullOrWhiteSpace(flight.Origin)
-          ? "Origem"
-          : flight.Origin;
+            string.IsNullOrWhiteSpace(ticket.Origin)
+                ? "Origem"
+                : ticket.Origin;
+
 
         FlightOneDestination =
-            flight.DestinationCode
-            ?? flight.Destination
-            ?? "Destino";
+            string.IsNullOrWhiteSpace(ticket.Destination)
+                ? "Destino"
+                : ticket.Destination;
+
 
         FlightOneDate =
-            flight.DepartureTime
+            ticket.DepartureTime
                 .ToString("dd MMM");
 
+
         FlightOneTime =
-            flight.DepartureTime
+            ticket.DepartureTime
                 .ToString("HH:mm");
 
+
+        // A porta vem da informação operacional do voo.
+        // Se não estiver disponível, mostramos "Por definir".
+
         FlightOneGate =
+            flight == null ||
             string.IsNullOrWhiteSpace(flight.Gate)
                 ? "Por definir"
                 : flight.Gate;
+    }
+
+
+    // =========================================================
+    // LIMPAR PRÓXIMA VIAGEM
+    // =========================================================
+
+    private void ClearUpcomingFlight()
+    {
+        HasUpcomingFlights = false;
+        HasNoUpcomingFlights = true;
+
+        FlightOneNumber = string.Empty;
+        FlightOneOrigin = string.Empty;
+        FlightOneDestination = string.Empty;
+        FlightOneDate = string.Empty;
+        FlightOneTime = string.Empty;
+        FlightOneGate = string.Empty;
+    }
+
+
+    // =========================================================
+    // CARTÃO DE EMBARQUE
+    // =========================================================
+
+    private void SetBoardingPass(
+        TicketDto? ticket)
+    {
+        if (ticket == null)
+        {
+            ClearBoardingPass();
+            return;
+        }
+
+
+        BoardingSummaryIsVisible = true;
+        NoBoardingLabelIsVisible = false;
+
+
+        BoardingFlight =
+            string.IsNullOrWhiteSpace(ticket.FlightNumber)
+                ? "—"
+                : ticket.FlightNumber;
+
+
+        BoardingSeat =
+            string.IsNullOrWhiteSpace(ticket.SeatCode)
+                ? "—"
+                : ticket.SeatCode;
+    }
+
+
+    // =========================================================
+    // LIMPAR CARTÃO DE EMBARQUE
+    // =========================================================
+
+    private void ClearBoardingPass()
+    {
+        BoardingSummaryIsVisible = false;
+        NoBoardingLabelIsVisible = true;
+
+        BoardingFlight = "—";
+        BoardingSeat = "—";
+    }
+
+
+    // =========================================================
+    // ERRO
+    // =========================================================
+
+    private void ShowError(
+        string message)
+    {
+        ErrorMessage = message;
+        HasError = true;
     }
 }

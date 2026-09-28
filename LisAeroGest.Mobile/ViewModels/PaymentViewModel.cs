@@ -11,6 +11,11 @@ namespace LisAeroGest.Mobile.ViewModels
     {
         private readonly ApiService _apiService;
 
+
+        // =========================================================
+        // DADOS DA RESERVA
+        // =========================================================
+
         [ObservableProperty]
         private int ticketId;
 
@@ -26,6 +31,11 @@ namespace LisAeroGest.Mobile.ViewModels
         [ObservableProperty]
         private string price = string.Empty;
 
+
+        // =========================================================
+        // PAGAMENTO
+        // =========================================================
+
         [ObservableProperty]
         private string phoneNumber = string.Empty;
 
@@ -33,18 +43,46 @@ namespace LisAeroGest.Mobile.ViewModels
         private bool isBusy;
 
         [ObservableProperty]
-        private string statusMessage = string.Empty;
-
-        [ObservableProperty]
         private bool paymentRequestSent;
 
         [ObservableProperty]
         private bool paymentCompleted;
 
-        public PaymentViewModel(ApiService apiService)
+
+        // =========================================================
+        // FEEDBACK
+        // =========================================================
+
+        [ObservableProperty]
+        private string statusMessage = string.Empty;
+
+        [ObservableProperty]
+        private string errorMessage = string.Empty;
+
+        [ObservableProperty]
+        private bool hasError;
+
+        [ObservableProperty]
+        private string successMessage = string.Empty;
+
+        [ObservableProperty]
+        private bool hasSuccess;
+
+
+        // =========================================================
+        // CONSTRUTOR
+        // =========================================================
+
+        public PaymentViewModel(
+            ApiService apiService)
         {
             _apiService = apiService;
         }
+
+
+        // =========================================================
+        // RECEBER PARÂMETROS
+        // =========================================================
 
         public void ApplyQueryAttributes(
             IDictionary<string, object> query)
@@ -56,23 +94,47 @@ namespace LisAeroGest.Mobile.ViewModels
                     query.Select(kv =>
                         kv.Key + "=" + kv.Value)));
 
+            ClearFeedback();
+
+            PaymentRequestSent = false;
+            PaymentCompleted = false;
+
+
+            // =====================================================
+            // TICKET
+            // =====================================================
+
             if (query.TryGetValue(
                 "ticketId",
-                out var ticketIdValue))
+                out var ticketIdValue)
+                &&
+                int.TryParse(
+                    ticketIdValue?.ToString(),
+                    out var parsedTicketId))
             {
-                TicketId =
-                    Convert.ToInt32(
-                        ticketIdValue.ToString());
+                TicketId = parsedTicketId;
             }
+
+
+            // =====================================================
+            // VOO
+            // =====================================================
 
             if (query.TryGetValue(
                 "flightId",
-                out var flightIdValue))
+                out var flightIdValue)
+                &&
+                int.TryParse(
+                    flightIdValue?.ToString(),
+                    out var parsedFlightId))
             {
-                FlightId =
-                    Convert.ToInt32(
-                        flightIdValue.ToString());
+                FlightId = parsedFlightId;
             }
+
+
+            // =====================================================
+            // LUGAR
+            // =====================================================
 
             if (query.TryGetValue(
                 "seatCode",
@@ -80,8 +142,14 @@ namespace LisAeroGest.Mobile.ViewModels
             {
                 SeatCode =
                     Uri.UnescapeDataString(
-                        seatCodeValue?.ToString() ?? "");
+                        seatCodeValue?.ToString() ??
+                        string.Empty);
             }
+
+
+            // =====================================================
+            // NÚMERO DO VOO
+            // =====================================================
 
             if (query.TryGetValue(
                 "flightNumber",
@@ -89,8 +157,14 @@ namespace LisAeroGest.Mobile.ViewModels
             {
                 FlightNumber =
                     Uri.UnescapeDataString(
-                        flightNumberValue?.ToString() ?? "");
+                        flightNumberValue?.ToString() ??
+                        string.Empty);
             }
+
+
+            // =====================================================
+            // PREÇO
+            // =====================================================
 
             if (query.TryGetValue(
                 "price",
@@ -98,9 +172,65 @@ namespace LisAeroGest.Mobile.ViewModels
             {
                 Price =
                     Uri.UnescapeDataString(
-                        priceValue?.ToString() ?? "");
+                        priceValue?.ToString() ??
+                        string.Empty);
             }
         }
+
+
+        // =========================================================
+        // LIMPAR FEEDBACK
+        // =========================================================
+
+        private void ClearFeedback()
+        {
+            HasError = false;
+            ErrorMessage = string.Empty;
+
+            HasSuccess = false;
+            SuccessMessage = string.Empty;
+
+            StatusMessage = string.Empty;
+        }
+
+
+        // =========================================================
+        // MOSTRAR ERRO
+        // =========================================================
+
+        private void ShowError(
+            string message)
+        {
+            StatusMessage = string.Empty;
+
+            HasSuccess = false;
+            SuccessMessage = string.Empty;
+
+            ErrorMessage = message;
+            HasError = true;
+        }
+
+
+        // =========================================================
+        // MOSTRAR SUCESSO
+        // =========================================================
+
+        private void ShowSuccess(
+            string message)
+        {
+            StatusMessage = string.Empty;
+
+            HasError = false;
+            ErrorMessage = string.Empty;
+
+            SuccessMessage = message;
+            HasSuccess = true;
+        }
+
+
+        // =========================================================
+        // ENVIAR PEDIDO MB WAY
+        // =========================================================
 
         [RelayCommand]
         private async Task StartPaymentAsync()
@@ -108,16 +238,39 @@ namespace LisAeroGest.Mobile.ViewModels
             if (IsBusy || TicketId <= 0)
                 return;
 
-            var normalizedPhone =
-                NormalizePhoneNumber(PhoneNumber);
+            ClearFeedback();
 
-            if (!IsValidPhoneNumber(normalizedPhone))
+
+            // =====================================================
+            // NORMALIZAR TELEFONE
+            // =====================================================
+
+            var normalizedPhone =
+                NormalizePhoneNumber(
+                    PhoneNumber);
+
+
+            // =====================================================
+            // VALIDAR TELEFONE
+            // =====================================================
+
+            if (!IsValidPhoneNumber(
+                normalizedPhone))
             {
-                StatusMessage =
-                    "Introduz um número de telemóvel português válido.";
+                ShowError(
+                    "Introduz um número de telemóvel português válido.");
 
                 return;
             }
+
+
+            // Guardamos o número normalizado.
+            PhoneNumber = normalizedPhone;
+
+
+            // =====================================================
+            // SIMULAR PEDIDO MB WAY
+            // =====================================================
 
             try
             {
@@ -126,15 +279,24 @@ namespace LisAeroGest.Mobile.ViewModels
                 StatusMessage =
                     "A enviar pedido MB WAY…";
 
-                // Simulates receiving the request
-                // on the MB WAY application.
                 await Task.Delay(1000);
 
                 PaymentRequestSent = true;
 
-                StatusMessage =
-                    $"Pedido enviado para {MaskPhoneNumber(normalizedPhone)}. " +
-                    "Autoriza o pagamento para continuar.";
+                StatusMessage = string.Empty;
+
+                ShowSuccess(
+                    $"Pedido enviado para " +
+                    $"{MaskPhoneNumber(normalizedPhone)}. " +
+                    $"Autoriza o pagamento para concluir a compra.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(
+                    $"[Payment] Start payment error: {ex}");
+
+                ShowError(
+                    "Não foi possível enviar o pedido MB WAY.");
             }
             finally
             {
@@ -142,53 +304,112 @@ namespace LisAeroGest.Mobile.ViewModels
             }
         }
 
+
+        // =========================================================
+        // CONFIRMAR PAGAMENTO
+        // =========================================================
+
         [RelayCommand]
         private async Task ConfirmPaymentAsync()
         {
             if (IsBusy || TicketId <= 0)
                 return;
 
+
+            // =====================================================
+            // VALIDAR PEDIDO
+            // =====================================================
+
             if (!PaymentRequestSent)
             {
-                StatusMessage =
-                    "Envia primeiro o pedido MB WAY.";
+                ShowError(
+                    "Envia primeiro o pedido MB WAY.");
 
                 return;
             }
+
+
+            // =====================================================
+            // CONFIRMAÇÃO
+            // =====================================================
+
+            var confirmed =
+                await Shell.Current.DisplayAlert(
+                    "Autorizar pagamento",
+                    $"Confirmar o pagamento de {Price} " +
+                    $"para o voo {FlightNumber}?",
+                    "Autorizar",
+                    "Cancelar");
+
+            if (!confirmed)
+                return;
+
+
+            // =====================================================
+            // PROCESSAR PAGAMENTO
+            // =====================================================
 
             try
             {
                 IsBusy = true;
 
+                HasError = false;
+                ErrorMessage = string.Empty;
+
+                HasSuccess = false;
+                SuccessMessage = string.Empty;
+
                 StatusMessage =
                     "A processar pagamento…";
 
                 var result =
-                    await _apiService.PayWithMbWayAsync(
-                        TicketId,
-                        PhoneNumber);
+                    await _apiService
+                        .PayWithMbWayAsync(
+                            TicketId,
+                            PhoneNumber);
+
+
+                // =================================================
+                // ERRO
+                // =================================================
 
                 if (!result.Success ||
                     result.Data == null)
                 {
-                    StatusMessage =
+                    ShowError(
                         result.ErrorMessage ??
-                        "Não foi possível confirmar o pagamento.";
+                        "Não foi possível confirmar o pagamento.");
 
                     return;
                 }
 
+
+                // =================================================
+                // PAGAMENTO CONCLUÍDO
+                // =================================================
+
                 PaymentCompleted = true;
 
-                StatusMessage =
-                    "Pagamento concluído.";
+                PaymentRequestSent = false;
 
-                await Shell.Current.DisplayAlert(
-                    "Pagamento concluído",
-                    $"Pagamento de {result.Data.Amount:F2} € " +
-                    "simulado com sucesso.\n\n" +
-                    $"Referência: {result.Data.TransactionId}",
-                    "Ver bilhete");
+                ShowSuccess(
+                    $"Pagamento de " +
+                    $"{result.Data.Amount:F2} € " +
+                    $"concluído com sucesso. " +
+                    $"Referência: " +
+                    $"{result.Data.TransactionId}");
+
+
+                // =================================================
+                // PEQUENA PAUSA PARA MOSTRAR O RESULTADO
+                // =================================================
+
+                await Task.Delay(900);
+
+
+                // =================================================
+                // IR PARA OS BILHETES
+                // =================================================
 
                 await Shell.Current.GoToAsync(
                     "//TicketsPage");
@@ -198,8 +419,8 @@ namespace LisAeroGest.Mobile.ViewModels
                 Debug.WriteLine(
                     $"[Payment] Error: {ex}");
 
-                StatusMessage =
-                    "Ocorreu um erro durante o pagamento.";
+                ShowError(
+                    "Ocorreu um erro durante o pagamento.");
             }
             finally
             {
@@ -207,11 +428,19 @@ namespace LisAeroGest.Mobile.ViewModels
             }
         }
 
+
+        // =========================================================
+        // NORMALIZAR NÚMERO
+        // =========================================================
+
         private static string NormalizePhoneNumber(
             string? phoneNumber)
         {
-            if (string.IsNullOrWhiteSpace(phoneNumber))
+            if (string.IsNullOrWhiteSpace(
+                phoneNumber))
+            {
                 return string.Empty;
+            }
 
             var normalized =
                 phoneNumber
@@ -219,18 +448,32 @@ namespace LisAeroGest.Mobile.ViewModels
                     .Replace("-", "");
 
             if (normalized.StartsWith("+351"))
-                normalized = normalized[4..];
+            {
+                normalized =
+                    normalized[4..];
+            }
 
             return normalized;
         }
 
+
+        // =========================================================
+        // VALIDAR NÚMERO
+        // =========================================================
+
         private static bool IsValidPhoneNumber(
             string phoneNumber)
         {
-            return phoneNumber.Length == 9 &&
-                   phoneNumber.All(char.IsDigit) &&
-                   phoneNumber.StartsWith("9");
+            return
+                phoneNumber.Length == 9 &&
+                phoneNumber.All(char.IsDigit) &&
+                phoneNumber.StartsWith("9");
         }
+
+
+        // =========================================================
+        // MASCARAR NÚMERO
+        // =========================================================
 
         private static string MaskPhoneNumber(
             string phoneNumber)
@@ -239,7 +482,8 @@ namespace LisAeroGest.Mobile.ViewModels
                 return phoneNumber;
 
             return
-                $"{phoneNumber[..3]} *** {phoneNumber[^3..]}";
+                $"{phoneNumber[..3]} *** " +
+                $"{phoneNumber[^3..]}";
         }
     }
 }

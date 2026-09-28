@@ -1,40 +1,256 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
-             xmlns:models="clr-namespace:LisAeroGest.Mobile.Models"
-             x:Class="LisAeroGest.Mobile.Views.FavoritesPage"
-             x:DataType="vm:FavoritesViewModel"
-             x:Name="Root"
-             Title="Favoritos"
-             Background="{AppThemeBinding Light={StaticResource AppBackgroundLightBrush}, Dark={StaticResource AppBackgroundGradientBrush}}">
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
+    xmlns:models="clr-namespace:LisAeroGest.Mobile.Models"
+    x:Class="LisAeroGest.Mobile.Views.FavoritesPage"
+    x:DataType="vm:FavoritesViewModel"
+    x:Name="Root"
+    Title="Favoritos"
+    Background="{AppThemeBinding
+        Light={StaticResource AppBackgroundLightBrush},
+        Dark={StaticResource AppBackgroundGradientBrush}}">
+
+
     <Grid RowDefinitions="Auto,*">
-        <VerticalStackLayout Padding="24,30,24,16" Spacing="3">
-            <Label Text="FAVORITOS" FontFamily="OpenSansSemibold" FontSize="14" TextColor="{AppThemeBinding Light={StaticResource TextSecondary}, Dark={StaticResource TextSecondaryDark}}" />
-            <Label Text="Voos guardados" Style="{StaticResource TitleStyle}" />
+
+
+        <!-- =====================================================
+             CABEÇALHO
+        ====================================================== -->
+
+        <VerticalStackLayout
+            Padding="24,30,24,16"
+            Spacing="4">
+
+            <Label
+                Text="FAVORITOS"
+                FontFamily="OpenSansSemibold"
+                FontSize="14"
+                TextColor="{AppThemeBinding
+                    Light={StaticResource TextSecondary},
+                    Dark={StaticResource TextSecondaryDark}}" />
+
+            <Label
+                Text="Voos guardados"
+                Style="{StaticResource TitleStyle}" />
+
+            <Label
+                Text="Guarda os voos que pretendes consultar rapidamente."
+                Style="{StaticResource CaptionStyle}" />
+
         </VerticalStackLayout>
-        <RefreshView Grid.Row="1" Command="{Binding LoadCommand}" IsRefreshing="{Binding IsBusy}">
-            <CollectionView ItemsSource="{Binding Flights}" EmptyView="Ainda não tens voos favoritos.">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:FlightDetailDto">
-                        <Border Style="{StaticResource CardStyle}" Margin="24,6" Padding="16">
-                            <VerticalStackLayout Spacing="9">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <Label Text="{Binding FlightNumber}" FontFamily="OpenSansSemibold" FontSize="22" />
-                                    <Button Grid.Column="1" Text="★" Command="{Binding Source={x:Reference Root}, Path=BindingContext.RemoveCommand}" CommandParameter="{Binding .}" Style="{StaticResource TextButtonStyle}" Padding="6" />
-                                </Grid>
-                                <Grid ColumnDefinitions="*,Auto,*">
-                                    <Label Text="{Binding OriginCode}" FontSize="18" FontFamily="OpenSansSemibold" />
-                                    <Label Grid.Column="1" Text="→" FontSize="20" TextColor="{StaticResource AccentDark}" />
-                                    <Label Grid.Column="2" Text="{Binding DestinationCode}" FontSize="18" FontFamily="OpenSansSemibold" HorizontalTextAlignment="End" />
-                                </Grid>
-                                <Label Text="{Binding DepartureTime, StringFormat='{0:dd/MM/yyyy HH:mm}'}" Style="{StaticResource CaptionStyle}" />
-                                <Button Text="Ver voo" Command="{Binding Source={x:Reference Root}, Path=BindingContext.OpenFlightCommand}" CommandParameter="{Binding .}" Style="{StaticResource SecondaryButtonStyle}" />
-                            </VerticalStackLayout>
+
+
+        <!-- =====================================================
+             CONTEÚDO
+        ====================================================== -->
+
+        <RefreshView
+            Grid.Row="1"
+            Command="{Binding LoadCommand}"
+            IsRefreshing="{Binding IsBusy}">
+
+            <CollectionView
+                ItemsSource="{Binding Flights}">
+
+
+                <!-- =================================================
+                     CABEÇALHO DA LISTA
+                ================================================== -->
+
+                <CollectionView.Header>
+
+                    <VerticalStackLayout
+                        Padding="24,0,24,10"
+                        Spacing="10">
+
+
+                        <!-- ERRO -->
+
+                        <Border
+                            IsVisible="{Binding Source={x:Reference Root}, Path=BindingContext.HasError}"
+                            Padding="14"
+                            BackgroundColor="#1AEF4444"
+                            Stroke="#EF4444"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 10">
+
+                            <Label
+                                Text="{Binding Source={x:Reference Root}, Path=BindingContext.ErrorMessage}"
+                                FontSize="13"
+                                TextColor="#EF4444"
+                                LineBreakMode="WordWrap" />
+
                         </Border>
+
+
+                        <!-- SUCESSO -->
+
+                        <Border
+                            IsVisible="{Binding Source={x:Reference Root}, Path=BindingContext.HasSuccess}"
+                            Padding="14"
+                            BackgroundColor="#1A22C55E"
+                            Stroke="#22C55E"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 10">
+
+                            <Label
+                                Text="{Binding Source={x:Reference Root}, Path=BindingContext.SuccessMessage}"
+                                FontSize="13"
+                                TextColor="#22C55E"
+                                LineBreakMode="WordWrap" />
+
+                        </Border>
+
+                    </VerticalStackLayout>
+
+                </CollectionView.Header>
+
+
+                <!-- =================================================
+                     SEM FAVORITOS
+                ================================================== -->
+
+                <CollectionView.EmptyView>
+
+                    <VerticalStackLayout
+                        Padding="36,50"
+                        Spacing="12"
+                        HorizontalOptions="Center">
+
+                        <Label
+                            Text="☆"
+                            FontSize="46"
+                            TextColor="{StaticResource AccentDark}"
+                            HorizontalTextAlignment="Center" />
+
+                        <Label
+                            Text="Ainda não tens favoritos"
+                            Style="{StaticResource Title2Style}"
+                            HorizontalTextAlignment="Center" />
+
+                        <Label
+                            Text="Adiciona um voo aos favoritos para o encontrares rapidamente aqui."
+                            Style="{StaticResource CaptionStyle}"
+                            HorizontalTextAlignment="Center"
+                            LineBreakMode="WordWrap" />
+
+                    </VerticalStackLayout>
+
+                </CollectionView.EmptyView>
+
+
+                <!-- =================================================
+                     VOO
+                ================================================== -->
+
+                <CollectionView.ItemTemplate>
+
+                    <DataTemplate
+                        x:DataType="models:FlightDetailDto">
+
+                        <Border
+                            Style="{StaticResource CardStyle}"
+                            Margin="24,6"
+                            Padding="16">
+
+                            <VerticalStackLayout
+                                Spacing="12">
+
+
+                                <!-- VOO + FAVORITO -->
+
+                                <Grid
+                                    ColumnDefinitions="*,Auto">
+
+                                    <VerticalStackLayout
+                                        Spacing="2">
+
+                                        <Label
+                                            Text="VOO"
+                                            Style="{StaticResource FootnoteStyle}" />
+
+                                        <Label
+                                            Text="{Binding FlightNumber}"
+                                            FontFamily="OpenSansSemibold"
+                                            FontSize="22" />
+
+                                    </VerticalStackLayout>
+
+
+                                    <Button
+                                        Grid.Column="1"
+                                        Text="★"
+                                        Command="{Binding Source={x:Reference Root}, Path=BindingContext.RemoveCommand}"
+                                        CommandParameter="{Binding .}"
+                                        Style="{StaticResource TextButtonStyle}"
+                                        FontSize="22"
+                                        Padding="8" />
+
+                                </Grid>
+
+
+                                <!-- ROTA -->
+
+                                <Grid
+                                    ColumnDefinitions="*,Auto,*"
+                                    ColumnSpacing="10">
+
+                                    <Label
+                                        Text="{Binding OriginCode}"
+                                        FontSize="18"
+                                        FontFamily="OpenSansSemibold"
+                                        VerticalOptions="Center" />
+
+                                    <Label
+                                        Grid.Column="1"
+                                        Text="→"
+                                        FontSize="20"
+                                        TextColor="{StaticResource AccentDark}"
+                                        VerticalOptions="Center" />
+
+                                    <Label
+                                        Grid.Column="2"
+                                        Text="{Binding DestinationCode}"
+                                        FontSize="18"
+                                        FontFamily="OpenSansSemibold"
+                                        HorizontalTextAlignment="End"
+                                        VerticalOptions="Center" />
+
+                                </Grid>
+
+
+                                <!-- DATA -->
+
+                                <Label
+                                    Text="{Binding DepartureTime,
+                                        StringFormat='{0:dd/MM/yyyy HH:mm}'}"
+                                    Style="{StaticResource CaptionStyle}" />
+
+
+                                <!-- ABRIR -->
+
+                                <Button
+                                    Text="Ver voo"
+                                    Command="{Binding Source={x:Reference Root}, Path=BindingContext.OpenFlightCommand}"
+                                    CommandParameter="{Binding .}"
+                                    Style="{StaticResource SecondaryButtonStyle}" />
+
+                            </VerticalStackLayout>
+
+                        </Border>
+
                     </DataTemplate>
+
                 </CollectionView.ItemTemplate>
+
             </CollectionView>
+
         </RefreshView>
+
     </Grid>
+
 </ContentPage>

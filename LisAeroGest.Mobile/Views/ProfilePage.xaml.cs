@@ -4,26 +4,73 @@ namespace LisAeroGest.Mobile.Views
 {
     public partial class ProfilePage : ContentPage
     {
-        public ProfilePage(ProfileViewModel viewModel)
+        private readonly ProfileViewModel _viewModel;
+
+
+        // =========================================================
+        // CONSTRUTOR
+        // =========================================================
+
+        public ProfilePage(
+            ProfileViewModel viewModel)
         {
             InitializeComponent();
-            BindingContext = viewModel;
+
+            _viewModel = viewModel;
+            BindingContext = _viewModel;
         }
+
+
+        // =========================================================
+        // CARREGAR PERFIL
+        // =========================================================
 
         protected override async void OnAppearing()
         {
             base.OnAppearing();
-            if (BindingContext is ProfileViewModel vm)
-                await vm.LoadCommand.ExecuteAsync(null);
+
+            await _viewModel
+                .LoadCommand
+                .ExecuteAsync(null);
         }
 
-        private async void OnSettingsClicked(object sender, EventArgs e)
-            => await Shell.Current.GoToAsync(nameof(SettingsPage));
 
-        private async void OnHistoryClicked(object sender, EventArgs e)
-            => await Shell.Current.GoToAsync(nameof(HistoryPage));
+        // =========================================================
+        // PREFERÊNCIAS
+        // =========================================================
 
-        private async void OnFavoritesClicked(object sender, EventArgs e)
-            => await Shell.Current.GoToAsync(nameof(FavoritesPage));
+        private async void OnSettingsClicked(
+            object sender,
+            EventArgs e)
+        {
+            await Shell.Current.GoToAsync(
+                nameof(SettingsPage));
+        }
+
+
+        // =========================================================
+        // HISTÓRICO
+        // =========================================================
+
+        private async void OnHistoryClicked(
+            object sender,
+            EventArgs e)
+        {
+            await Shell.Current.GoToAsync(
+                nameof(HistoryPage));
+        }
+
+
+        // =========================================================
+        // FAVORITOS
+        // =========================================================
+
+        private async void OnFavoritesClicked(
+            object sender,
+            EventArgs e)
+        {
+            await Shell.Current.GoToAsync(
+                nameof(FavoritesPage));
+        }
     }
 }

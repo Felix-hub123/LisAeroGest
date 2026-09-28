@@ -17,22 +17,150 @@
             Padding="24,30"
             Spacing="18">
 
-            <!-- HEADER -->
 
-            <Label
-                Text="PAGAMENTO"
-                FontFamily="OpenSansSemibold"
-                FontSize="14"
-                TextColor="{AppThemeBinding
-                    Light={StaticResource TextSecondary},
-                    Dark={StaticResource TextSecondaryDark}}" />
+            <!-- =====================================================
+                 CABEÇALHO
+            ====================================================== -->
 
-            <Label
-                Text="Confirma a tua viagem"
-                Style="{StaticResource TitleStyle}" />
+            <VerticalStackLayout Spacing="5">
+
+                <Label
+                    Text="PAGAMENTO"
+                    FontFamily="OpenSansSemibold"
+                    FontSize="14"
+                    TextColor="{AppThemeBinding
+                        Light={StaticResource TextSecondary},
+                        Dark={StaticResource TextSecondaryDark}}" />
+
+                <Label
+                    Text="Confirma a tua viagem"
+                    Style="{StaticResource TitleStyle}" />
+
+                <Label
+                    Text="Finaliza a reserva através da simulação MB WAY."
+                    Style="{StaticResource CaptionStyle}" />
+
+            </VerticalStackLayout>
 
 
-            <!-- RESUMO DA VIAGEM -->
+            <!-- =====================================================
+                 LOADING
+            ====================================================== -->
+
+            <HorizontalStackLayout
+                IsVisible="{Binding IsBusy}"
+                HorizontalOptions="Center"
+                Spacing="8">
+
+                <ActivityIndicator
+                    IsRunning="{Binding IsBusy}"
+                    Color="{StaticResource AccentDark}"
+                    WidthRequest="22"
+                    HeightRequest="22" />
+
+                <Label
+                    Text="{Binding StatusMessage}"
+                    Style="{StaticResource CaptionStyle}"
+                    VerticalOptions="Center" />
+
+            </HorizontalStackLayout>
+
+
+            <!-- =====================================================
+                 ERRO
+            ====================================================== -->
+
+            <Border
+                IsVisible="{Binding HasError}"
+                Padding="14"
+                BackgroundColor="#1AEF4444"
+                Stroke="#EF4444"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 10">
+
+                <Grid
+                    ColumnDefinitions="Auto,*"
+                    ColumnSpacing="10">
+
+                    <Label
+                        Text="!"
+                        FontSize="20"
+                        FontFamily="OpenSansSemibold"
+                        TextColor="#EF4444"
+                        VerticalOptions="Center" />
+
+                    <VerticalStackLayout
+                        Grid.Column="1"
+                        Spacing="2">
+
+                        <Label
+                            Text="Não foi possível concluir"
+                            FontSize="13"
+                            FontFamily="OpenSansSemibold"
+                            TextColor="#EF4444" />
+
+                        <Label
+                            Text="{Binding ErrorMessage}"
+                            FontSize="12"
+                            TextColor="#EF4444"
+                            LineBreakMode="WordWrap" />
+
+                    </VerticalStackLayout>
+
+                </Grid>
+
+            </Border>
+
+
+            <!-- =====================================================
+                 SUCESSO
+            ====================================================== -->
+
+            <Border
+                IsVisible="{Binding HasSuccess}"
+                Padding="14"
+                BackgroundColor="#1A22C55E"
+                Stroke="#22C55E"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 10">
+
+                <Grid
+                    ColumnDefinitions="Auto,*"
+                    ColumnSpacing="10">
+
+                    <Label
+                        Text="✓"
+                        FontSize="20"
+                        FontFamily="OpenSansSemibold"
+                        TextColor="#22C55E"
+                        VerticalOptions="Center" />
+
+                    <VerticalStackLayout
+                        Grid.Column="1"
+                        Spacing="2">
+
+                        <Label
+                            Text="Operação concluída"
+                            FontSize="13"
+                            FontFamily="OpenSansSemibold"
+                            TextColor="#22C55E" />
+
+                        <Label
+                            Text="{Binding SuccessMessage}"
+                            FontSize="12"
+                            TextColor="#22C55E"
+                            LineBreakMode="WordWrap" />
+
+                    </VerticalStackLayout>
+
+                </Grid>
+
+            </Border>
+
+
+            <!-- =====================================================
+                 RESUMO DA VIAGEM
+            ====================================================== -->
 
             <Border
                 Style="{StaticResource CardElevatedStyle}"
@@ -41,13 +169,18 @@
                 <VerticalStackLayout Spacing="12">
 
                     <Label
+                        Text="RESUMO DA VIAGEM"
+                        Style="{StaticResource FootnoteStyle}" />
+
+                    <Label
                         Text="{Binding FlightNumber}"
                         FontFamily="OpenSansSemibold"
                         FontSize="25"
                         TextColor="{StaticResource AccentDark}" />
 
                     <Label
-                        Text="{Binding SeatCode, StringFormat='Lugar {0}'}"
+                        Text="{Binding SeatCode,
+                            StringFormat='Lugar {0}'}"
                         Style="{StaticResource BodyEmphasisStyle}" />
 
                     <BoxView
@@ -60,7 +193,8 @@
 
                         <Label
                             Text="Total"
-                            Style="{StaticResource CaptionStyle}" />
+                            Style="{StaticResource CaptionStyle}"
+                            VerticalOptions="Center" />
 
                         <Label
                             Grid.Column="1"
@@ -75,7 +209,9 @@
             </Border>
 
 
-            <!-- MB WAY -->
+            <!-- =====================================================
+                 MB WAY
+            ====================================================== -->
 
             <Border
                 Style="{StaticResource CardStyle}"
@@ -83,10 +219,14 @@
 
                 <VerticalStackLayout Spacing="14">
 
-                    <Grid ColumnDefinitions="Auto,*"
-                          ColumnSpacing="12">
 
-                        <!-- ÍCONE -->
+                    <!-- =================================================
+                         CABEÇALHO MB WAY
+                    ================================================== -->
+
+                    <Grid
+                        ColumnDefinitions="Auto,*"
+                        ColumnSpacing="12">
 
                         <Border
                             WidthRequest="48"
@@ -96,7 +236,8 @@
                             BackgroundColor="{StaticResource AccentDark}">
 
                             <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="14" />
+                                <RoundRectangle
+                                    CornerRadius="14" />
                             </Border.StrokeShape>
 
                             <Label
@@ -109,8 +250,6 @@
 
                         </Border>
 
-
-                        <!-- TÍTULO -->
 
                         <VerticalStackLayout
                             Grid.Column="1"
@@ -138,30 +277,57 @@
                             Dark={StaticResource BorderDark}}" />
 
 
-                    <!-- TELEFONE -->
+                    <!-- =================================================
+                         TELEFONE
+                    ================================================== -->
 
-                    <Label
-                        Text="Número de telemóvel"
-                        Style="{StaticResource BodyEmphasisStyle}" />
+                    <VerticalStackLayout Spacing="7">
 
-                    <Entry
-                        Text="{Binding PhoneNumber}"
-                        Placeholder="9XX XXX XXX"
-                        Keyboard="Telephone"
-                        MaxLength="16"
-                        ReturnType="Done" />
+                        <Label
+                            Text="Número de telemóvel"
+                            Style="{StaticResource BodyEmphasisStyle}" />
+
+                        <Border
+                            Style="{StaticResource InputCardStyle}"
+                            Padding="6">
+
+                            <Entry
+                                Text="{Binding PhoneNumber}"
+                                Placeholder="9XX XXX XXX"
+                                Keyboard="Telephone"
+                                MaxLength="16"
+                                ReturnType="Done"
+                                BackgroundColor="Transparent" />
+
+                        </Border>
+
+                        <Label
+                            Text="Será enviado um pedido de pagamento simulado para este número."
+                            Style="{StaticResource CaptionStyle}" />
+
+                    </VerticalStackLayout>
 
 
-                    <Label
-                        Text="Será enviado um pedido de pagamento simulado para este número."
-                        Style="{StaticResource CaptionStyle}" />
+                    <!-- =================================================
+                         ENVIAR PEDIDO
+                    ================================================== -->
+
+                    <Button
+                        Text="Enviar pedido MB WAY"
+                        Command="{Binding StartPaymentCommand}"
+                        IsVisible="{Binding PaymentRequestSent,
+                            Converter={StaticResource InvertedBoolConverter}}"
+                        IsEnabled="{Binding IsBusy,
+                            Converter={StaticResource InvertedBoolConverter}}" />
 
                 </VerticalStackLayout>
 
             </Border>
 
 
-            <!-- PEDIDO MB WAY ENVIADO -->
+            <!-- =====================================================
+                 PEDIDO MB WAY ENVIADO
+            ====================================================== -->
 
             <Border
                 Style="{StaticResource CardElevatedStyle}"
@@ -220,49 +386,42 @@
             </Border>
 
 
-            <!-- AVISO -->
+            <!-- =====================================================
+                 AMBIENTE DE DEMONSTRAÇÃO
+            ====================================================== -->
 
             <Border
                 Style="{StaticResource CardStyle}"
                 Padding="16">
 
-                <VerticalStackLayout Spacing="5">
+                <Grid
+                    ColumnDefinitions="Auto,*"
+                    ColumnSpacing="10">
 
                     <Label
-                        Text="Ambiente de demonstração"
-                        Style="{StaticResource BodyEmphasisStyle}" />
+                        Text="ⓘ"
+                        FontSize="20"
+                        VerticalOptions="Start"
+                        TextColor="{StaticResource AccentDark}" />
 
-                    <Label
-                        Text="Este é um simulador académico. Nenhuma transação MB WAY real será efetuada e não são recolhidos dados bancários."
-                        Style="{StaticResource CaptionStyle}" />
+                    <VerticalStackLayout
+                        Grid.Column="1"
+                        Spacing="5">
 
-                </VerticalStackLayout>
+                        <Label
+                            Text="Ambiente de demonstração"
+                            Style="{StaticResource BodyEmphasisStyle}" />
+
+                        <Label
+                            Text="Este é um simulador académico. Nenhuma transação MB WAY real será efetuada e não são recolhidos dados bancários."
+                            Style="{StaticResource CaptionStyle}"
+                            LineBreakMode="WordWrap" />
+
+                    </VerticalStackLayout>
+
+                </Grid>
 
             </Border>
-
-
-            <!-- ESTADO -->
-
-            <ActivityIndicator
-                IsRunning="{Binding IsBusy}"
-                IsVisible="{Binding IsBusy}"
-                HorizontalOptions="Center" />
-
-            <Label
-                Text="{Binding StatusMessage}"
-                Style="{StaticResource CaptionStyle}"
-                HorizontalTextAlignment="Center" />
-
-
-            <!-- ENVIAR PEDIDO -->
-
-            <Button
-                Text="Enviar pedido MB WAY"
-                Command="{Binding StartPaymentCommand}"
-                IsVisible="{Binding PaymentRequestSent,
-                    Converter={StaticResource InvertedBoolConverter}}"
-                IsEnabled="{Binding IsBusy,
-                    Converter={StaticResource InvertedBoolConverter}}" />
 
         </VerticalStackLayout>
 

@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using LisAeroGest.Mobile.Models;
 using LisAeroGest.Mobile.Services;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace LisAeroGest.Mobile.ViewModels;
 
@@ -10,17 +11,32 @@ public partial class OperationsCommunicationsViewModel : ObservableObject
 {
     private readonly ApiService _apiService;
 
+
+    // =========================================================
+    // VOO
+    // =========================================================
+
     [ObservableProperty]
     private int _flightId;
 
     [ObservableProperty]
     private FlightDto? _selectedFlight;
 
+
+    // =========================================================
+    // COMUNICAÇÃO
+    // =========================================================
+
     [ObservableProperty]
     private string _selectedType = "Informação";
 
     [ObservableProperty]
     private string _message = string.Empty;
+
+
+    // =========================================================
+    // ESTADO
+    // =========================================================
 
     [ObservableProperty]
     private bool _isBusy;
@@ -32,9 +48,21 @@ public partial class OperationsCommunicationsViewModel : ObservableObject
     private bool _hasError;
 
     [ObservableProperty]
+    private string _successMessage = string.Empty;
+
+    [ObservableProperty]
+    private bool _hasSuccess;
+
+    [ObservableProperty]
     private string _statusLabel = string.Empty;
 
+
+    // =========================================================
+    // LISTAS
+    // =========================================================
+
     public ObservableCollection<FlightDto> Flights { get; } = new();
+
 
     public List<string> CommunicationTypes { get; } = new()
     {
@@ -44,8 +72,14 @@ public partial class OperationsCommunicationsViewModel : ObservableObject
         "Atraso"
     };
 
+
+    // =========================================================
+    // PROPRIEDADES CALCULADAS
+    // =========================================================
+
     public bool HasSelectedFlight =>
         SelectedFlight != null;
+
 
     public string SelectedFlightTitle =>
         SelectedFlight == null
@@ -54,19 +88,39 @@ public partial class OperationsCommunicationsViewModel : ObservableObject
               $"{SelectedFlight.Origin} → " +
               $"{SelectedFlight.Destination}";
 
+
+    // =========================================================
+    // CONSTRUTOR
+    // =========================================================
+
     public OperationsCommunicationsViewModel(
         ApiService apiService)
     {
         _apiService = apiService;
     }
 
-    partial void OnSelectedFlightChanged(FlightDto? value)
+
+    // =========================================================
+    // VOO SELECIONADO
+    // =========================================================
+
+    partial void OnSelectedFlightChanged(
+        FlightDto? value)
     {
-        OnPropertyChanged(nameof(HasSelectedFlight));
-        OnPropertyChanged(nameof(SelectedFlightTitle));
+        OnPropertyChanged(
+            nameof(HasSelectedFlight));
+
+        OnPropertyChanged(
+            nameof(SelectedFlightTitle));
+
+        ClearFeedback();
     }
 
+
+    // =========================================================
     // CARREGAR VOOS
+    // =========================================================
+
     [RelayCommand]
     public async Task LoadAsync()
     {
@@ -77,24 +131,27 @@ public partial class OperationsCommunicationsViewModel : ObservableObject
         {
             IsBusy = true;
 
-            HasError = false;
-            ErrorMessage = string.Empty;
+            ClearFeedback();
+
             StatusLabel = string.Empty;
 
+
             var result =
-                await _apiService.GetDeparturesAsync();
+                await _apiService
+                    .GetDeparturesAsync();
+
 
             if (!result.Success)
             {
                 Flights.Clear();
 
-                ErrorMessage =
+                ShowError(
                     result.ErrorMessage ??
-                    "Não foi possível carregar os voos.";
+                    "Não foi possível carregar os voos.");
 
-                HasError = true;
                 return;
             }
+
 
             var flights =
                 (result.Data ?? new List<FlightDto>())
@@ -103,18 +160,24 @@ public partial class OperationsCommunicationsViewModel : ObservableObject
                         f.Status,
                         "Cancelled",
                         StringComparison.OrdinalIgnoreCase))
-                .OrderBy(f => f.DepartureTime)
+                .OrderBy(f =>
+                    f.DepartureTime)
                 .ToList();
 
+
             Flights.Clear();
+
 
             foreach (var flight in flights)
             {
                 Flights.Add(flight);
             }
 
-            // Se chegámos através dos detalhes de um voo,
-            // selecionamos automaticamente esse voo.
+
+            // =================================================
+            // VOO RECEBIDO ATRAVÉS DA NAVEGAÇÃO
+            // =================================================
+
             if (FlightId > 0)
             {
                 SelectedFlight =
@@ -122,12 +185,22 @@ public partial class OperationsCommunicationsViewModel : ObservableObject
                         f => f.Id == FlightId);
             }
 
-            // Se existir apenas um voo, seleciona-o.
+
+            // =================================================
+            // APENAS UM VOO
+            // =================================================
+
             if (SelectedFlight == null &&
                 Flights.Count == 1)
             {
-                SelectedFlight = Flights[0];
+                SelectedFlight =
+                    Flights[0];
             }
+
+
+            // =================================================
+            // SEM VOOS
+            // =================================================
 
             if (Flights.Count == 0)
             {
@@ -135,12 +208,15 @@ public partial class OperationsCommunicationsViewModel : ObservableObject
                     "Não existem voos disponíveis.";
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            ErrorMessage =
-                "Ocorreu um erro ao carregar os voos.";
+            Debug.WriteLine(
+                $"[OperationsCommunicationsViewModel] Load: {ex}");
 
-            HasError = true;
+            Flights.Clear();
+
+            ShowError(
+                "Ocorreu um erro ao carregar os voos.");
         }
         finally
         {
@@ -148,43 +224,60 @@ public partial class OperationsCommunicationsViewModel : ObservableObject
         }
     }
 
+
+    // =========================================================
     // ENVIAR COMUNICAÇÃO
+    // =========================================================
+
     [RelayCommand]
     private async Task SendAsync()
     {
         if (IsBusy)
             return;
 
-        HasError = false;
-        ErrorMessage = string.Empty;
+
+        ClearFeedback();
         StatusLabel = string.Empty;
+
+
+        // =====================================================
+        // VALIDAR VOO
+        // =====================================================
 
         if (SelectedFlight == null)
         {
-            ErrorMessage =
-                "Selecione primeiro um voo.";
+            ShowError(
+                "Selecione primeiro um voo.");
 
-            HasError = true;
             return;
         }
+
+
+        // =====================================================
+        // VALIDAR MENSAGEM
+        // =====================================================
 
         if (string.IsNullOrWhiteSpace(Message))
         {
-            ErrorMessage =
-                "Escreva a mensagem.";
+            ShowError(
+                "Escreva a mensagem.");
 
-            HasError = true;
             return;
         }
+
 
         if (Message.Trim().Length > 500)
         {
-            ErrorMessage =
-                "A mensagem não pode exceder 500 caracteres.";
+            ShowError(
+                "A mensagem não pode exceder 500 caracteres.");
 
-            HasError = true;
             return;
         }
+
+
+        // =====================================================
+        // CONFIRMAÇÃO
+        // =====================================================
 
         var confirmed =
             await Shell.Current.DisplayAlert(
@@ -194,19 +287,35 @@ public partial class OperationsCommunicationsViewModel : ObservableObject
                 "Enviar",
                 "Cancelar");
 
+
         if (!confirmed)
             return;
+
 
         try
         {
             IsBusy = true;
 
+            ClearFeedback();
+
+
+            // Guardamos o número do voo antes do pedido.
+
+            var flightNumber =
+                SelectedFlight.FlightNumber;
+
+
             var request =
                 new FlightCommunicationRequestDto
                 {
-                    Type = ConvertType(SelectedType),
-                    Message = Message.Trim()
+                    Type =
+                        ConvertType(
+                            SelectedType),
+
+                    Message =
+                        Message.Trim()
                 };
+
 
             var result =
                 await _apiService
@@ -214,34 +323,45 @@ public partial class OperationsCommunicationsViewModel : ObservableObject
                         SelectedFlight.Id,
                         request);
 
+
+            // =================================================
+            // ERRO
+            // =================================================
+
             if (!result.Success ||
                 result.Data == null)
             {
-                ErrorMessage =
+                ShowError(
                     result.ErrorMessage ??
-                    "Não foi possível enviar a comunicação.";
+                    "Não foi possível enviar a comunicação.");
 
-                HasError = true;
                 return;
             }
 
-            StatusLabel =
-                $"✓ Enviado a " +
-                $"{result.Data.Recipients} passageiro(s).";
+
+            // =================================================
+            // SUCESSO
+            // =================================================
+
+            ShowSuccess(
+                $"Comunicação enviada aos passageiros do voo " +
+                $"{flightNumber}. " +
+                $"{result.Data.Recipients} passageiro(s) notificado(s).");
+
+
+            // Limpar apenas a mensagem.
+            // Mantemos voo e tipo selecionados para facilitar
+            // uma nova comunicação para o mesmo voo.
 
             Message = string.Empty;
-
-            await Shell.Current.DisplayAlert(
-                "Comunicação enviada",
-                result.Data.Message,
-                "OK");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            ErrorMessage =
-                "Ocorreu um erro ao enviar a comunicação.";
+            Debug.WriteLine(
+                $"[OperationsCommunicationsViewModel] Send: {ex}");
 
-            HasError = true;
+            ShowError(
+                "Ocorreu um erro ao enviar a comunicação.");
         }
         finally
         {
@@ -249,7 +369,13 @@ public partial class OperationsCommunicationsViewModel : ObservableObject
         }
     }
 
-    private static string ConvertType(string type)
+
+    // =========================================================
+    // TIPO DE COMUNICAÇÃO
+    // =========================================================
+
+    private static string ConvertType(
+        string type)
     {
         return type switch
         {
@@ -258,5 +384,41 @@ public partial class OperationsCommunicationsViewModel : ObservableObject
             "Atraso" => "Delay",
             _ => "Info"
         };
+    }
+
+
+    // =========================================================
+    // FEEDBACK
+    // =========================================================
+
+    private void ClearFeedback()
+    {
+        HasError = false;
+        ErrorMessage = string.Empty;
+
+        HasSuccess = false;
+        SuccessMessage = string.Empty;
+    }
+
+
+    private void ShowError(
+        string message)
+    {
+        HasSuccess = false;
+        SuccessMessage = string.Empty;
+
+        ErrorMessage = message;
+        HasError = true;
+    }
+
+
+    private void ShowSuccess(
+        string message)
+    {
+        HasError = false;
+        ErrorMessage = string.Empty;
+
+        SuccessMessage = message;
+        HasSuccess = true;
     }
 }

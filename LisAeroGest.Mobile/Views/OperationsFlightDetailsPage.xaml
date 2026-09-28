@@ -32,11 +32,72 @@
                  ERRO
             ====================================================== -->
 
-            <Label
-                Text="{Binding ErrorMessage}"
+            <Border
                 IsVisible="{Binding HasError}"
-                TextColor="Red"
-                HorizontalTextAlignment="Center" />
+                Padding="12"
+                BackgroundColor="#1AEF4444"
+                Stroke="#EF4444"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 10">
+
+                <Grid
+                    ColumnDefinitions="Auto,*"
+                    ColumnSpacing="10">
+
+                    <Label
+                        Text="!"
+                        FontSize="18"
+                        FontFamily="OpenSansSemibold"
+                        TextColor="#EF4444"
+                        VerticalOptions="Center" />
+
+                    <Label
+                        Grid.Column="1"
+                        Text="{Binding ErrorMessage}"
+                        FontSize="13"
+                        TextColor="#EF4444"
+                        VerticalOptions="Center"
+                        LineBreakMode="WordWrap" />
+
+                </Grid>
+
+            </Border>
+
+
+            <!-- =====================================================
+                 SUCESSO
+            ====================================================== -->
+
+            <Border
+                IsVisible="{Binding HasSuccess}"
+                Padding="12"
+                BackgroundColor="#1A22C55E"
+                Stroke="#22C55E"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 10">
+
+                <Grid
+                    ColumnDefinitions="Auto,*"
+                    ColumnSpacing="10">
+
+                    <Label
+                        Text="✓"
+                        FontSize="18"
+                        FontFamily="OpenSansSemibold"
+                        TextColor="#22C55E"
+                        VerticalOptions="Center" />
+
+                    <Label
+                        Grid.Column="1"
+                        Text="{Binding SuccessMessage}"
+                        FontSize="13"
+                        TextColor="#22C55E"
+                        VerticalOptions="Center"
+                        LineBreakMode="WordWrap" />
+
+                </Grid>
+
+            </Border>
 
 
             <!-- =====================================================
@@ -166,9 +227,7 @@
                         ColumnSpacing="10">
 
 
-                        <!-- =========================
-                             ORIGEM
-                        ========================== -->
+                        <!-- ORIGEM -->
 
                         <Border
                             IsVisible="{Binding HasOriginWeather}"
@@ -257,9 +316,7 @@
                         </Border>
 
 
-                        <!-- =========================
-                             DESTINO
-                        ========================== -->
+                        <!-- DESTINO -->
 
                         <Border
                             Grid.Column="1"
@@ -351,9 +408,7 @@
                     </Grid>
 
 
-                    <!-- =============================
-                         ALERTA METEOROLÓGICO
-                    ============================== -->
+                    <!-- ALERTA METEOROLÓGICO -->
 
                     <Border
                         IsVisible="{Binding HasWeatherAlert}"
@@ -552,8 +607,6 @@
                 <VerticalStackLayout
                     Margin="0,8,0,0"
                     Spacing="12">
-
-                    <!-- TÍTULO -->
 
                     <Grid ColumnDefinitions="*,Auto">
 
