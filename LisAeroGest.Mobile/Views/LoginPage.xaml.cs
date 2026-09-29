@@ -11,9 +11,12 @@ namespace LisAeroGest.Mobile.Views
             BindingContext = viewModel;
         }
 
-        private async void OnPortalClicked(object sender, EventArgs e)
+        private async void OnRegisterClicked(
+            object sender,
+            EventArgs e)
         {
-            await Launcher.Default.OpenAsync("https://lisaerogest.onrender.com/Account/Register");
+            await Shell.Current.GoToAsync(
+                nameof(RegisterPage));
         }
     }
 }

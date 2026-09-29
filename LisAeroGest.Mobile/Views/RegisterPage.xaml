@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:LisAeroGest.Mobile.ViewModels"
+    x:Class="LisAeroGest.Mobile.Views.RegisterPage"
+    x:DataType="vm:RegisterViewModel"
+    Title="Criar conta"
+    Shell.NavBarIsVisible="True"
+    Background="{StaticResource AppBackgroundGradientBrush}">
+
+    <ScrollView>
+
+        <VerticalStackLayout
+            Padding="24,28,24,32"
+            Spacing="18">
+
+            <!-- CABEÇALHO -->
+
+            <VerticalStackLayout
+                Spacing="4"
+                Margin="0,0,0,10">
+
+                <Label
+                    Text="NOVO PASSAGEIRO"
+                    FontFamily="OpenSansSemibold"
+                    FontSize="13"
+                    TextColor="{StaticResource TextSecondaryDark}" />
+
+                <Label
+                    Text="Criar conta"
+                    Style="{StaticResource TitleStyle}" />
+
+                <Label
+                    Text="Crie o seu perfil de passageiro para reservar voos, consultar bilhetes e acompanhar a sua viagem."
+                    Style="{StaticResource CaptionStyle}" />
+
+            </VerticalStackLayout>
+
+
+            <!-- FORMULÁRIO -->
+
+            <Border Style="{StaticResource CardElevatedStyle}">
+
+                <VerticalStackLayout Spacing="16">
+
+
+                    <!-- ERRO -->
+
+                    <Border
+                        IsVisible="{Binding HasError}"
+                        Style="{StaticResource StatusBadgeStyle}"
+                        Stroke="{StaticResource ErrorDark}">
+
+                        <Label
+                            Text="{Binding ErrorMessage}"
+                            TextColor="{StaticResource ErrorDark}"
+                            FontSize="14" />
+
+                    </Border>
+
+
+                    <!-- NOME -->
+
+                    <VerticalStackLayout Spacing="6">
+
+                        <Label
+                            Text="Nome"
+                            Style="{StaticResource BodyEmphasisStyle}" />
+
+                        <Border Style="{StaticResource InputCardStyle}">
+
+                            <Entry
+                                Placeholder="Primeiro nome"
+                                Text="{Binding FirstName}"
+                                ReturnType="Next" />
+
+                        </Border>
+
+                    </VerticalStackLayout>
+
+
+                    <!-- APELIDO -->
+
+                    <VerticalStackLayout Spacing="6">
+
+                        <Label
+                            Text="Apelido"
+                            Style="{StaticResource BodyEmphasisStyle}" />
+
+                        <Border Style="{StaticResource InputCardStyle}">
+
+                            <Entry
+                                Placeholder="Último nome"
+                                Text="{Binding LastName}"
+                                ReturnType="Next" />
+
+                        </Border>
+
+                    </VerticalStackLayout>
+
+
+                    <!-- EMAIL -->
+
+                    <VerticalStackLayout Spacing="6">
+
+                        <Label
+                            Text="Email"
+                            Style="{StaticResource BodyEmphasisStyle}" />
+
+                        <Border Style="{StaticResource InputCardStyle}">
+
+                            <Entry
+                                Placeholder="email@exemplo.com"
+                                Text="{Binding Email}"
+                                Keyboard="Email"
+                                ReturnType="Next" />
+
+                        </Border>
+
+                    </VerticalStackLayout>
+
+
+                    <!-- DOCUMENTO -->
+
+                    <VerticalStackLayout Spacing="6">
+
+                        <Label
+                            Text="Documento de identificação"
+                            Style="{StaticResource BodyEmphasisStyle}" />
+
+                        <Border Style="{StaticResource InputCardStyle}">
+
+                            <Entry
+                                Placeholder="Número do documento"
+                                Text="{Binding DocumentNumber}"
+                                ReturnType="Next" />
+
+                        </Border>
+
+                    </VerticalStackLayout>
+
+
+                    <!-- PASSWORD -->
+
+                    <VerticalStackLayout Spacing="6">
+
+                        <Label
+                            Text="Password"
+                            Style="{StaticResource BodyEmphasisStyle}" />
+
+                        <Border Style="{StaticResource InputCardStyle}">
+
+                            <Entry
+                                Placeholder="Mínimo 6 caracteres"
+                                Text="{Binding Password}"
+                                IsPassword="True"
+                                ReturnType="Next" />
+
+                        </Border>
+
+                    </VerticalStackLayout>
+
+
+                    <!-- CONFIRMAR PASSWORD -->
+
+                    <VerticalStackLayout Spacing="6">
+
+                        <Label
+                            Text="Confirmar password"
+                            Style="{StaticResource BodyEmphasisStyle}" />
+
+                        <Border Style="{StaticResource InputCardStyle}">
+
+                            <Entry
+                                Placeholder="Repita a password"
+                                Text="{Binding ConfirmPassword}"
+                                IsPassword="True"
+                                ReturnType="Done"
+                                ReturnCommand="{Binding RegisterCommand}" />
+
+                        </Border>
+
+                    </VerticalStackLayout>
+
+
+                    <!-- BOTÃO CRIAR -->
+
+                    <Button
+                        Text="Criar conta"
+                        Command="{Binding RegisterCommand}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
+
+
+                    <!-- LOADING -->
+
+                    <ActivityIndicator
+                        IsRunning="{Binding IsBusy}"
+                        IsVisible="{Binding IsBusy}"
+                        Color="{StaticResource AccentDark}"
+                        HorizontalOptions="Center" />
+
+                </VerticalStackLayout>
+
+            </Border>
+
+
+            <!-- VOLTAR -->
+
+            <Button
+                Text="Já tem conta? Iniciar sessão"
+                Command="{Binding GoToLoginCommand}"
+                Style="{StaticResource TextButtonStyle}" />
+
+        </VerticalStackLayout>
+
+    </ScrollView>
+
+</ContentPage>

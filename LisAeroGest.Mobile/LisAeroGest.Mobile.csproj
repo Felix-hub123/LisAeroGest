@@ -33,18 +33,15 @@
 
 		<ApplicationVersion>1</ApplicationVersion>
 
-		<SupportedOSPlatformVersion
-			Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
 			21.0
 		</SupportedOSPlatformVersion>
 
-		<SupportedOSPlatformVersion
-			Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
 			10.0.17763.0
 		</SupportedOSPlatformVersion>
 
-		<TargetPlatformMinVersion
-			Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
 			10.0.17763.0
 		</TargetPlatformMinVersion>
 
@@ -59,8 +56,7 @@
 	     WINDOWS
 	========================================================= -->
 
-	<PropertyGroup
-		Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
 
 		<WindowsPackageType>None</WindowsPackageType>
 
@@ -77,23 +73,15 @@
 
 	<ItemGroup>
 
-		<MauiIcon
-			Include="Resources\AppIcon\appicon.svg"
-			ForegroundFile="Resources\AppIcon\appiconfg.svg"
-			Color="#0C1A1C" />
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#0C1A1C" />
 
-		<MauiSplashScreen
-			Include="Resources\Splash\splash.svg"
-			Color="#080B10"
-			BaseSize="128,128" />
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#080B10" BaseSize="128,128" />
 
 		<MauiImage Include="Resources\Images\*" />
 
 		<MauiFont Include="Resources\Fonts\*" />
 
-		<MauiAsset
-			Include="Resources\Raw\**"
-			LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 
 	</ItemGroup>
 
@@ -104,45 +92,25 @@
 
 	<ItemGroup>
 
-		<PackageReference
-			Include="CommunityToolkit.Mvvm"
-			Version="8.3.2" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
 
-		<PackageReference
-			Include="Microsoft.Extensions.Configuration.UserSecrets"
-			Version="6.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
 
-		<PackageReference
-			Include="Microsoft.Extensions.Hosting.Abstractions"
-			Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
 
-		<PackageReference
-			Include="Microsoft.Extensions.Http"
-			Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
 
-		<PackageReference
-			Include="Microsoft.Maui.Controls"
-			Version="8.0.100" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="8.0.100" />
 
-		<PackageReference
-			Include="Microsoft.Maui.Controls.Compatibility"
-			Version="8.0.100" />
+		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.100" />
 
-		<PackageReference
-			Include="Microsoft.Extensions.Logging.Debug"
-			Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
 
-		<PackageReference
-			Include="System.IdentityModel.Tokens.Jwt"
-			Version="8.22.0" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.22.0" />
 
-		<PackageReference
-			Include="Plugin.Maui.Calendar"
-			Version="1.2.6" />
+		<PackageReference Include="Plugin.Maui.Calendar" Version="1.2.6" />
 
-		<PackageReference
-			Include="SkiaSharp"
-			Version="2.88.6" />
+		<PackageReference Include="SkiaSharp" Version="2.88.6" />
 
 	</ItemGroup>
 
@@ -175,6 +143,10 @@
 
 		<MauiXaml Update="Views\PaymentPage.xaml">
 			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+
+		<MauiXaml Update="Views\RegisterPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 
 		<MauiXaml Update="Views\SelectSeatPage.xaml">

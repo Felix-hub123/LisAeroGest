@@ -104,6 +104,10 @@ namespace LisAeroGest.Mobile
             Routing.RegisterRoute(
                 nameof(OperationsFlightDetailsPage),
                 new DiRouteFactory<OperationsFlightDetailsPage>());
+
+            Routing.RegisterRoute(
+                 nameof(RegisterPage),
+                 new DiRouteFactory<RegisterPage>());
         }
 
 

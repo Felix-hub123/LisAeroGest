@@ -284,7 +284,7 @@ namespace LisAeroGest.Controllers
             // Verifica se o utilizador já tem bilhete para este voo
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             var existingTicket = await _ticketRepository.GetAllQueryable()
-                .AnyAsync(t => t.FlightId == id && t.Passenger.UserId == userId && t.Status != "Cancelled");
+                .AnyAsync(t => t.FlightId == id && t.Passenger!.UserId == userId && t.Status != "Cancelled");
 
             if (existingTicket)
             {
@@ -603,7 +603,7 @@ namespace LisAeroGest.Controllers
 
                 await _notificationRepository.AddAsync(new Notification
                 {
-                    UserId = ticket.Passenger.UserId,
+                    UserId = ticket.Passenger.UserId!,
                     Title = subject,
                     Message = body,
                     CreatedAt = DateTime.UtcNow,

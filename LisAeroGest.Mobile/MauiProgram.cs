@@ -111,6 +111,8 @@ namespace LisAeroGest.Mobile
 
             builder.Services.AddTransient<FavoritesViewModel>();
 
+            builder.Services.AddTransient<RegisterViewModel>();
+
 
             // =====================================================
             // VIEWMODELS - FUNCIONÁRIO
@@ -170,6 +172,8 @@ namespace LisAeroGest.Mobile
             builder.Services.AddTransient<HistoryPage>();
 
             builder.Services.AddTransient<FavoritesPage>();
+
+            builder.Services.AddTransient<RegisterPage>();
 
 
             // =====================================================

@@ -8,9 +8,7 @@
     x:DataType="vm:LoginViewModel"
     Title="LisAeroGest"
     Shell.NavBarIsVisible="False"
-    Background="{AppThemeBinding
-        Light={StaticResource AppBackgroundLightBrush},
-        Dark={StaticResource AppBackgroundGradientBrush}}">
+    Background="{StaticResource AppBackgroundGradientBrush}">
 
     <ScrollView>
 
@@ -18,9 +16,7 @@
             Padding="28,64,28,32"
             Spacing="20">
 
-            <!-- =====================================================
-                 LOGÓTIPO / TÍTULO
-            ====================================================== -->
+            <!-- LOGÓTIPO / TÍTULO -->
 
             <VerticalStackLayout
                 Spacing="3"
@@ -33,15 +29,13 @@
                     TextColor="{StaticResource AccentDark}" />
 
                 <Label
-                    Text="Lisbon Airport Portal"
+                    Text="Aeroporto de Lisboa"
                     Style="{StaticResource CaptionStyle}" />
 
             </VerticalStackLayout>
 
 
-            <!-- =====================================================
-                 LOGIN
-            ====================================================== -->
+            <!-- LOGIN -->
 
             <Border Style="{StaticResource CardElevatedStyle}">
 
@@ -52,7 +46,7 @@
                         Style="{StaticResource TitleStyle}" />
 
                     <Label
-                        Text="Entra para veres os teus voos, bilhetes e alertas."
+                        Text="Entre para consultar voos, bilhetes, viagens e alertas."
                         Style="{StaticResource CaptionStyle}" />
 
 
@@ -61,23 +55,17 @@
                     <Border
                         IsVisible="{Binding HasError}"
                         Style="{StaticResource StatusBadgeStyle}"
-                        Stroke="{AppThemeBinding
-                            Light={StaticResource Error},
-                            Dark={StaticResource ErrorDark}}">
+                        Stroke="{StaticResource ErrorDark}">
 
                         <Label
                             Text="{Binding ErrorMessage}"
-                            TextColor="{AppThemeBinding
-                                Light={StaticResource Error},
-                                Dark={StaticResource ErrorDark}}"
+                            TextColor="{StaticResource ErrorDark}"
                             FontSize="14" />
 
                     </Border>
 
 
-                    <!-- =================================================
-                         EMAIL
-                    ================================================== -->
+                    <!-- EMAIL -->
 
                     <VerticalStackLayout Spacing="6">
 
@@ -98,9 +86,7 @@
                     </VerticalStackLayout>
 
 
-                    <!-- =================================================
-                         PASSWORD
-                    ================================================== -->
+                    <!-- PASSWORD -->
 
                     <VerticalStackLayout Spacing="6">
 
@@ -110,79 +96,27 @@
 
                         <Border Style="{StaticResource InputCardStyle}">
 
-                            <Grid
-                                ColumnDefinitions="*,Auto"
-                                ColumnSpacing="5">
-
-                                <Entry
-                                    Grid.Column="0"
-                                    Placeholder="Password"
-                                    Text="{Binding Password}"
-                                    IsPassword="{Binding IsPasswordHidden}"
-                                    ReturnType="Done"
-                                    ReturnCommand="{Binding LoginCommand}"
-                                    VerticalOptions="Center" />
-
-                                <Button
-                                    Grid.Column="1"
-                                    Text="{Binding PasswordVisibilityIcon}"
-                                    Command="{Binding TogglePasswordVisibilityCommand}"
-                                    Style="{StaticResource TextButtonStyle}"
-                                    FontSize="18"
-                                    WidthRequest="45"
-                                    HeightRequest="42"
-                                    Padding="5"
-                                    VerticalOptions="Center"
-                                    SemanticProperties.Description="Mostrar ou ocultar password" />
-
-                            </Grid>
+                            <Entry
+                                Placeholder="Password"
+                                Text="{Binding Password}"
+                                IsPassword="True"
+                                ReturnType="Done"
+                                ReturnCommand="{Binding LoginCommand}" />
 
                         </Border>
 
                     </VerticalStackLayout>
 
 
-                    <!-- =================================================
-                         GUARDAR CREDENCIAIS
-                    ================================================== -->
-
-                    <Grid
-                        ColumnDefinitions="Auto,*"
-                        ColumnSpacing="10">
-
-                        <CheckBox
-                            Grid.Column="0"
-                            IsChecked="{Binding RememberCredentials}"
-                            Color="{StaticResource AccentDark}"
-                            VerticalOptions="Center" />
-
-                        <Label
-                            Grid.Column="1"
-                            Text="Guardar credenciais"
-                            Style="{StaticResource BodyEmphasisStyle}"
-                            VerticalOptions="Center">
-
-                            <Label.GestureRecognizers>
-
-                                <TapGestureRecognizer
-                                    Command="{Binding ToggleRememberCredentialsCommand}" />
-
-                            </Label.GestureRecognizers>
-
-                        </Label>
-
-                    </Grid>
-
-
-                    <!-- =================================================
-                         ENTRAR
-                    ================================================== -->
+                    <!-- BOTÃO LOGIN -->
 
                     <Button
                         Text="Entrar"
                         Command="{Binding LoginCommand}"
-                        IsEnabled="{Binding IsBusy,
-                            Converter={StaticResource InvertedBoolConverter}}" />
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
+
+
+                    <!-- LOADING -->
 
                     <ActivityIndicator
                         IsRunning="{Binding IsBusy}"
@@ -195,23 +129,31 @@
             </Border>
 
 
-            <!-- =====================================================
-                 PORTAL WEB
-            ====================================================== -->
+            <!-- CRIAR CONTA -->
 
-            <VerticalStackLayout Spacing="4">
+            <Border Style="{StaticResource CardElevatedStyle}">
 
-                <Label
-                    Text="A criação de conta é feita no portal web."
-                    Style="{StaticResource CaptionStyle}"
-                    HorizontalTextAlignment="Center" />
+                <VerticalStackLayout Spacing="10">
 
-                <Button
-                    Text="Abrir portal web"
-                    Clicked="OnPortalClicked"
-                    Style="{StaticResource TextButtonStyle}" />
+                    <Label
+                        Text="Ainda não tem conta?"
+                        FontFamily="OpenSansSemibold"
+                        FontSize="17"
+                        HorizontalTextAlignment="Center" />
 
-            </VerticalStackLayout>
+                    <Label
+                        Text="Crie o seu perfil de passageiro diretamente na aplicação."
+                        Style="{StaticResource CaptionStyle}"
+                        HorizontalTextAlignment="Center" />
+
+                    <Button
+                        Text="Criar conta"
+                        Clicked="OnRegisterClicked"
+                        Style="{StaticResource TextButtonStyle}" />
+
+                </VerticalStackLayout>
+
+            </Border>
 
         </VerticalStackLayout>
 

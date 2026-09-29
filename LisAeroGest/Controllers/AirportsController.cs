@@ -74,7 +74,7 @@ namespace LisAeroGest.Controllers
                 return View(viewModel);
             }
 
-            var existingAirport = await _airportRepository.GetByIATACodeAsync(viewModel.IATACode);
+            var existingAirport = await _airportRepository.GetByIATACodeAsync(viewModel.IATACode!);
             if (existingAirport != null)
             {
                 ModelState.AddModelError(nameof(viewModel.IATACode), $"Já existe um aeroporto com o código IATA '{viewModel.IATACode}'.");

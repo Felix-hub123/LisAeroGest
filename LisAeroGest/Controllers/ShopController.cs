@@ -109,37 +109,127 @@ namespace LisAeroGest.Controllers
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> Index(
-                 string? origin,
-                 string? destination,
-                 DateTime? date,
-                 DateTime? returnDate,
-                 int? passengers,
-                 string? tripType,
-                 string? cabinClass,
-                 bool? directOnly)
+     string? origin,
+     string? destination,
+     DateTime? date,
+     DateTime? returnDate,
+     int? passengers,
+     string? tripType,
+     string? cabinClass,
+     bool? directOnly,
+     int page = 1)
         {
-            var destinationCode = ExtractIataOrText(destination);
+            const int pageSize = 5;
 
-            var flights = await _flightRepository.GetAvailableFlightsAsync(
-                origin,
-                destinationCode,
-                date);
+            var destinationCode =
+                ExtractIataOrText(destination);
 
-            var airports = await _airportRepository.GetAllAsync();
 
-            var model = new ShopIndexViewModel
-            {
-                Origin = origin,
-                Destination = destination,
-                Date = date?.ToString("yyyy-MM-dd"),
-                ReturnDate = returnDate?.ToString("yyyy-MM-dd"),
-                Passengers = passengers ?? 1,
-                TripType = string.IsNullOrWhiteSpace(tripType) ? "oneway" : tripType,
-                CabinClass = string.IsNullOrWhiteSpace(cabinClass) ? "Economy" : cabinClass,
-                DirectOnly = directOnly == true,
-                Airports = _converterHelper.ToAirportSelectList(airports),
-                Flights = flights.Select(MapFlightSearchItem).ToList()
-            };
+            var flights =
+                await _flightRepository
+                    .GetAvailableFlightsAsync(
+                        origin,
+                        destinationCode,
+                        date);
+
+
+            var airports =
+                await _airportRepository
+                    .GetAllAsync();
+
+
+            var allFlights =
+                flights
+                    .Select(MapFlightSearchItem)
+                    .OrderBy(f => f.DepartureTime)
+                    .ToList();
+
+
+            var totalCount =
+                allFlights.Count;
+
+
+            var totalPages =
+                Math.Max(
+                    1,
+                    (int)Math.Ceiling(
+                        totalCount /
+                        (double)pageSize));
+
+
+            page =
+                Math.Max(
+                    1,
+                    Math.Min(
+                        page,
+                        totalPages));
+
+
+            var pagedFlights =
+                allFlights
+                    .Skip(
+                        (page - 1) *
+                        pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+
+            var model =
+                new ShopIndexViewModel
+                {
+                    Origin =
+                        origin,
+
+                    Destination =
+                        destination,
+
+                    Date =
+                        date?.ToString(
+                            "yyyy-MM-dd"),
+
+                    ReturnDate =
+                        returnDate?.ToString(
+                            "yyyy-MM-dd"),
+
+                    Passengers =
+                        passengers ?? 1,
+
+                    TripType =
+                        string.IsNullOrWhiteSpace(
+                            tripType)
+                            ? "oneway"
+                            : tripType,
+
+                    CabinClass =
+                        string.IsNullOrWhiteSpace(
+                            cabinClass)
+                            ? "Economy"
+                            : cabinClass,
+
+                    DirectOnly =
+                        directOnly == true,
+
+                    Airports =
+                        _converterHelper
+                            .ToAirportSelectList(
+                                airports),
+
+                    Flights =
+                        pagedFlights,
+
+                    ResultCount =
+                        totalCount,
+
+                    Page =
+                        page,
+
+                    PageSize =
+                        pageSize,
+
+                    TotalPages =
+                        totalPages
+                };
+
 
             return View(model);
         }

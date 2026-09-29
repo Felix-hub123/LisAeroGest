@@ -71,7 +71,7 @@ namespace LisAeroGest.Models
         /// Número de voos encontrados.
         /// </summary>
         [Display(Name = "Resultados")]
-        public int ResultCount => Flights.Count;
+        public int ResultCount { get; set; }
 
         /// <summary>
         /// Indica se o utilizador aplicou algum filtro.
@@ -104,5 +104,31 @@ namespace LisAeroGest.Models
         [Display(Name = "Passageiros")]
         public string PassengersLabel =>
             Passengers == 1 ? "1 passageiro" : $"{Passengers} passageiros";
+
+
+        public int Page { get; set; } = 1;
+
+        public int PageSize { get; set; } = 5;
+
+        public int TotalPages { get; set; } = 1;
+
+        public bool HasPreviousPage =>
+            Page > 1;
+
+        public bool HasNextPage =>
+            Page < TotalPages;
+
+        public int FirstItem =>
+            ResultCount == 0
+                ? 0
+                : ((Page - 1) * PageSize) + 1;
+
+        public int LastItem =>
+            Math.Min(
+                Page * PageSize,
+                ResultCount);
+
+
+
     }
 }
