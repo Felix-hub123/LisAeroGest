@@ -13,28 +13,44 @@ namespace LisAeroGest.Data.Repositories
         {
         }
 
-        public async Task<IEnumerable<AuditLog>>
-            GetAllWithDetailsAsync()
+
+        // =========================================================
+        // QUERY PARA FILTROS / ORDENAÇÃO / PAGINAÇÃO
+        // =========================================================
+
+        public IQueryable<AuditLog>
+            GetAllWithDetailsQueryable()
         {
-            return await _dbSet
+            return _dbSet
                 .AsNoTracking()
                 .Include(a => a.User)
                 .Include(a => a.Flight)
                 .Include(a => a.Ticket)
-                    .ThenInclude(t => t!.Passenger)
+                    .ThenInclude(t => t!.Passenger);
+        }
+
+
+        // =========================================================
+        // TODOS OS REGISTOS
+        // =========================================================
+
+        public async Task<IEnumerable<AuditLog>>
+            GetAllWithDetailsAsync()
+        {
+            return await GetAllWithDetailsQueryable()
                 .OrderByDescending(a => a.CreatedAt)
                 .ToListAsync();
         }
 
+
+        // =========================================================
+        // REGISTO POR ID
+        // =========================================================
+
         public async Task<AuditLog?>
             GetByIdWithDetailsAsync(int id)
         {
-            return await _dbSet
-                .AsNoTracking()
-                .Include(a => a.User)
-                .Include(a => a.Flight)
-                .Include(a => a.Ticket)
-                    .ThenInclude(t => t!.Passenger)
+            return await GetAllWithDetailsQueryable()
                 .FirstOrDefaultAsync(a => a.Id == id);
         }
     }

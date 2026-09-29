@@ -6,9 +6,13 @@
 
 <div class="container-fluid py-4">
 
+    <!-- ========================================================= -->
     <!-- CABEÇALHO -->
+    <!-- ========================================================= -->
+
     <div class="d-flex flex-column flex-lg-row
-                justify-content-between align-items-lg-center
+                justify-content-between
+                align-items-lg-center
                 gap-3 mb-4">
 
         <div>
@@ -22,24 +26,26 @@
             </h2>
 
             <p class="text-muted mb-0">
-                Consulte as ações e alterações registadas no LisAeroGest.
+                Consulte as principais atividades registadas no LisAeroGest.
             </p>
         </div>
 
-        <div>
-            <a asp-controller="Admin"
-               asp-action="Dashboard"
-               class="btn btn-outline-secondary">
+        <a asp-controller="Admin"
+           asp-action="Dashboard"
+           class="btn btn-outline-secondary">
 
-                <i class="bi bi-arrow-left me-1"></i>
-                Voltar ao Dashboard
-            </a>
-        </div>
+            <i class="bi bi-arrow-left me-1"></i>
+            Voltar ao Dashboard
+
+        </a>
 
     </div>
 
 
+    <!-- ========================================================= -->
     <!-- ESTATÍSTICAS -->
+    <!-- ========================================================= -->
+
     <div class="row g-3 mb-4">
 
         <div class="col-6 col-xl">
@@ -129,7 +135,10 @@
     </div>
 
 
+    <!-- ========================================================= -->
     <!-- FILTROS -->
+    <!-- ========================================================= -->
+
     <div class="card border-0 shadow-sm mb-4">
 
         <div class="card-body">
@@ -142,7 +151,8 @@
 
 
                     <!-- PESQUISA -->
-                    <div class="col-lg-5">
+
+                    <div class="col-12 col-lg-5">
 
                         <label class="form-label fw-semibold">
                             Pesquisar
@@ -150,7 +160,7 @@
 
                         <div class="input-group">
 
-                            <span class="input-group-text bg-white">
+                            <span class="input-group-text bg-transparent">
                                 <i class="bi bi-search"></i>
                             </span>
 
@@ -158,7 +168,7 @@
                                    name="search"
                                    value="@Model.Search"
                                    class="form-control"
-                                   placeholder="Utilizador, voo, ação, descrição..." />
+                                   placeholder="Utilizador, voo ou descrição..." />
 
                         </div>
 
@@ -166,111 +176,45 @@
 
 
                     <!-- AÇÃO -->
-                    <div class="col-md-4 col-lg-2">
+
+                    <div class="col-12 col-md-6 col-lg-2">
 
                         <label class="form-label fw-semibold">
                             Ação
                         </label>
 
-                        <select name="action"
+                        <select name="auditAction"
                                 class="form-select">
 
-                            @if (string.IsNullOrWhiteSpace(Model.Action))
-                            {
-                                <option value="" selected>
-                                    Todas
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="">
-                                    Todas
-                                </option>
-                            }
+                            <option value="">Todas</option>
 
+                            <option value="Login">
+                                Login
+                            </option>
 
-                            @if (Model.Action == "Create")
-                            {
-                                <option value="Create" selected>
-                                    Criação
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="Create">
-                                    Criação
-                                </option>
-                            }
+                            <option value="Payment">
+                                Pagamento
+                            </option>
 
+                            <option value="Update">
+                                Alteração
+                            </option>
 
-                            @if (Model.Action == "Update")
-                            {
-                                <option value="Update" selected>
-                                    Alteração
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="Update">
-                                    Alteração
-                                </option>
-                            }
+                            <option value="Delete">
+                                Eliminação
+                            </option>
 
+                            <option value="CheckIn">
+                                Check-in
+                            </option>
 
-                            @if (Model.Action == "Delete")
-                            {
-                                <option value="Delete" selected>
-                                    Eliminação
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="Delete">
-                                    Eliminação
-                                </option>
-                            }
+                            <option value="GateChanged">
+                                Alteração de porta
+                            </option>
 
-
-                            @if (Model.Action == "CheckIn")
-                            {
-                                <option value="CheckIn" selected>
-                                    Check-in
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="CheckIn">
-                                    Check-in
-                                </option>
-                            }
-
-
-                            @if (Model.Action == "GateChanged")
-                            {
-                                <option value="GateChanged" selected>
-                                    Alteração de porta
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="GateChanged">
-                                    Alteração de porta
-                                </option>
-                            }
-
-
-                            @if (Model.Action == "CommunicationSent")
-                            {
-                                <option value="CommunicationSent" selected>
-                                    Comunicação
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="CommunicationSent">
-                                    Comunicação
-                                </option>
-                            }
+                            <option value="CommunicationSent">
+                                Comunicação
+                            </option>
 
                         </select>
 
@@ -278,7 +222,8 @@
 
 
                     <!-- CATEGORIA -->
-                    <div class="col-md-4 col-lg-2">
+
+                    <div class="col-12 col-md-6 col-lg-3">
 
                         <label class="form-label fw-semibold">
                             Categoria
@@ -287,172 +232,39 @@
                         <select name="category"
                                 class="form-select">
 
-                            @if (string.IsNullOrWhiteSpace(Model.Category))
-                            {
-                                <option value="" selected>
-                                    Todas
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="">
-                                    Todas
-                                </option>
-                            }
+                            <option value="">Todas</option>
 
+                            <option value="User">
+                                Utilizador
+                            </option>
 
-                            @if (Model.Category == "Airport")
-                            {
-                                <option value="Airport" selected>
-                                    Aeroporto
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="Airport">
-                                    Aeroporto
-                                </option>
-                            }
+                            <option value="Flight">
+                                Voo
+                            </option>
 
+                            <option value="Ticket">
+                                Bilhete
+                            </option>
 
-                            @if (Model.Category == "Airline")
-                            {
-                                <option value="Airline" selected>
-                                    Companhia aérea
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="Airline">
-                                    Companhia aérea
-                                </option>
-                            }
+                            <option value="Passenger">
+                                Passageiro
+                            </option>
 
+                            <option value="Gate">
+                                Porta
+                            </option>
 
-                            @if (Model.Category == "Aircraft")
-                            {
-                                <option value="Aircraft" selected>
-                                    Aeronave
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="Aircraft">
-                                    Aeronave
-                                </option>
-                            }
+                            <option value="Aircraft">
+                                Aeronave
+                            </option>
 
+                            <option value="Airline">
+                                Companhia aérea
+                            </option>
 
-                            @if (Model.Category == "Gate")
-                            {
-                                <option value="Gate" selected>
-                                    Porta
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="Gate">
-                                    Porta
-                                </option>
-                            }
-
-
-                            @if (Model.Category == "Flight")
-                            {
-                                <option value="Flight" selected>
-                                    Voo
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="Flight">
-                                    Voo
-                                </option>
-                            }
-
-
-                            @if (Model.Category == "Ticket")
-                            {
-                                <option value="Ticket" selected>
-                                    Bilhete
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="Ticket">
-                                    Bilhete
-                                </option>
-                            }
-
-
-                            @if (Model.Category == "Passenger")
-                            {
-                                <option value="Passenger" selected>
-                                    Passageiro
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="Passenger">
-                                    Passageiro
-                                </option>
-                            }
-
-
-                            @if (Model.Category == "Seat")
-                            {
-                                <option value="Seat" selected>
-                                    Assento
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="Seat">
-                                    Assento
-                                </option>
-                            }
-
-
-                            @if (Model.Category == "Notification")
-                            {
-                                <option value="Notification" selected>
-                                    Notificação
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="Notification">
-                                    Notificação
-                                </option>
-                            }
-
-
-                            @if (Model.Category == "Communication")
-                            {
-                                <option value="Communication" selected>
-                                    Comunicação
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="Communication">
-                                    Comunicação
-                                </option>
-                            }
-
-
-                            @if (Model.Category == "FlightCommunication")
-                            {
-                                <option value="FlightCommunication" selected>
-                                    Comunicação de voo
-                                </option>
-                            }
-                            else
-                            {
-                                <option value="FlightCommunication">
-                                    Comunicação de voo
-                                </option>
-                            }
+                            <option value="Airport">
+                                Aeroporto
+                            </option>
 
                         </select>
 
@@ -460,7 +272,8 @@
 
 
                     <!-- BOTÕES -->
-                    <div class="col-md-4 col-lg-3">
+
+                    <div class="col-12 col-lg-2">
 
                         <div class="d-flex gap-2">
 
@@ -471,6 +284,7 @@
                                 Filtrar
 
                             </button>
+
 
                             <a asp-controller="AuditLogs"
                                asp-action="Index"
@@ -494,363 +308,470 @@
     </div>
 
 
+    <!-- ========================================================= -->
     <!-- HISTÓRICO -->
+    <!-- ========================================================= -->
+
     <div class="card border-0 shadow-sm">
 
-        <div class="card-header bg-white border-0 py-3">
+        <div class="card-header bg-transparent border-0 py-3">
 
-            <div class="d-flex justify-content-between
-                        align-items-center">
+            <div class="d-flex flex-column flex-md-row
+                        justify-content-between
+                        align-items-md-center
+                        gap-2">
 
                 <div>
 
-                    <h5 class="fw-bold mb-0">
+                    <h5 class="fw-bold mb-1">
                         Histórico de atividades
                     </h5>
 
-                    <small class="text-muted">
-                        @Model.Logs.Count registo(s) apresentado(s)
-                    </small>
+
+                    @if (Model.FilteredCount > 0)
+                    {
+                        <small class="text-muted">
+
+                            A mostrar
+
+                            <strong>@Model.FirstItem</strong>
+
+                            –
+
+                            <strong>@Model.LastItem</strong>
+
+                            de
+
+                            <strong>@Model.FilteredCount</strong>
+
+                            registos
+
+                        </small>
+                    }
 
                 </div>
 
-                <i class="bi bi-clock-history fs-4 text-muted"></i>
+
+                @if (Model.FilteredCount > 0)
+                {
+                    <span class="badge bg-transparent border">
+
+                        Página @Model.Page de @Model.TotalPages
+
+                    </span>
+                }
 
             </div>
 
         </div>
 
 
-        <div class="card-body p-0">
+        @if (Model.Logs.Count == 0)
+        {
+            <div class="card-body text-center py-5">
 
-            @if (Model.Logs.Count == 0)
-            {
-                <!-- SEM RESULTADOS -->
-
-                <div class="text-center py-5">
-
-                    <div class="mb-3">
-
-                        <i class="bi bi-journal-x
-                                  display-5 text-muted"></i>
-
-                    </div>
-
-                    <h5 class="fw-semibold">
-                        Nenhum registo encontrado
-                    </h5>
-
-                    <p class="text-muted mb-0">
-                        Ainda não existem atividades para os
-                        critérios selecionados.
-                    </p>
-
+                <div class="fs-1 text-muted mb-3">
+                    <i class="bi bi-journal-x"></i>
                 </div>
-            }
-            else
-            {
-                <!-- TABELA -->
 
-                <div class="table-responsive">
+                <h5 class="fw-semibold">
+                    Nenhum registo encontrado
+                </h5>
 
-                    <table class="table table-hover
-                                  align-middle mb-0">
+                <p class="text-muted mb-0">
+                    Não existem atividades para os critérios selecionados.
+                </p>
 
-                        <thead class="table-light">
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
 
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Data</th>
+                            <th>Utilizador</th>
+                            <th>Ação</th>
+                            <th>Categoria</th>
+                            <th>Voo</th>
+                            <th>Descrição</th>
+                            <th class="text-center">Detalhes</th>
+                        </tr>
+                    </thead>
+
+
+                    <tbody>
+
+                        @foreach (var item in Model.Logs)
+                        {
                             <tr>
 
-                                <th class="ps-4">
-                                    Data
-                                </th>
+                                <!-- DATA -->
 
-                                <th>
-                                    Utilizador
-                                </th>
+                                <td class="ps-4 text-nowrap">
 
-                                <th>
-                                    Ação
-                                </th>
+                                    <div class="fw-semibold">
 
-                                <th>
-                                    Categoria
-                                </th>
+                                        @(item.CreatedAt
+                                                                        .ToLocalTime()
+                                                                        .ToString("dd/MM/yyyy"))
 
-                                <th>
-                                    Voo
-                                </th>
+                                    </div>
 
-                                <th>
-                                    Descrição
-                                </th>
+                                    <small class="text-muted">
 
-                                <th class="text-center">
-                                    Detalhes
-                                </th>
+                                        @(item.CreatedAt
+                                                                        .ToLocalTime()
+                                                                        .ToString("HH:mm"))
 
-                            </tr>
+                            </small>
 
-                        </thead>
+                                </td>
 
 
-                        <tbody>
+                                <!-- UTILIZADOR -->
 
-                            @foreach (var item in Model.Logs)
-                            {
-                                <tr>
+                                <td>
 
+                                    <div class="fw-semibold">
+                                        @item.UserName
+                                    </div>
 
-                                    <!-- DATA -->
-                                    <td class="ps-4 text-nowrap">
-
-                                        <div class="fw-semibold">
-                                            @(item.CreatedAt
-                                                .ToLocalTime()
-                                                .ToString("dd/MM/yyyy"))
-                                        </div>
-
+                            @if (!string.IsNullOrWhiteSpace(
+                                                        item.UserEmail))
+                                    {
                                         <small class="text-muted">
-                                            @(item.CreatedAt
-                                                .ToLocalTime()
-                                                .ToString("HH:mm:ss"))
+                                            @item.UserEmail
                                         </small>
+                                    }
 
-                                    </td>
-
-
-                                    <!-- UTILIZADOR -->
-                                    <td>
-
-                                        <div class="fw-semibold">
-                                            @item.UserName
-                                        </div>
-
-                                        @if (!string.IsNullOrWhiteSpace(
-                                            item.UserEmail))
-                                        {
-                                            <small class="text-muted">
-                                                @item.UserEmail
-                                            </small>
-                                        }
-
-                                    </td>
+                                </td>
 
 
-                                    <!-- AÇÃO -->
-                                    <td>
+                                <!-- AÇÃO -->
 
-                                        @if (item.Action == "Create")
-                                        {
-                                            <span class="badge
-                                                         bg-primary-subtle
-                                                         text-primary
-                                                         border
-                                                         border-primary-subtle">
+                                <td>
 
-                                                <i class="bi bi-plus-circle me-1"></i>
-                                                Criação
+                                    @switch (item.Action)
+                                    {
+                                        case "Login":
+
+                                            <span class="badge bg-primary-subtle text-primary">
+
+                                                <i class="bi bi-box-arrow-in-right me-1"></i>
+
+                                                Login
 
                                             </span>
-                                        }
-                                        else if (item.Action == "Update")
-                                        {
-                                            <span class="badge
-                                                         bg-warning-subtle
-                                                         text-warning-emphasis
-                                                         border
-                                                         border-warning-subtle">
+
+                                            break;
+
+
+                                        case "Payment":
+
+                                            <span class="badge bg-success-subtle text-success">
+
+                                                <i class="bi bi-credit-card me-1"></i>
+
+                                                Pagamento
+
+                                            </span>
+
+                                            break;
+
+
+                                        case "Update":
+
+                                            <span class="badge bg-warning-subtle text-warning-emphasis">
 
                                                 <i class="bi bi-pencil me-1"></i>
+
                                                 Alteração
 
                                             </span>
-                                        }
-                                        else if (item.Action == "Delete")
-                                        {
-                                            <span class="badge
-                                                         bg-danger-subtle
-                                                         text-danger
-                                                         border
-                                                         border-danger-subtle">
+
+                                            break;
+
+
+                                        case "Delete":
+
+                                            <span class="badge bg-danger-subtle text-danger">
 
                                                 <i class="bi bi-trash me-1"></i>
+
                                                 Eliminação
 
                                             </span>
-                                        }
-                                        else if (item.Action == "CheckIn")
-                                        {
-                                            <span class="badge
-                                                         bg-success-subtle
-                                                         text-success
-                                                         border
-                                                         border-success-subtle">
+
+                                            break;
+
+
+                                        case "CheckIn":
+
+                                            <span class="badge bg-success-subtle text-success">
 
                                                 <i class="bi bi-person-check me-1"></i>
+
                                                 Check-in
 
                                             </span>
-                                        }
-                                        else if (item.Action == "GateChanged")
-                                        {
-                                            <span class="badge
-                                                         bg-warning-subtle
-                                                         text-warning-emphasis
-                                                         border
-                                                         border-warning-subtle">
+
+                                            break;
+
+
+                                        case "GateChanged":
+
+                                            <span class="badge bg-warning-subtle text-warning-emphasis">
 
                                                 <i class="bi bi-signpost me-1"></i>
+
                                                 Porta
 
                                             </span>
-                                        }
-                                        else if (item.Action ==
-                                                 "CommunicationSent")
-                                        {
-                                            <span class="badge
-                                                         bg-info-subtle
-                                                         text-info-emphasis
-                                                         border
-                                                         border-info-subtle">
+
+                                            break;
+
+
+                                        case "CommunicationSent":
+
+                                            <span class="badge bg-info-subtle text-info-emphasis">
 
                                                 <i class="bi bi-megaphone me-1"></i>
+
                                                 Comunicação
 
                                             </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge
-                                                         bg-secondary-subtle
-                                                         text-secondary">
+
+                                            break;
+
+
+                                        default:
+
+                                            <span class="badge bg-secondary-subtle text-secondary">
 
                                                 @item.Action
 
                                             </span>
-                                        }
 
-                                    </td>
+                                            break;
+                                    }
 
-
-                                    <!-- CATEGORIA -->
-                                    <td>
-
-                                        @switch (item.Category)
-                                        {
-                                            case "Airport":
-                                                <span>Aeroporto</span>
-                                                break;
-
-                                            case "Airline":
-                                                <span>Companhia aérea</span>
-                                                break;
-
-                                            case "Aircraft":
-                                                <span>Aeronave</span>
-                                                break;
-
-                                            case "Gate":
-                                                <span>Porta</span>
-                                                break;
-
-                                            case "Flight":
-                                                <span>Voo</span>
-                                                break;
-
-                                            case "Ticket":
-                                                <span>Bilhete</span>
-                                                break;
-
-                                            case "Passenger":
-                                                <span>Passageiro</span>
-                                                break;
-
-                                            case "Seat":
-                                                <span>Assento</span>
-                                                break;
-
-                                            case "Notification":
-                                                <span>Notificação</span>
-                                                break;
-
-                                            case "FlightCommunication":
-                                                <span>Comunicação de voo</span>
-                                                break;
-
-                                            case "Communication":
-                                                <span>Comunicação</span>
-                                                break;
-
-                                            default:
-                                                <span>@item.Category</span>
-                                                break;
-                                        }
-
-                                    </td>
+                                </td>
 
 
-                                    <!-- VOO -->
-                                    <td>
+                                <!-- CATEGORIA -->
 
-                                        @if (!string.IsNullOrWhiteSpace(
-                                            item.FlightNumber))
-                                        {
-                                            <span class="fw-semibold">
-                                                @item.FlightNumber
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">
-                                                —
-                                            </span>
-                                        }
+                                <td>
 
-                                    </td>
+                                    @switch (item.Category)
+                                    {
+                                        case "User":
+                                            <span>Utilizador</span>
+                                            break;
+
+                                        case "Flight":
+                                            <span>Voo</span>
+                                            break;
+
+                                        case "Ticket":
+                                            <span>Bilhete</span>
+                                            break;
+
+                                        case "Passenger":
+                                            <span>Passageiro</span>
+                                            break;
+
+                                        case "Gate":
+                                            <span>Porta</span>
+                                            break;
+
+                                        case "Aircraft":
+                                            <span>Aeronave</span>
+                                            break;
+
+                                        case "Airline":
+                                            <span>Companhia aérea</span>
+                                            break;
+
+                                        case "Airport":
+                                            <span>Aeroporto</span>
+                                            break;
+
+                                        default:
+                                            <span>@item.Category</span>
+                                            break;
+                                    }
+
+                                </td>
 
 
-                                    <!-- DESCRIÇÃO -->
-                                    <td style="min-width:260px;
-                                               max-width:420px;">
+                                <!-- VOO -->
 
-                                        <div class="text-truncate"
-                                             style="max-width:420px;"
-                                             title="@item.Description">
+                                <td>
 
-                                            @item.Description
+                                    @if (!string.IsNullOrWhiteSpace(
+                                                                item.FlightNumber))
+                                    {
+                                        <span class="fw-semibold">
+                                            @item.FlightNumber
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            —
+                                        </span>
+                                    }
 
-                                        </div>
-
-                                    </td>
+                                </td>
 
 
-                                    <!-- DETALHES -->
-                                    <td class="text-center">
+                                <!-- DESCRIÇÃO -->
 
-                                        <a asp-controller="AuditLogs"
-                                           asp-action="Details"
-                                           asp-route-id="@item.Id"
-                                           class="btn btn-sm
-                                                  btn-outline-primary"
-                                           title="Ver detalhes">
+                                <td style="min-width:260px; max-width:420px;">
 
-                                            <i class="bi bi-eye"></i>
+                                    <div class="text-truncate"
+                                         style="max-width:420px;"
+                                         title="@item.Description">
 
-                                        </a>
+                                        @item.Description
 
-                                    </td>
+                                    </div>
 
-                                </tr>
+                                </td>
+
+
+                                <!-- DETALHES -->
+
+                                <td class="text-center">
+
+                                    <a asp-controller="AuditLogs"
+                                       asp-action="Details"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Ver detalhes">
+
+                                        <i class="bi bi-eye"></i>
+
+                                    </a>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+
+
+        <!-- ===================================================== -->
+        <!-- PAGINAÇÃO -->
+        <!-- ===================================================== -->
+        @if (Model.TotalPages > 1)
+        {
+            <div class="card-footer bg-transparent border-0 py-3">
+
+                <div class="d-flex
+                                flex-column
+                                flex-md-row
+                                justify-content-between
+                                align-items-md-center
+                                gap-3">
+
+
+                    <small class="text-muted">
+
+                        Página
+
+                        <strong>@Model.Page</strong>
+
+                        de
+
+                        <strong>@Model.TotalPages</strong>
+
+                    </small>
+
+
+                    <nav>
+
+                        <ul class="pagination pagination-sm mb-0">
+
+
+                            <li class="page-item
+                                    @(!Model.HasPreviousPage ? "disabled" : "")">
+
+                                <a class="page-link"
+                                   asp-action="Index"
+                                   asp-route-page="@(Model.Page - 1)"
+                                   asp-route-search="@Model.Search"
+                                   asp-route-auditAction="@Model.Action"
+                                   asp-route-category="@Model.Category">
+
+                                    <i class="bi bi-chevron-left"></i>
+
+                                    Anterior
+
+                                </a>
+
+                            </li>
+
+
+                            @for (
+                                                    var i = Math.Max(1, Model.Page - 2);
+                                                    i <= Math.Min(Model.TotalPages, Model.Page + 2);
+                                                    i++)
+                            {
+                                <li class="page-item
+                                            @(i == Model.Page ? "active" : "")">
+
+                                    <a class="page-link"
+                                       asp-action="Index"
+                                       asp-route-page="@i"
+                                       asp-route-search="@Model.Search"
+                                       asp-route-auditAction="@Model.Action"
+                                       asp-route-category="@Model.Category">
+
+                                        @i
+
+                                    </a>
+
+                                </li>
                             }
 
-                        </tbody>
 
-                    </table>
+                            <li class="page-item
+                                    @(!Model.HasNextPage ? "disabled" : "")">
+
+                                <a class="page-link"
+                                   asp-action="Index"
+                                   asp-route-page="@(Model.Page + 1)"
+                                   asp-route-search="@Model.Search"
+                                   asp-route-auditAction="@Model.Action"
+                                   asp-route-category="@Model.Category">
+
+                                    Seguinte
+
+                                    <i class="bi bi-chevron-right"></i>
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </nav>
 
                 </div>
-            }
 
-        </div>
+            </div>
+        }
 
     </div>
 

@@ -26,16 +26,26 @@
             <div class="container-fluid">
 
                 <!-- ═══ LOGO ═══ -->
-                @if (User.IsInRole("Admin") || User.IsInRole("Employee"))
+                @if (User.Identity?.IsAuthenticated == true)
                 {
-                    <a class="navbar-brand" asp-controller="Dashboard" asp-action="Index">
-                        <i class="bi bi-airplane-fill"></i>LisAeroGest
+                    <a class="navbar-brand"
+                       asp-controller="Dashboard"
+                       asp-action="Index">
+
+                        <i class="bi bi-airplane-fill"></i>
+                        LisAeroGest
+
                     </a>
                 }
                 else
                 {
-                    <a class="navbar-brand" asp-controller="Home" asp-action="Index">
-                        <i class="bi bi-airplane-fill"></i>LisAeroGest
+                    <a class="navbar-brand"
+                       asp-controller="Home"
+                       asp-action="Index">
+
+                        <i class="bi bi-airplane-fill"></i>
+                        LisAeroGest
+
                     </a>
                 }
 
@@ -155,88 +165,215 @@
 
     <!-- FOOTER MODERNO -->
     <footer class="lis-footer">
+
         <div class="container">
+
             <div class="row g-4">
-                <!-- Coluna 1: Marca -->
-                <div class="col-lg-4 col-md-6">
+
+
+                <!-- ================================================= -->
+                <!-- COLUNA 1: MARCA -->
+                <!-- ================================================= -->
+
+                <div class="col-lg-5 col-md-6">
+
                     <h5 class="fw-bold mb-3">
-                        <i class="bi bi-airplane-fill me-2"></i>LisAeroGest
+
+                        <i class="bi bi-airplane-fill me-2"></i>
+
+                        LisAeroGest
+
                     </h5>
+
+
                     <p class="small mb-0">
-                        Plataforma de Gestão Aeroportuária do Aeroporto de Lisboa.
-                        Pesquise voos, reserve bilhetes e acompanhe as operações.
+
+                        Plataforma de Gestão Aeroportuária
+                        do Aeroporto de Lisboa.
+
+                        <br />
+
+                        Pesquise voos, reserve bilhetes
+                        e acompanhe as operações.
+
                     </p>
-                    <div class="footer-social mt-3">
-                        <a href="#" title="Facebook"><i class="bi bi-facebook"></i></a>
-                        <a href="#" title="Instagram"><i class="bi bi-instagram"></i></a>
-                        <a href="#" title="Twitter"><i class="bi bi-twitter-x"></i></a>
-                        <a href="#" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- COLUNA 2: SERVIÇOS -->
+                <!-- ================================================= -->
+
+                <div class="col-lg-3 col-md-6">
+
+                    <h6>
+                        Serviços
+                    </h6>
+
+
+                    <a asp-controller="Shop"
+                       asp-action="Index">
+
+                        Pesquisar voos
+
+                    </a>
+
+
+                    <a asp-controller="Flights"
+                       asp-action="PublicIndex">
+
+                        Estado dos voos
+
+                    </a>
+
+
+                    <a asp-controller="CheckIn"
+                       asp-action="Index">
+
+                        Check-in online
+
+                    </a>
+
+
+                    <a asp-controller="Airline"
+                       asp-action="PublicIndex">
+
+                        Companhias aéreas
+
+                    </a>
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- COLUNA 3: CONTACTOS -->
+                <!-- ================================================= -->
+
+                <div class="col-lg-4 col-md-6">
+
+                    <h6>
+                        Contactos
+                    </h6>
+
+
+                    <div class="small">
+
+                        <div class="mb-2">
+
+                            <i class="bi
+                                  bi-telephone
+                                  me-1"></i>
+
+                            +351 21 841 73 00
+
+                        </div>
+
+
+                        <div class="mb-2">
+
+                            <i class="bi
+                                  bi-envelope
+                                  me-1"></i>
+
+                            info@lisaerogest.pt
+
+                        </div>
+
+
+                        <div class="mb-2">
+
+                            <i class="bi
+                                  bi-geo-alt
+                                  me-1"></i>
+
+                            Aeroporto de Lisboa
+
+                        </div>
+
+
+                        <div>
+
+                            <i class="bi
+                                  bi-geo
+                                  me-1"></i>
+
+                            1700-008 Lisboa
+
+                        </div>
+
                     </div>
+
                 </div>
 
-                <!-- Coluna 2: Informações -->
-                <div class="col-lg-2 col-md-6">
-                    <h6>Informações</h6>
-                    <a asp-controller="Home" asp-action="Help">Como chegar</a>
-                    <a asp-controller="Home" asp-action="Help">Estacionamento</a>
-                    <a asp-controller="Home" asp-action="Help">Segurança</a>
-                    <a asp-controller="Home" asp-action="Help">Acessibilidade</a>
-                    <a asp-controller="Home" asp-action="Help">Perguntas frequentes</a>
-                </div>
-
-                <!-- Coluna 3: Serviços -->
-                <div class="col-lg-3 col-md-6">
-                    <h6>Serviços</h6>
-                    <a asp-controller="Shop" asp-action="Index">Pesquisar voos</a>
-                    <a asp-controller="Flights" asp-action="PublicIndex">Estado dos voos</a>
-                    <a asp-controller="CheckIn" asp-action="Index">Check-in online</a>
-                    <a asp-controller="Airline" asp-action="PublicIndex">Companhias aéreas</a>
-                    <a asp-controller="Home" asp-action="Help">Ajuda</a>
-                </div>
-
-                <!-- Coluna 4: Contactos -->
-                <div class="col-lg-3 col-md-6">
-                    <h6>Contactos</h6>
-                    <a asp-controller="Home" asp-action="Contact">
-                        <i class="bi bi-telephone me-1"></i>+351 21 841 73 00
-                    </a>
-                    <a asp-controller="Home" asp-action="Contact">
-                        <i class="bi bi-envelope me-1"></i>info@lisaerogest.pt
-                    </a>
-                    <a asp-controller="Home" asp-action="Contact">
-                        <i class="bi bi-geo-alt me-1"></i>Aeroporto de Lisboa
-                    </a>
-                    <a asp-controller="Home" asp-action="Contact">
-                        <i class="bi bi-geo me-1"></i>1700-008 Lisboa
-                    </a>
-                </div>
             </div>
+
+
+            <!-- ===================================================== -->
+            <!-- RODAPÉ INFERIOR -->
+            <!-- ===================================================== -->
 
             <div class="footer-bottom">
+
                 <div class="row align-items-center">
-                    <div class="col-md-6 text-center text-md-start">
-                        &copy; @DateTime.Now.Year LisAeroGest · Todos os direitos reservados
+
+                    <div class="col-12
+                            text-center">
+
+                        &copy;
+                        @DateTime.Now.Year
+                        LisAeroGest ·
+                        Todos os direitos reservados
+
                     </div>
-                    <div class="col-md-6 text-center text-md-end">
-                        <a asp-controller="Home" asp-action="Privacy" class="d-inline">Privacidade</a>
-                        <span class="mx-2">·</span>
-                        <a asp-controller="Home" asp-action="Terms" class="d-inline">Termos de utilização</a>
-                        <span class="mx-2">·</span>
-                        <a asp-controller="Home" asp-action="Contact" class="d-inline">Cookies</a>
-                    </div>
+
                 </div>
+
             </div>
+
         </div>
+
     </footer>
 
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
-        <div id="globalToast" class="toast" role="alert">
+
+    <!-- ============================================================= -->
+    <!-- TOAST GLOBAL -->
+    <!-- ============================================================= -->
+
+    <div class="position-fixed
+            bottom-0
+            end-0
+            p-3"
+         style="z-index:1080;">
+
+        <div id="globalToast"
+             class="toast"
+             role="alert">
+
             <div class="toast-header">
-                <strong class="me-auto">LisAeroGest</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+
+                <strong class="me-auto">
+                    LisAeroGest
+                </strong>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="toast">
+                </button>
+
             </div>
-            <div class="toast-body">@(TempData["Success"] ?? TempData["Error"] ?? TempData["Info"])</div>
+
+
+            <div class="toast-body">
+
+                @(TempData["Success"]
+                                ?? TempData["Error"]
+                                ?? TempData["Info"])
+
+            </div>
+
         </div>
+
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

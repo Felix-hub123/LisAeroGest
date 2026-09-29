@@ -5,18 +5,65 @@ namespace LisAeroGest.Models
 {
     public class TicketsIndexViewModel
     {
-        public IEnumerable<Ticket> Tickets { get; set; } = new List<Ticket>();
+        // =========================================================
+        // DADOS
+        // =========================================================
 
-        public string SearchTerm { get; set; } = string.Empty;
+        public IEnumerable<Ticket> Tickets { get; set; }
+            = new List<Ticket>();
+
+
+        // =========================================================
+        // FILTROS
+        // =========================================================
+
+        public string SearchTerm { get; set; }
+            = string.Empty;
 
         public string? Status { get; set; }
 
-        public List<SelectListItem> StatusOptions { get; set; } = new();
+        public IEnumerable<SelectListItem> StatusOptions { get; set; }
+            = new List<SelectListItem>();
+
+
+        // =========================================================
+        // ORDENAÇÃO
+        // =========================================================
+
+        public string SortOrder { get; set; }
+            = "date_desc";
+
+
+        // =========================================================
+        // PAGINAÇÃO
+        // =========================================================
 
         public int Page { get; set; } = 1;
 
-        public int TotalPages { get; set; } = 1;
+        public int PageSize { get; set; } = 20;
+
+        public int TotalPages { get; set; }
 
         public int TotalCount { get; set; }
+
+
+        public bool HasPreviousPage =>
+            Page > 1;
+
+
+        public bool HasNextPage =>
+            Page < TotalPages;
+
+
+        public int FirstItem =>
+            TotalCount == 0
+                ? 0
+                : ((Page - 1) * PageSize) + 1;
+
+
+        public int LastItem =>
+            Math.Min(
+                Page * PageSize,
+                TotalCount);
     }
 }

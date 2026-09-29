@@ -1,62 +1,636 @@
 ﻿@model LisAeroGest.Models.TicketsIndexViewModel
+
 @{
     ViewData["Title"] = "Bilhetes";
 }
 
+
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="h3 fw-bold mb-0">
-            <i class="bi bi-ticket-perforated me-2"></i>Bilhetes
-        </h1>
-        <span class="text-muted">@Model.TotalCount registos</span>
+
+    <!-- =========================================================
+         CABEÇALHO
+    ========================================================== -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h1 class="h3 fw-bold mb-1">
+
+                <i class="bi bi-ticket-perforated me-2"></i>
+
+                Bilhetes
+
+            </h1>
+
+            <p class="text-muted mb-0">
+                Consulte, pesquise e ordene os bilhetes vendidos.
+            </p>
+
+        </div>
+
+
+        <span class="badge bg-light text-dark border fs-6">
+
+            @Model.TotalCount registos
+
+        </span>
+
     </div>
 
-    <form method="get" class="row g-2 mb-3">
-        <div class="col-md-4">
-            <input asp-for="SearchTerm" class="form-control" placeholder="Voo, passageiro..." />
-        </div>
-        <div class="col-md-3">
-            <select asp-for="Status" asp-items="Model.StatusOptions" class="form-select">
-                <option value="">Todos os estados</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-primary">Filtrar</button>
-        </div>
-    </form>
 
-    @if (!Model.Tickets.Any())
-    {
-        <p class="text-muted">Não existem bilhetes.</p>
-    }
-    else
-    {
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Voo</th>
-                        <th>Passageiro</th>
-                        <th>Lugar</th>
-                        <th>Estado</th>
-                        <th class="text-end">Preço</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var t in Model.Tickets)
-                    {
-                        <tr>
-                            <td>@t.Id</td>
-                            <td>@(t.Flight?.FlightNumber ?? "—")</td>
-                            <td>@(t.Passenger != null ? $"{t.Passenger.FirstName} {t.Passenger.LastName}" : "—")</td>
-                            <td>@(t.Seat?.Code ?? "—")</td>
-                            <td>@t.Status</td>
-                            <td class="text-end">@t.TotalPrice.ToString("C")</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+    <!-- =========================================================
+         FILTROS
+    ========================================================== -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header bg-light fw-bold">
+
+            <i class="bi bi-funnel me-1"></i>
+
+            Filtros e ordenação
+
         </div>
-    }
+
+
+        <div class="card-body">
+
+            <form method="get"
+                  asp-action="Index"
+                  class="row g-3">
+
+
+                <!-- PESQUISA -->
+
+                <div class="col-lg-4 col-md-6">
+
+                    <label class="form-label fw-semibold">
+                        Pesquisa
+                    </label>
+
+                    <input asp-for="SearchTerm"
+                           class="form-control"
+                           placeholder="Voo ou passageiro..." />
+
+                </div>
+
+
+                <!-- ESTADO -->
+
+                <div class="col-lg-3 col-md-6">
+
+                    <label class="form-label fw-semibold">
+                        Estado
+                    </label>
+
+                    <select asp-for="Status"
+                            asp-items="Model.StatusOptions"
+                            class="form-select">
+
+                        <option value="">
+                            Todos os estados
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- ORDENAÇÃO -->
+
+                <div class="col-lg-3 col-md-6">
+
+                    <label class="form-label fw-semibold">
+
+                        <i class="bi bi-sort-down me-1"></i>
+
+                        Ordenar por
+
+                    </label>
+
+                    <select name="sortOrder"
+                            class="form-select">
+
+                        <option value="date_desc"
+                                selected="@(Model.SortOrder == "date_desc")">
+                            Data — mais recente
+                        </option>
+
+                        <option value="date_asc"
+                                selected="@(Model.SortOrder == "date_asc")">
+                            Data — mais antiga
+                        </option>
+
+                        <option value="price_desc"
+                                selected="@(Model.SortOrder == "price_desc")">
+                            Preço — maior primeiro
+                        </option>
+
+                        <option value="price_asc"
+                                selected="@(Model.SortOrder == "price_asc")">
+                            Preço — menor primeiro
+                        </option>
+
+                        <option value="flight_asc"
+                                selected="@(Model.SortOrder == "flight_asc")">
+                            Voo — A-Z
+                        </option>
+
+                        <option value="flight_desc"
+                                selected="@(Model.SortOrder == "flight_desc")">
+                            Voo — Z-A
+                        </option>
+
+                        <option value="passenger_asc"
+                                selected="@(Model.SortOrder == "passenger_asc")">
+                            Passageiro — A-Z
+                        </option>
+
+                        <option value="passenger_desc"
+                                selected="@(Model.SortOrder == "passenger_desc")">
+                            Passageiro — Z-A
+                        </option>
+
+                        <option value="status_asc"
+                                selected="@(Model.SortOrder == "status_asc")">
+                            Estado — A-Z
+                        </option>
+
+                        <option value="status_desc"
+                                selected="@(Model.SortOrder == "status_desc")">
+                            Estado — Z-A
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- BOTÕES -->
+
+                <div class="col-lg-2 col-md-6 d-flex align-items-end">
+
+                    <div class="d-flex gap-2 w-100">
+
+                        <a asp-action="Index"
+                           class="btn btn-outline-secondary"
+                           title="Limpar filtros">
+
+                            <i class="bi bi-x-lg"></i>
+
+                        </a>
+
+
+                        <button type="submit"
+                                class="btn btn-primary flex-grow-1">
+
+                            <i class="bi bi-search me-1"></i>
+
+                            Filtrar
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         RESUMO
+    ========================================================== -->
+
+    <div class="d-flex justify-content-between
+                align-items-center mb-2">
+
+        <div class="text-muted small">
+
+            @if (Model.TotalCount > 0)
+            {
+                <span>
+
+                    A mostrar
+
+                    <strong>@Model.FirstItem</strong>
+
+                    –
+
+                    <strong>@Model.LastItem</strong>
+
+                    de
+
+                    <strong>@Model.TotalCount</strong>
+
+                    bilhetes
+
+                </span>
+            }
+            else
+            {
+                <span>
+                    Nenhum bilhete encontrado.
+                </span>
+            }
+
+        </div>
+
+
+        @if (Model.TotalCount > 0)
+        {
+            <div class="text-muted small">
+
+                Página
+
+                <strong>@Model.Page</strong>
+
+                de
+
+                <strong>@Model.TotalPages</strong>
+
+            </div>
+        }
+
+    </div>
+
+
+    <!-- =========================================================
+         TABELA
+    ========================================================== -->
+
+    <div class="card shadow-sm">
+
+        <div class="card-body p-0">
+
+            @if (!Model.Tickets.Any())
+            {
+                <div class="text-center py-5">
+
+                    <i class="bi bi-ticket-perforated
+                                  fs-1 text-muted"></i>
+
+                    <p class="text-muted mt-3 mb-0">
+                        Não existem bilhetes com os filtros selecionados.
+                    </p>
+
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+
+                    <table class="table table-hover
+                                      align-middle mb-0">
+
+                        <thead class="table-light">
+
+                            <tr>
+
+                                <th>
+                                    ID
+                                </th>
+
+                                <th>
+                                    Voo
+                                </th>
+
+                                <th>
+                                    Passageiro
+                                </th>
+
+                                <th>
+                                    Lugar
+                                </th>
+
+                                <th>
+                                    Estado
+                                </th>
+
+                                <th>
+                                    Data
+                                </th>
+
+                                <th class="text-end">
+                                    Preço
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            @foreach (var t in Model.Tickets)
+                            {
+                                <tr>
+
+                                    <!-- ID -->
+
+                                    <td class="fw-semibold">
+
+                                        #@t.Id
+
+                                    </td>
+
+
+                                    <!-- VOO -->
+
+                                    <td>
+
+                                        <span class="badge
+                                                             bg-light
+                                                             text-dark
+                                                             border">
+
+                                            @(t.Flight?.FlightNumber
+                                                                                ?? "—")
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- PASSAGEIRO -->
+
+                                    <td>
+
+                                        @(t.Passenger != null
+                                                                        ? $"{t.Passenger.FirstName} {t.Passenger.LastName}"
+                                                                        : "—")
+
+                            </td>
+
+
+                                    <!-- LUGAR -->
+
+                                    <td>
+
+                                        @(t.Seat?.Code ?? "—")
+
+                                    </td>
+
+
+                                    <!-- ESTADO -->
+
+                                    <td>
+
+                                @switch (t.Status)
+                                        {
+                                            case "Paid":
+
+                                                <span class="badge bg-success">
+                                                    Pago
+                                                </span>
+
+                                                break;
+
+
+                                            case "CheckedIn":
+
+                                                <span class="badge bg-primary">
+                                                    Check-in
+                                                </span>
+
+                                                break;
+
+
+                                            case "Reserved":
+
+                                                <span class="badge bg-warning text-dark">
+                                                    Reservado
+                                                </span>
+
+                                                break;
+
+
+                                            case "Cancelled":
+
+                                                <span class="badge bg-danger">
+                                                    Cancelado
+                                                </span>
+
+                                                break;
+
+
+                                            case "Expired":
+
+                                                <span class="badge bg-secondary">
+                                                    Expirado
+                                                </span>
+
+                                                break;
+
+
+                                            default:
+
+                                                <span class="badge bg-secondary">
+                                                    @t.Status
+                                                </span>
+
+                                                break;
+                                        }
+
+                                    </td>
+
+
+                                    <!-- DATA -->
+
+                                    <td>
+
+                                        @t.PurchaseDate.ToString(
+                                        "dd/MM/yyyy HH:mm")
+
+                            </td>
+
+
+                            <!-- PREÇO -->
+
+                            <td class="text-end fw-semibold">
+
+                                @t.TotalPrice.ToString("C")
+
+                            </td>
+
+                        </tr>
+                                                }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         PAGINAÇÃO
+    ========================================================== -->
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="mt-4"
+             aria-label="Paginação dos bilhetes">
+
+            <ul class="pagination justify-content-center">
+
+
+                <!-- ANTERIOR -->
+
+                <li class="page-item
+                               @(!Model.HasPreviousPage
+                                                   ? "disabled"
+                                                   : "")">
+
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-searchTerm="@Model.SearchTerm"
+                   asp-route-status="@Model.Status"
+                   asp-route-sortOrder="@Model.SortOrder"
+                   asp-route-page="@(Model.Page - 1)">
+
+                        <i class="bi bi-chevron-left"></i>
+
+                        Anterior
+
+                    </a>
+
+                </li>
+
+
+                <!-- PÁGINAS -->
+            @{
+                    var startPage =
+                    Math.Max(
+                    1,
+                    Model.Page - 2);
+
+                    var endPage =
+                    Math.Min(
+                    Model.TotalPages,
+                    Model.Page + 2);
+                }
+
+
+                @if (startPage > 1)
+                {
+                    <li class="page-item">
+
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-searchTerm="@Model.SearchTerm"
+                           asp-route-status="@Model.Status"
+                           asp-route-sortOrder="@Model.SortOrder"
+                           asp-route-page="1">
+
+                            1
+
+                        </a>
+
+                    </li>
+
+
+                    @if (startPage > 2)
+                    {
+                        <li class="page-item disabled">
+
+                            <span class="page-link">
+                                ...
+                            </span>
+
+                        </li>
+                    }
+                }
+
+
+                @for (var i = startPage;
+                            i <= endPage;
+                            i++)
+                {
+                    <li class="page-item
+                                       @(i == Model.Page
+                                                           ? "active"
+                                                           : "")">
+
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-searchTerm="@Model.SearchTerm"
+                   asp-route-status="@Model.Status"
+                   asp-route-sortOrder="@Model.SortOrder"
+                   asp-route-page="@i">
+
+                            @i
+
+                        </a>
+
+                    </li>
+                        }
+
+
+                @if (endPage < Model.TotalPages)
+                {
+                    @if (endPage < Model.TotalPages - 1)
+                    {
+                        <li class="page-item disabled">
+
+                            <span class="page-link">
+                                ...
+                            </span>
+
+                        </li>
+                    }
+
+
+                    <li class="page-item">
+
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-searchTerm="@Model.SearchTerm"
+                           asp-route-status="@Model.Status"
+                           asp-route-sortOrder="@Model.SortOrder"
+                           asp-route-page="@Model.TotalPages">
+
+                            @Model.TotalPages
+
+                        </a>
+
+                    </li>
+                }
+
+
+            <!-- SEGUINTE -->
+
+            <li class="page-item
+                           @(!Model.HasNextPage
+                                               ? "disabled"
+                                               : "")">
+
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-searchTerm="@Model.SearchTerm"
+                   asp-route-status="@Model.Status"
+                   asp-route-sortOrder="@Model.SortOrder"
+                   asp-route-page="@(Model.Page + 1)">
+
+                        Seguinte
+
+                        <i class="bi bi-chevron-right"></i>
+
+                    </a>
+
+                </li>
+
+            </ul>
+
+        </nav>
+        }
+
 </div>

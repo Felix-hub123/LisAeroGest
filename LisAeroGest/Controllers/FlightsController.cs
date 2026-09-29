@@ -60,36 +60,198 @@ namespace LisAeroGest.Controllers
         /// </summary>
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> Index(int? airlineId, int? originId, int? destinationId, string? status)
+        public async Task<IActionResult> Index(
+       int? airlineId,
+       int? originId,
+       int? destinationId,
+       string? status,
+       string sortOrder = "departure_desc",
+       int page = 1)
         {
-            var query = _flightRepository.GetAllQueryable();
+            const int pageSize = 10;
 
-            if (airlineId.HasValue) query = query.Where(f => f.AirlineId == airlineId.Value);
-            if (originId.HasValue) query = query.Where(f => f.OriginAirportId == originId.Value);
-            if (destinationId.HasValue) query = query.Where(f => f.DestinationAirportId == destinationId.Value);
-            if (!string.IsNullOrEmpty(status)) query = query.Where(f => f.Status == status);
+            // =========================================================
+            // VALIDAR PÁGINA
+            // =========================================================
 
-            var flights = await query
-                .Include(f => f.Airline)
-                .Include(f => f.OriginAirport)
-                .Include(f => f.DestinationAirport)
-                .Include(f => f.Gate)
-                .OrderByDescending(f => f.DepartureTime)
-                .ToListAsync();
+            if (page < 1)
+                page = 1;
 
-            var model = new FlightFilterViewModel
+
+            // =========================================================
+            // QUERY BASE
+            // =========================================================
+
+            var query =
+                _flightRepository
+                    .GetAllQueryable();
+
+
+            // =========================================================
+            // FILTROS
+            // =========================================================
+
+            if (airlineId.HasValue)
             {
-                Flights = flights,
-                Airlines = _converterHelper.ToComboAirlines(await _airlineRepository.GetAllAsync(), airlineId),
-                Airports = _converterHelper.ToComboAirports(await _airportRepository.GetAllAsync(), originId),
-                Statuses = _converterHelper.ToComboStatuses(status),
-                FilterAirlineId = airlineId,
-                FilterOriginId = originId,
-                FilterDestinationId = destinationId,
-                FilterStatus = status
+                query = query.Where(
+                    f => f.AirlineId == airlineId.Value);
+            }
+
+
+            if (originId.HasValue)
+            {
+                query = query.Where(
+                    f => f.OriginAirportId == originId.Value);
+            }
+
+
+            if (destinationId.HasValue)
+            {
+                query = query.Where(
+                    f => f.DestinationAirportId ==
+                         destinationId.Value);
+            }
+
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                query = query.Where(
+                    f => f.Status == status);
+            }
+
+
+            // =========================================================
+            // TOTAL DE RESULTADOS
+            // =========================================================
+
+            var totalItems =
+                await query.CountAsync();
+
+
+            // =========================================================
+            // ORDENAÇÃO
+            // =========================================================
+
+            query = sortOrder switch
+            {
+                "departure_asc" =>
+                    query.OrderBy(f => f.DepartureTime),
+
+                "flight_asc" =>
+                    query.OrderBy(f => f.FlightNumber),
+
+                "flight_desc" =>
+                    query.OrderByDescending(f => f.FlightNumber),
+
+                "origin_asc" =>
+                    query.OrderBy(f =>
+                        f.OriginAirport!.IATACode),
+
+                "destination_asc" =>
+                    query.OrderBy(f =>
+                        f.DestinationAirport!.IATACode),
+
+                "status_asc" =>
+                    query.OrderBy(f => f.Status),
+
+                _ =>
+                    query.OrderByDescending(
+                        f => f.DepartureTime)
             };
 
-            ViewBag.Destinations = _converterHelper.ToComboAirports(await _airportRepository.GetAllAsync(), destinationId);
+
+            // =========================================================
+            // CALCULAR TOTAL DE PÁGINAS
+            // =========================================================
+
+            var totalPages =
+                totalItems == 0
+                    ? 1
+                    : (int)Math.Ceiling(
+                        totalItems / (double)pageSize);
+
+
+            // Evita pedir uma página que já não existe.
+            if (page > totalPages)
+                page = totalPages;
+
+
+            // =========================================================
+            // PAGINAÇÃO
+            // =========================================================
+
+            var flights =
+                await query
+                    .Include(f => f.Airline)
+                    .Include(f => f.OriginAirport)
+                    .Include(f => f.DestinationAirport)
+                    .Include(f => f.Gate)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+
+            // =========================================================
+            // DADOS DOS FILTROS
+            // =========================================================
+
+            var airlines =
+                await _airlineRepository.GetAllAsync();
+
+            var airports =
+                await _airportRepository.GetAllAsync();
+
+
+            // =========================================================
+            // VIEWMODEL
+            // =========================================================
+
+            var model =
+                new FlightFilterViewModel
+                {
+                    Flights = flights,
+
+                    Airlines =
+                        _converterHelper.ToComboAirlines(
+                            airlines,
+                            airlineId),
+
+                    Airports =
+                        _converterHelper.ToComboAirports(
+                            airports,
+                            originId),
+
+                    Statuses =
+                        _converterHelper.ToComboStatuses(
+                            status),
+
+                    FilterAirlineId = airlineId,
+
+                    FilterOriginId = originId,
+
+                    FilterDestinationId = destinationId,
+
+                    FilterStatus = status,
+
+                    SortOrder = sortOrder,
+
+                    CurrentPage = page,
+
+                    PageSize = pageSize,
+
+                    TotalItems = totalItems
+                };
+
+
+            // =========================================================
+            // DESTINOS
+            // =========================================================
+
+            ViewBag.Destinations =
+                _converterHelper.ToComboAirports(
+                    airports,
+                    destinationId);
+
 
             return View(model);
         }

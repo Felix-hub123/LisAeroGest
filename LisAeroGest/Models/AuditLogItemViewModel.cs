@@ -30,9 +30,16 @@
     }
 
 
+    // =============================================================
+    // HISTÓRICO
+    // =============================================================
+
     public class AuditLogHistoryViewModel
     {
-        // Filtros
+        // =========================================================
+        // FILTROS
+        // =========================================================
+
         public string? Search { get; set; }
 
         public string? Action { get; set; }
@@ -40,7 +47,10 @@
         public string? Category { get; set; }
 
 
-        // Estatísticas
+        // =========================================================
+        // ESTATÍSTICAS
+        // =========================================================
+
         public int TotalLogs { get; set; }
 
         public int LogsToday { get; set; }
@@ -52,11 +62,51 @@
         public int Communications { get; set; }
 
 
-        // Resultados
+        // =========================================================
+        // PAGINAÇÃO
+        // =========================================================
+
+        public int FilteredCount { get; set; }
+
+        public int Page { get; set; } = 1;
+
+        public int PageSize { get; set; } = 10;
+
+        public int TotalPages { get; set; } = 1;
+
+
+        public bool HasPreviousPage =>
+            Page > 1;
+
+
+        public bool HasNextPage =>
+            Page < TotalPages;
+
+
+        public int FirstItem =>
+            FilteredCount == 0
+                ? 0
+                : ((Page - 1) * PageSize) + 1;
+
+
+        public int LastItem =>
+            Math.Min(
+                Page * PageSize,
+                FilteredCount);
+
+
+        // =========================================================
+        // RESULTADOS
+        // =========================================================
+
         public List<AuditLogItemViewModel> Logs { get; set; }
             = new();
     }
 
+
+    // =============================================================
+    // DETALHES
+    // =============================================================
 
     public class AuditLogDetailsViewModel
     {

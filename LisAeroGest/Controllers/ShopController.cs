@@ -859,20 +859,79 @@ namespace LisAeroGest.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> MyTickets()
+        public async Task<IActionResult> MyTickets(int page = 1)
         {
-            var passenger = await GetCurrentPassengerAsync();
+            const int pageSize = 5;
+
+            var passenger =
+                await GetCurrentPassengerAsync();
 
             if (passenger == null)
-                return RedirectToAction("Index", "Home");
+            {
+                return RedirectToAction(
+                    "Index",
+                    "Home");
+            }
 
-            var tickets =
+
+            var allTickets =
                 (await _ticketRepository
                     .GetByPassengerAsync(passenger.Id))
                 .Where(t =>
                     t.Status == "Paid" ||
                     t.Status == "CheckedIn")
+                .OrderByDescending(t =>
+                    t.PurchaseDate)
                 .ToList();
+
+
+            var totalTickets =
+                allTickets.Count;
+
+
+            var totalPages =
+                Math.Max(
+                    1,
+                    (int)Math.Ceiling(
+                        totalTickets /
+                        (double)pageSize));
+
+
+            page =
+                Math.Max(
+                    1,
+                    Math.Min(
+                        page,
+                        totalPages));
+
+
+            var tickets =
+                allTickets
+                    .Skip(
+                        (page - 1) *
+                        pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+
+            ViewBag.TotalTickets =
+                totalTickets;
+
+            ViewBag.Page =
+                page;
+
+            ViewBag.PageSize =
+                pageSize;
+
+            ViewBag.TotalPages =
+                totalPages;
+
+            ViewBag.HasPreviousPage =
+                page > 1;
+
+            ViewBag.HasNextPage =
+                page < totalPages;
+
 
             return View(tickets);
         }

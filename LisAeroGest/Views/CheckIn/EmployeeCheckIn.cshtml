@@ -1,71 +1,472 @@
 ﻿@model IEnumerable<LisAeroGest.Data.Entities.Ticket>
+
 @{
-    ViewData["Title"] = "Resultados da Pesquisa";
+    ViewData["Title"] = "Balcão Check-in";
+
+    var tickets =
+        Model ??
+        Enumerable.Empty<LisAeroGest.Data.Entities.Ticket>();
+
+    var searchTerm =
+        ViewBag.SearchTerm as string;
+
+    var hasSearch =
+        !string.IsNullOrWhiteSpace(searchTerm);
 }
 
 <div class="container mt-4 mb-5">
 
-    <div class="d-flex align-items-center gap-3 mb-4">
-        <a asp-action="EmployeeCheckIn" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left"></i>
-        </a>
+    <!-- CABEÇALHO -->
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+
         <div>
-            <h2 class="fw-bold mb-0 text-white">
-                <i class="bi bi-search text-lime me-2"></i>Resultados da Pesquisa
+            <div class="text-uppercase text-lime fw-semibold small mb-1">
+                Operações
+            </div>
+
+            <h2 class="fw-bold mb-1 text-white">
+                <i class="bi bi-person-check text-lime me-2"></i>
+                Balcão Check-in
             </h2>
-            <p class="text-muted mb-0 small">
-                @ViewBag.ResultCount resultados para "<strong class="text-white">@ViewBag.SearchTerm</strong>"
+
+            <p class="text-muted mb-0">
+                Pesquise um passageiro ou bilhete para realizar o check-in presencial.
             </p>
         </div>
+
+        <a asp-controller="Dashboard"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+
+            <i class="bi bi-arrow-left me-1"></i>
+            Voltar ao Dashboard
+
+        </a>
+
     </div>
 
-    <div class="row g-3">
-        @foreach (var ticket in Model)
-        {
-            <div class="col-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-3">
-                        <div class="row align-items-center g-2">
-                            <div class="col-md-1">
-                                <span class="badge bg-primary">#@ticket.Id</span>
-                            </div>
-                            <div class="col-md-3">
-                                <strong class="text-white">@ticket.Passenger?.FirstName @ticket.Passenger?.LastName</strong>
-                                <br />
-                                <small class="text-muted">@ticket.Passenger?.DocumentType @ticket.Passenger?.DocumentNumber</small>
-                            </div>
-                            <div class="col-md-3">
-                                <span class="badge bg-secondary">@ticket.Flight?.FlightNumber</span>
-                                <br />
-                                <small class="text-muted">
-                                    @ticket.Flight?.OriginAirport?.IATACode → @ticket.Flight?.DestinationAirport?.IATACode
-                                </small>
-                            </div>
-                            <div class="col-md-2">
-                                <small class="text-muted">
-                                    <i class="bi bi-calendar3 me-1"></i>
-                                    @ticket.Flight?.DepartureTime.ToString("dd/MM/yyyy HH:mm")
-                                </small>
-                            </div>
-                            <div class="col-md-1">
-                                <span class="badge @(ticket.Status == "Paid" ? "bg-warning text-dark" : ticket.Status == "CheckedIn" ? "bg-success" : "bg-secondary")">
-                                    @ticket.Status
-                                </span>
-                            </div>
-                            <div class="col-md-2 text-end">
-                                <form asp-action="ProcessCheckIn" method="post" class="d-inline">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="ticketId" value="@ticket.Id" />
-                                    <button type="submit" class="btn btn-sm btn-lime"
-                                            @(ticket.Status != "Paid" ? "disabled" : "")>
-                                        <i class="bi bi-check-circle me-1"></i>Check-in
-                                    </button>
-                                </form>
-                            </div>
+
+    <!-- MENSAGENS -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+
+            <i class="bi bi-exclamation-triangle me-2"></i>
+
+            @TempData["Error"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+
+            <i class="bi bi-check-circle me-2"></i>
+
+            @TempData["Success"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+    @if (TempData["Info"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show">
+
+            <i class="bi bi-info-circle me-2"></i>
+
+            @TempData["Info"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+
+    <!-- PESQUISA -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body p-4">
+
+            <h5 class="fw-bold text-white mb-1">
+
+                <i class="bi bi-search text-lime me-2"></i>
+
+                Pesquisar passageiro
+
+            </h5>
+
+            <p class="text-muted small mb-3">
+                Utilize o nome, documento ou número do bilhete.
+            </p>
+
+
+            <form asp-controller="CheckIn"
+                  asp-action="EmployeeCheckIn"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div class="row g-3 align-items-end">
+
+                    <div class="col-12 col-lg-9">
+
+                        <label class="form-label fw-semibold">
+                            Pesquisa
+                        </label>
+
+                        <div class="input-group">
+
+                            <span class="input-group-text bg-transparent">
+                                <i class="bi bi-search"></i>
+                            </span>
+
+                            <input type="text"
+                                   name="searchTerm"
+                                   value="@searchTerm"
+                                   class="form-control"
+                                   placeholder="Nome, documento ou número do bilhete..."
+                                   autocomplete="off"
+                                   required />
+
                         </div>
+
                     </div>
+
+
+                    <div class="col-12 col-lg-3">
+
+                        <button type="submit"
+                                class="btn btn-lime w-100">
+
+                            <i class="bi bi-search me-1"></i>
+                            Pesquisar
+
+                        </button>
+
+                    </div>
+
                 </div>
-            </div>
-        }
+
+            </form>
+
+        </div>
+
     </div>
+
+
+    <!-- CONTEÚDO -->
+    @if (!hasSearch)
+    {
+        <div class="card border-0 shadow-sm">
+
+            <div class="card-body text-center py-5">
+
+                <div class="fs-1 text-muted mb-3">
+                    <i class="bi bi-person-vcard"></i>
+                </div>
+
+                <h5 class="fw-semibold text-white">
+                    Pesquise um passageiro
+                </h5>
+
+                <p class="text-muted mb-0">
+                    Introduza um nome, documento ou número de bilhete para começar.
+                </p>
+
+            </div>
+
+        </div>
+    }
+    else if (!tickets.Any())
+    {
+        <div class="card border-0 shadow-sm">
+
+            <div class="card-body text-center py-5">
+
+                <div class="fs-1 text-muted mb-3">
+                    <i class="bi bi-search"></i>
+                </div>
+
+                <h5 class="fw-semibold text-white">
+                    Nenhum resultado encontrado
+                </h5>
+
+                <p class="text-muted mb-0">
+
+                    Não foi encontrado nenhum bilhete para
+
+                    <strong class="text-white">
+                        "@searchTerm"
+                    </strong>.
+
+                </p>
+
+            </div>
+
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm">
+
+            <div class="card-header bg-transparent border-0 py-3">
+
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+
+                    <div>
+
+                        <h5 class="fw-bold text-white mb-1">
+                            Resultados
+                        </h5>
+
+                        <small class="text-muted">
+
+                            @tickets.Count()
+                            resultado(s) para
+
+                            <strong class="text-white">
+                                "@searchTerm"
+                            </strong>
+
+                        </small>
+
+                    </div>
+
+
+                    <span class="badge bg-transparent border">
+
+                        @tickets.Count() resultado(s)
+
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="card-body">
+
+                <div class="row g-3">
+
+                    @foreach (var ticket in tickets)
+                    {
+                        <div class="col-12">
+
+                            <div class="card border shadow-sm">
+
+                                <div class="card-body">
+
+                                    <div class="row align-items-center g-3">
+
+
+                                        <!-- PASSAGEIRO -->
+
+                                        <div class="col-12 col-md-3">
+
+                                            <small class="text-muted d-block">
+                                                Passageiro
+                                            </small>
+
+                                            <strong class="text-white">
+
+                                                @ticket.Passenger?.FirstName
+                                                @ticket.Passenger?.LastName
+
+                                            </strong>
+
+                                            <br />
+
+                                            <small class="text-muted">
+
+                                                @ticket.Passenger?.DocumentType
+                                                @ticket.Passenger?.DocumentNumber
+
+                                            </small>
+
+                                        </div>
+
+
+                                        <!-- BILHETE -->
+
+                                        <div class="col-6 col-md-1">
+
+                                            <small class="text-muted d-block">
+                                                Bilhete
+                                            </small>
+
+                                            <span class="badge bg-primary">
+                                                #@ticket.Id
+                                            </span>
+
+                                        </div>
+
+
+                                        <!-- VOO -->
+
+                                        <div class="col-6 col-md-2">
+
+                                            <small class="text-muted d-block">
+                                                Voo
+                                            </small>
+
+                                            <strong class="text-white">
+                                                @ticket.Flight?.FlightNumber
+                                            </strong>
+
+                                        </div>
+
+
+                                        <!-- ROTA -->
+
+                                        <div class="col-6 col-md-2">
+
+                                            <small class="text-muted d-block">
+                                                Rota
+                                            </small>
+
+                                            <span class="text-white">
+
+                                                @ticket.Flight?.OriginAirport?.IATACode
+
+                                                →
+
+                                                @ticket.Flight?.DestinationAirport?.IATACode
+
+                                            </span>
+
+                                        </div>
+
+
+                                        <!-- PARTIDA -->
+
+                                        <div class="col-6 col-md-2">
+
+                                            <small class="text-muted d-block">
+                                                Partida
+                                            </small>
+
+                                            <span class="text-white">
+
+                                                @(ticket.Flight != null
+                                                                                        ? ticket.Flight.DepartureTime
+                                                                                        .ToString("dd/MM/yyyy HH:mm")
+                                                                                        : "—")
+
+                                    </span>
+
+                                        </div>
+
+
+                                        <!-- ESTADO -->
+
+                                        <div class="col-6 col-md-1">
+
+                                            <small class="text-muted d-block">
+                                                Estado
+                                            </small>
+
+                                    @if (ticket.Status == "Paid")
+                                            {
+                                                <span class="badge bg-warning text-dark">
+                                                    Pago
+                                                </span>
+                                            }
+                                            else if (ticket.Status == "CheckedIn")
+                                            {
+                                                <span class="badge bg-success">
+                                                    Check-in
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">
+                                                    @ticket.Status
+                                                </span>
+                                            }
+
+                                        </div>
+
+
+                                        <!-- AÇÃO -->
+
+                                        <div class="col-6 col-md-1 text-md-end">
+
+                                            @if (ticket.Status == "Paid")
+                                            {
+                                                <form asp-controller="CheckIn"
+                                                      asp-action="ProcessCheckIn"
+                                                      method="post">
+
+                                                    @Html.AntiForgeryToken()
+
+                                                    <input type="hidden"
+                                                           name="ticketId"
+                                                           value="@ticket.Id" />
+
+                                                    <button type="submit"
+                                                            class="btn btn-sm btn-lime">
+
+                                                        <i class="bi bi-check-circle me-1"></i>
+
+                                                        Check-in
+
+                                                    </button>
+
+                                                </form>
+                                            }
+                                            else if (ticket.Status == "CheckedIn")
+                                            {
+                                                <span class="badge bg-success">
+
+                                                    <i class="bi bi-check-circle-fill me-1"></i>
+
+                                                    Concluído
+
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-secondary"
+                                                        disabled>
+
+                                                    Indisponível
+
+                                                </button>
+                                            }
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
 </div>

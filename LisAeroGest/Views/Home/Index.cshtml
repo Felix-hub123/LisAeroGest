@@ -1,6 +1,11 @@
 ﻿@model LisAeroGest.Models.HomeBoardViewModel
+@using LisAeroGest.Helpers
+
 @{
-    ViewData["Title"] = "Voos a partir de Lisboa";
+    ViewData["Title"] = "Início";
+
+    var destinations =
+        DestinationHelper.GetFeaturedDestinations();
 }
 
 <!-- ═══ HERO ═══ -->
@@ -236,73 +241,156 @@
 <!-- ═══ DESTINOS POPULARES ═══ -->
 @if (Model.PopularDestinations?.Any() == true)
 {
-    var destImages = new Dictionary<string, string>
-    {
-        { "MAD", "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=600&q=80" },
-        { "CDG", "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&q=80" },
-        { "LHR", "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600&q=80" },
-        { "JFK", "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=600&q=80" },
-        { "FCO", "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=600&q=80" },
-        { "BCN", "https://images.unsplash.com/photo-1583422409516-2895a77efded?w=600&q=80" },
-        { "AMS", "https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=600&q=80" },
-        { "FRA", "https://images.unsplash.com/photo-1577985043696-8bd54d9f093f?w=600&q=80" }
-    };
+    <section class="container mb-5">
 
-    <section class="container mb-5" data-aos="fade-up">
-        <div class="row align-items-end mb-4">
-            <div class="col-lg-8">
-                <div class="lis-section-label">Destinos Populares</div>
-                <h2 class="lis-section-title">
-                    Inspire-se.<br />
-                    Escolha o seu<br />
-                    <span class="highlight">próximo destino.</span>
+        <div class="d-flex
+                        justify-content-between
+                        align-items-end
+                        flex-wrap
+                        gap-3
+                        mb-4">
+
+            <div>
+
+                <span class="text-lime
+                                 text-uppercase
+                                 fw-semibold
+                                 small">
+
+                    Inspire-se
+
+                </span>
+
+                <h2 class="fw-bold text-white mb-1">
+
+                    Destinos em destaque
+
                 </h2>
+
+                <p class="text-muted mb-0">
+
+                    Descubra alguns dos destinos
+                    disponíveis a partir de Lisboa.
+
+                </p>
+
             </div>
+
+
+            <a asp-controller="Shop"
+               asp-action="Index"
+               class="btn btn-outline-lime btn-sm">
+
+                Ver todos os voos
+
+                <i class="bi bi-arrow-right ms-1"></i>
+
+            </a>
+
         </div>
+
 
         <div class="row g-3">
-            @foreach (var d in Model.PopularDestinations.Take(4))
+
+            @foreach (var destination in destinations.Take(4))
             {
-                var imgUrl = destImages.GetValueOrDefault(d.IATA, "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&q=80");
-                <div class="col-6 col-lg-3">
-                    <a asp-controller="Shop" asp-action="Calendar" asp-route-destination="@d.IATA" class="text-decoration-none">
-                        <div class="lis-dest-card">
-                            <img src="@imgUrl" alt="@d.Cidade" loading="lazy" />
-                            <div class="dest-overlay">
-                                <div class="dest-top">
-                                    <div>
-                                        <div class="dest-city">@d.Cidade</div>
-                                        <div class="dest-country">@d.Pais</div>
-                                    </div>
-                                    @if (d.Weather?.Main != null)
-                                    {
-                                        <div class="dest-temp">
-                                            <i class="bi bi-cloud-sun"></i> @Math.Round(d.Weather.Main.Temp)°C
-                                        </div>
-                                    }
-                                </div>
-                                <div class="dest-bottom">
-                                    <div>
-                                        <div class="dest-price-label">Desde</div>
-                                        <div class="dest-price">@(d.FromPrice > 0 ? d.FromPrice.Value.ToString("C0") : "—")</div>
-                                    </div>
-                                    <div class="dest-arrow">
-                                        <i class="bi bi-arrow-right"></i>
-                                    </div>
-                                </div>
+                <div class="col-12 col-sm-6 col-lg-3">
+
+                    <a asp-controller="Shop"
+                       asp-action="Index"
+                       asp-route-destination="@destination.Code"
+                       class="text-decoration-none">
+
+                        <div class="position-relative
+                                            overflow-hidden
+                                            rounded-3
+                                            shadow-sm"
+                             style="height:220px;">
+
+                            <img src="@destination.ImageUrl"
+                                 alt="@destination.City"
+                                 loading="lazy"
+                                 class="w-100 h-100"
+                                 style="object-fit:cover;" />
+
+
+                            <div class="position-absolute
+                                                top-0
+                                                start-0
+                                                w-100
+                                                h-100"
+                                 style="
+                                             background:
+                                                 linear-gradient(
+                                                     to top,
+                                                     rgba(7,12,22,.95),
+                                                     rgba(7,12,22,.10)
+                                                 );
+                                         ">
                             </div>
-                            @if (d.IsAdverseWeather)
-                            {
-                                <div class="position-absolute top-0 end-0 m-2" style="z-index:2;">
-                                    <span class="badge bg-warning text-dark">⚠ Tempo</span>
+
+
+                            <div class="position-absolute
+                                                bottom-0
+                                                start-0
+                                                w-100
+                                                p-3">
+
+                                <div class="d-flex
+                                                    justify-content-between
+                                                    align-items-end">
+
+                                    <div>
+
+                                        <span class="badge
+                                                             bg-dark
+                                                             bg-opacity-75
+                                                             mb-2">
+
+                                            @destination.Code
+
+                                        </span>
+
+
+                                        <h5 class="text-white
+                                                           fw-bold
+                                                           mb-0">
+
+                                            @destination.City
+
+                                        </h5>
+
+
+                                        <small class="text-light opacity-75">
+
+                                            @destination.Country
+
+                                        </small>
+
+                                    </div>
+
+
+                                    <div class="text-lime fs-5">
+
+                                        <i class="bi bi-arrow-up-right"></i>
+
+                                    </div>
+
                                 </div>
-                            }
+
+                            </div>
+
                         </div>
+
                     </a>
+
                 </div>
             }
+
         </div>
+
     </section>
+}
 }
 
 <!-- ═══ QUICK LINKS (apenas 3, sem Calendário) ═══ -->

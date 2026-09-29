@@ -9,6 +9,8 @@ namespace LisAeroGest.Controllers
     [Authorize(Roles = "Admin")]
     public class AuditLogsController : Controller
     {
+        private const int PageSize = 10;
+
         private readonly IAuditLogRepository _auditLogRepository;
 
         public AuditLogsController(
@@ -19,13 +21,15 @@ namespace LisAeroGest.Controllers
 
 
         // =========================================================
-        // HISTÓRICO DE AUDITORIA
+        // HISTÓRICO
         // =========================================================
 
+        [HttpGet]
         public async Task<IActionResult> Index(
-      string? search,
-      string? action,
-      string? category)
+            string? search,
+            string? auditAction,
+            string? category,
+            int page = 1)
         {
             var logs =
                 (await _auditLogRepository
@@ -33,119 +37,144 @@ namespace LisAeroGest.Controllers
                 .ToList();
 
 
-            // =========================================================
+            // =====================================================
+            // NÃO MOSTRAR CREATE
+            // =====================================================
+
+            var filteredLogs = logs
+                .Where(a =>
+                    !string.Equals(
+                        a.Action,
+                        "Create",
+                        StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+
+            // =====================================================
             // NORMALIZAR FILTROS
-            // =========================================================
+            // =====================================================
 
             search = string.IsNullOrWhiteSpace(search)
                 ? null
                 : search.Trim();
 
-            action = string.IsNullOrWhiteSpace(action)
+            auditAction = string.IsNullOrWhiteSpace(auditAction)
                 ? null
-                : action.Trim();
+                : auditAction.Trim();
 
             category = string.IsNullOrWhiteSpace(category)
                 ? null
                 : category.Trim();
 
 
-            // =========================================================
+            // =====================================================
             // ESTATÍSTICAS
-            // =========================================================
+            // =====================================================
 
             var today = DateTime.UtcNow.Date;
+
 
             var model = new AuditLogHistoryViewModel
             {
                 Search = search,
-                Action = action,
+
+                Action = auditAction,
+
                 Category = category,
 
-                TotalLogs = logs.Count,
+                TotalLogs = filteredLogs.Count,
 
-                LogsToday = logs.Count(a =>
+                LogsToday = filteredLogs.Count(a =>
                     a.CreatedAt.Date == today),
 
-                CheckIns = logs.Count(a =>
+                CheckIns = filteredLogs.Count(a =>
                     a.Action == "CheckIn"),
 
-                GateChanges = logs.Count(a =>
+                GateChanges = filteredLogs.Count(a =>
                     a.Action == "GateChanged"),
 
-                Communications = logs.Count(a =>
+                Communications = filteredLogs.Count(a =>
                     a.Action == "CommunicationSent")
             };
 
 
-            // =========================================================
-            // COMEÇAMOS COM TODOS OS REGISTOS
-            // =========================================================
-
-            var filteredLogs = logs.ToList();
-
-
-            // =========================================================
+            // =====================================================
             // PESQUISA
-            // =========================================================
+            // =====================================================
 
             if (search != null)
             {
                 filteredLogs = filteredLogs
                     .Where(a =>
+
                         ContainsIgnoreCase(
                             a.Description,
                             search)
+
                         ||
+
                         ContainsIgnoreCase(
                             a.Action,
                             search)
+
                         ||
+
                         ContainsIgnoreCase(
                             a.Category,
                             search)
+
                         ||
+
                         ContainsIgnoreCase(
                             a.User?.Email,
                             search)
+
                         ||
+
                         ContainsIgnoreCase(
                             GetUserName(a),
                             search)
+
                         ||
+
                         ContainsIgnoreCase(
                             a.Flight?.FlightNumber,
                             search)
+
                         ||
-                        (a.TicketId.HasValue &&
-                         a.TicketId.Value
-                             .ToString()
-                             .Contains(
-                                 search,
-                                 StringComparison.OrdinalIgnoreCase)))
+
+                        (
+                            a.TicketId.HasValue &&
+                            a.TicketId.Value
+                                .ToString()
+                                .Contains(
+                                    search,
+                                    StringComparison.OrdinalIgnoreCase)
+                        )
+                    )
                     .ToList();
             }
 
 
-            // =========================================================
+            // =====================================================
             // FILTRO POR AÇÃO
-            // =========================================================
+            // =====================================================
 
-            if (action != null)
+            if (auditAction != null)
             {
                 filteredLogs = filteredLogs
                     .Where(a =>
                         string.Equals(
                             a.Action,
-                            action,
+                            auditAction,
                             StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
 
 
-            // =========================================================
+            // =====================================================
             // FILTRO POR CATEGORIA
-            // =========================================================
+            // =====================================================
 
             if (category != null)
             {
@@ -159,12 +188,50 @@ namespace LisAeroGest.Controllers
             }
 
 
-            // =========================================================
-            // RESULTADO
-            // =========================================================
-            model.Logs = logs
-                .OrderByDescending(a => a.CreatedAt)
-                .Select(MapToItemViewModel)
+            // =====================================================
+            // PAGINAÇÃO
+            // =====================================================
+
+            var filteredCount =
+                filteredLogs.Count;
+
+
+            var totalPages = Math.Max(
+                1,
+                (int)Math.Ceiling(
+                    filteredCount /
+                    (double)PageSize));
+
+
+            page = Math.Max(
+                1,
+                Math.Min(
+                    page,
+                    totalPages));
+
+
+            model.FilteredCount =
+                filteredCount;
+
+            model.Page =
+                page;
+
+            model.PageSize =
+                PageSize;
+
+            model.TotalPages =
+                totalPages;
+
+
+            model.Logs = filteredLogs
+                .OrderByDescending(a =>
+                    a.CreatedAt)
+                .Skip(
+                    (page - 1) *
+                    PageSize)
+                .Take(PageSize)
+                .Select(
+                    MapToItemViewModel)
                 .ToList();
 
 
@@ -176,56 +243,61 @@ namespace LisAeroGest.Controllers
         // DETALHES
         // =========================================================
 
+        [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
             var log =
                 await _auditLogRepository
                     .GetByIdWithDetailsAsync(id);
 
+
             if (log == null)
-                return NotFound();
-
-
-            var model = new AuditLogDetailsViewModel
             {
-                Id = log.Id,
+                return NotFound();
+            }
 
-                UserName =
-                    GetUserName(log),
 
-                UserEmail =
-                    log.User?.Email,
+            var model =
+                new AuditLogDetailsViewModel
+                {
+                    Id = log.Id,
 
-                Action =
-                    log.Action,
+                    UserName =
+                        GetUserName(log),
 
-                Category =
-                    log.Category,
+                    UserEmail =
+                        log.User?.Email,
 
-                Description =
-                    log.Description,
+                    Action =
+                        log.Action,
 
-                FlightId =
-                    log.FlightId,
+                    Category =
+                        log.Category,
 
-                FlightNumber =
-                    log.Flight?.FlightNumber,
+                    Description =
+                        log.Description,
 
-                TicketId =
-                    log.TicketId,
+                    FlightId =
+                        log.FlightId,
 
-                PassengerName =
-                    GetPassengerName(log),
+                    FlightNumber =
+                        log.Flight?.FlightNumber,
 
-                OldValue =
-                    log.OldValue,
+                    TicketId =
+                        log.TicketId,
 
-                NewValue =
-                    log.NewValue,
+                    PassengerName =
+                        GetPassengerName(log),
 
-                CreatedAt =
-                    log.CreatedAt
-            };
+                    OldValue =
+                        log.OldValue,
+
+                    NewValue =
+                        log.NewValue,
+
+                    CreatedAt =
+                        log.CreatedAt
+                };
 
 
             return View(model);
@@ -286,20 +358,32 @@ namespace LisAeroGest.Controllers
         // HELPERS
         // =========================================================
 
-        private static string GetUserName(AuditLog log)
+        private static string GetUserName(
+            AuditLog log)
         {
             if (log.User == null)
+            {
                 return "Sistema";
+            }
+
 
             var fullName =
                 $"{log.User.FirstName} {log.User.LastName}"
-                .Trim();
+                    .Trim();
+
 
             if (!string.IsNullOrWhiteSpace(fullName))
+            {
                 return fullName;
+            }
 
-            if (!string.IsNullOrWhiteSpace(log.User.Email))
+
+            if (!string.IsNullOrWhiteSpace(
+                log.User.Email))
+            {
                 return log.User.Email;
+            }
+
 
             return "Utilizador";
         }
@@ -311,12 +395,17 @@ namespace LisAeroGest.Controllers
             var passenger =
                 log.Ticket?.Passenger;
 
+
             if (passenger == null)
+            {
                 return null;
+            }
+
 
             var fullName =
                 $"{passenger.FirstName} {passenger.LastName}"
-                .Trim();
+                    .Trim();
+
 
             return string.IsNullOrWhiteSpace(fullName)
                 ? null
@@ -328,10 +417,12 @@ namespace LisAeroGest.Controllers
             string? value,
             string search)
         {
-            return !string.IsNullOrWhiteSpace(value) &&
-                   value.Contains(
-                       search,
-                       StringComparison.OrdinalIgnoreCase);
+            return
+                !string.IsNullOrWhiteSpace(value)
+                &&
+                value.Contains(
+                    search,
+                    StringComparison.OrdinalIgnoreCase);
         }
     }
 }

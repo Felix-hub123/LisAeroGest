@@ -31,5 +31,14 @@ namespace LisAeroGest.Data.Repositories
                 .Include(c => c.SentByUser)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
+
+        public IQueryable<FlightCommunication>
+            GetAllWithDetailsQueryable()
+        {
+            return _dbSet
+                .Include(c => c.Flight)
+                .Include(c => c.SentByUser)
+                .AsQueryable();
+        }
     }
 }

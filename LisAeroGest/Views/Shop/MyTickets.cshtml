@@ -1,46 +1,119 @@
 ﻿@model IEnumerable<LisAeroGest.Data.Entities.Ticket>
+
 @{
     ViewData["Title"] = "Os Meus Bilhetes";
+
+    var totalTickets =
+        ViewBag.TotalTickets != null
+            ? (int)ViewBag.TotalTickets
+            : Model.Count();
+
+    var currentPage =
+        ViewBag.Page != null
+            ? (int)ViewBag.Page
+            : 1;
+
+    var totalPages =
+        ViewBag.TotalPages != null
+            ? (int)ViewBag.TotalPages
+            : 1;
+
+    var hasPreviousPage =
+        ViewBag.HasPreviousPage != null &&
+        (bool)ViewBag.HasPreviousPage;
+
+    var hasNextPage =
+        ViewBag.HasNextPage != null &&
+        (bool)ViewBag.HasNextPage;
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/myTickets.css" asp-append-version="true" />
+    <link rel="stylesheet"
+          href="~/css/myTickets.css"
+          asp-append-version="true" />
 }
 
 <div class="container my-4 mb-5">
 
-    <!-- ═══ CABEÇALHO ═══ -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <!-- CABEÇALHO -->
+
+    <div class="d-flex flex-wrap
+                justify-content-between
+                align-items-center
+                gap-3
+                mb-4">
+
         <h1 class="tickets-title mb-0">
-            <i class="bi bi-ticket-perforated-fill text-lime me-2"></i>Os Meus Bilhetes
+
+            <i class="bi
+                      bi-ticket-perforated-fill
+                      text-lime
+                      me-2"></i>
+
+            Os Meus Bilhetes
+
         </h1>
 
-        @if (Model.Any())
+        @if (totalTickets > 0)
         {
             <span class="tickets-count-badge">
+
                 <i class="bi bi-airplane me-1"></i>
-                @Model.Count() bilhete(s)
+
+                @totalTickets bilhete(s)
+
             </span>
         }
+
     </div>
 
-    @if (!Model.Any())
+
+    @if (totalTickets == 0)
     {
         <div class="tickets-empty">
-            <i class="bi bi-ticket-detailed display-1 d-block mb-3 text-muted"></i>
-            <h4 class="text-white mb-2">Ainda não tem bilhetes</h4>
-            <p class="text-muted mb-4">Pesquise voos e faça a sua primeira reserva.</p>
-            <a asp-action="Index" class="btn btn-lime">
-                <i class="bi bi-search me-1"></i>Comprar bilhetes
+
+            <i class="bi
+                          bi-ticket-detailed
+                          display-1
+                          d-block
+                          mb-3
+                          text-muted"></i>
+
+            <h4 class="text-white mb-2">
+                Ainda não tem bilhetes
+            </h4>
+
+            <p class="text-muted mb-4">
+                Pesquise voos e faça a sua primeira reserva.
+            </p>
+
+            <a asp-action="Index"
+               class="btn btn-lime">
+
+                <i class="bi bi-search me-1"></i>
+
+                Comprar bilhetes
+
             </a>
+
         </div>
     }
     else
     {
-        <!-- Desktop: tabela -->
-        <div class="tickets-table-wrapper table-responsive d-none d-md-block">
-            <table class="table tickets-table align-middle mb-0">
+        <!-- DESKTOP -->
+
+        <div class="tickets-table-wrapper
+                        table-responsive
+                        d-none
+                        d-md-block">
+
+            <table class="table
+                              tickets-table
+                              align-middle
+                              mb-0">
+
                 <thead>
+
                     <tr>
                         <th>Voo</th>
                         <th>Rota</th>
@@ -49,165 +122,536 @@
                         <th>Total</th>
                         <th>Estado</th>
                         <th>Compra</th>
-                        <th class="text-end pe-3">Ações</th>
+
+                        <th class="text-end pe-3">
+                            Ações
+                        </th>
                     </tr>
+
                 </thead>
+
                 <tbody>
+
                     @foreach (var ticket in Model)
                     {
-                        var waMsg = Uri.EscapeDataString(
-                            $"LisAeroGest — Bilhete #{ticket.Id:D6}\n" +
-                            $"Voo {ticket.Flight?.FlightNumber} " +
-                            $"({ticket.Flight?.OriginAirport?.IATACode} → {ticket.Flight?.DestinationAirport?.IATACode})\n" +
-                            $"Lugar: {ticket.Seat?.Code}\n" +
-                            $"Partida: {ticket.Flight?.DepartureTime:dd/MM/yyyy HH:mm}\n" +
-                            $"Total: {ticket.TotalPrice:C}");
+                        var waMsg =
+                        Uri.EscapeDataString(
+                        $"LisAeroGest — Bilhete #{ticket.Id:D6}\n" +
+                        $"Voo {ticket.Flight?.FlightNumber} " +
+                        $"({ticket.Flight?.OriginAirport?.IATACode} → {ticket.Flight?.DestinationAirport?.IATACode})\n" +
+                        $"Lugar: {ticket.Seat?.Code}\n" +
+                        $"Partida: {(ticket.Flight != null ? ticket.Flight.DepartureTime.ToString("dd/MM/yyyy HH:mm") : "—")}\n" +
+                        $"Total: {ticket.TotalPrice:C}");
 
                         <tr>
+
+                            <!-- VOO -->
+
                             <td>
+
                                 <span class="tickets-flight-number">
-                                    <i class="bi bi-airplane-fill me-1"></i>@ticket.Flight?.FlightNumber
+
+                                    <i class="bi bi-airplane-fill me-1"></i>
+
+                                    @ticket.Flight?.FlightNumber
+
                                 </span>
+
                             </td>
+
+
+                            <!-- ROTA -->
+
                             <td>
+
                                 <span class="tickets-route">
-                                    <strong>@ticket.Flight?.OriginAirport?.IATACode</strong>
-                                    <i class="bi bi-arrow-right text-lime mx-1"></i>
-                                    <strong>@ticket.Flight?.DestinationAirport?.IATACode</strong>
+
+                                    <strong>
+                                        @ticket.Flight?.OriginAirport?.IATACode
+                                    </strong>
+
+                                    <i class="bi
+                                                      bi-arrow-right
+                                                      text-lime
+                                                      mx-1"></i>
+
+                                    <strong>
+                                        @ticket.Flight?.DestinationAirport?.IATACode
+                                    </strong>
+
                                 </span>
+
                             </td>
+
+
+                            <!-- DATA -->
+
                             <td class="text-white">
-                                <i class="bi bi-calendar3 text-muted me-1"></i>
-                                @ticket.Flight?.DepartureTime.ToString("dd/MM/yyyy HH:mm")
-                            </td>
+
+                                <i class="bi
+                                                  bi-calendar3
+                                                  text-muted
+                                                  me-1"></i>
+
+                                @(ticket.Flight != null
+                                                        ? ticket.Flight.DepartureTime.ToString("dd/MM/yyyy HH:mm")
+                                                        : "—")
+
+                    </td>
+
+
+                            <!-- LUGAR -->
+
                             <td>
-                                <span class="tickets-seat">@ticket.Seat?.Code</span>
+
+                                <span class="tickets-seat">
+                                    @ticket.Seat?.Code
+                                </span>
+
                             </td>
-                            <td class="tickets-price">@ticket.TotalPrice.ToString("C")</td>
+
+
+                            <!-- TOTAL -->
+
+                            <td class="tickets-price">
+
+                                @ticket.TotalPrice.ToString("C")
+
+                            </td>
+
+
+                            <!-- ESTADO -->
+
                             <td>
-                                @switch (ticket.Status)
+
+                        @switch (ticket.Status)
                                 {
                                     case "Paid":
+
                                         <span class="badge-status badge-paid">
-                                            <i class="bi bi-check-circle-fill me-1"></i>Pago
+
+                                            <i class="bi
+                                                                      bi-check-circle-fill
+                                                                      me-1"></i>
+
+                                            Pago
+
                                         </span>
+
                                         break;
+
+
                                     case "CheckedIn":
+
                                         <span class="badge-status badge-checkin">
-                                            <i class="bi bi-clipboard-check-fill me-1"></i>Check-in
+
+                                            <i class="bi
+                                                                      bi-clipboard-check-fill
+                                                                      me-1"></i>
+
+                                            Check-in
+
                                         </span>
+
                                         break;
+
+
                                     case "Cancelled":
+
                                         <span class="badge-status badge-cancelled">
-                                            <i class="bi bi-x-circle-fill me-1"></i>Cancelado
+
+                                            <i class="bi
+                                                                      bi-x-circle-fill
+                                                                      me-1"></i>
+
+                                            Cancelado
+
                                         </span>
+
                                         break;
+
+
                                     default:
-                                        <span class="badge-status badge-pending">@ticket.Status</span>
+
+                                        <span class="badge-status badge-pending">
+
+                                            @ticket.Status
+
+                                        </span>
+
                                         break;
                                 }
+
                             </td>
-                            <td class="text-muted small">@ticket.PurchaseDate.ToString("dd/MM/yyyy")</td>
+
+
+                            <!-- COMPRA -->
+
+                            <td class="text-muted small">
+
+                                @ticket.PurchaseDate.ToString("dd/MM/yyyy")
+
+                            </td>
+
+
+                            <!-- AÇÕES -->
+
                             <td class="text-end pe-3">
+
                                 <a asp-action="DownloadTicketPdf"
                                    asp-route-ticketId="@ticket.Id"
-                                   class="btn btn-sm btn-outline-lime me-1"
+                                   class="btn
+                                                  btn-sm
+                                                  btn-outline-lime
+                                                  me-1"
                                    title="Descarregar PDF">
+
                                     <i class="bi bi-download"></i>
+
                                 </a>
+
+
                                 <a href="https://wa.me/?text=@waMsg"
                                    target="_blank"
-                                   class="btn btn-sm btn-whatsapp"
+                                   class="btn
+                                                  btn-sm
+                                                  btn-whatsapp"
                                    title="Enviar por WhatsApp">
+
                                     <i class="bi bi-whatsapp"></i>
+
                                 </a>
+
                             </td>
+
                         </tr>
                     }
+
                 </tbody>
+
             </table>
+
         </div>
 
-        <!-- Mobile: cards -->
+
+        <!-- MOBILE -->
+
         <div class="d-md-none tickets-cards">
+
             @foreach (var ticket in Model)
             {
-                var waMsg = Uri.EscapeDataString(
-                    $"LisAeroGest — Bilhete #{ticket.Id:D6}\n" +
-                    $"Voo {ticket.Flight?.FlightNumber} " +
-                    $"({ticket.Flight?.OriginAirport?.IATACode} → {ticket.Flight?.DestinationAirport?.IATACode})\n" +
-                    $"Lugar: {ticket.Seat?.Code}\n" +
-                    $"Partida: {ticket.Flight?.DepartureTime:dd/MM/yyyy HH:mm}\n" +
-                    $"Total: {ticket.TotalPrice:C}");
+                var waMsg =
+                Uri.EscapeDataString(
+                $"LisAeroGest — Bilhete #{ticket.Id:D6}\n" +
+                $"Voo {ticket.Flight?.FlightNumber} " +
+                $"({ticket.Flight?.OriginAirport?.IATACode} → {ticket.Flight?.DestinationAirport?.IATACode})\n" +
+                $"Lugar: {ticket.Seat?.Code}\n" +
+                $"Partida: {(ticket.Flight != null ? ticket.Flight.DepartureTime.ToString("dd/MM/yyyy HH:mm") : "—")}\n" +
+                $"Total: {ticket.TotalPrice:C}");
 
                 <div class="ticket-mobile-card">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
+
+                    <div class="d-flex
+                                        justify-content-between
+                                        align-items-start
+                                        mb-3">
+
                         <span class="tickets-flight-number">
-                            <i class="bi bi-airplane-fill me-1"></i>@ticket.Flight?.FlightNumber
+
+                            <i class="bi
+                                              bi-airplane-fill
+                                              me-1"></i>
+
+                            @ticket.Flight?.FlightNumber
+
                         </span>
+
+
                         @switch (ticket.Status)
                         {
                             case "Paid":
+
                                 <span class="badge-status badge-paid">
-                                    <i class="bi bi-check-circle-fill me-1"></i>Pago
+
+                                    <i class="bi
+                                                              bi-check-circle-fill
+                                                              me-1"></i>
+
+                                    Pago
+
                                 </span>
+
                                 break;
+
+
                             case "CheckedIn":
+
                                 <span class="badge-status badge-checkin">
-                                    <i class="bi bi-clipboard-check-fill me-1"></i>Check-in
+
+                                    <i class="bi
+                                                              bi-clipboard-check-fill
+                                                              me-1"></i>
+
+                                    Check-in
+
                                 </span>
+
                                 break;
+
+
                             case "Cancelled":
+
                                 <span class="badge-status badge-cancelled">
-                                    <i class="bi bi-x-circle-fill me-1"></i>Cancelado
+
+                                    <i class="bi
+                                                              bi-x-circle-fill
+                                                              me-1"></i>
+
+                                    Cancelado
+
                                 </span>
+
                                 break;
+
+
                             default:
-                                <span class="badge-status badge-pending">@ticket.Status</span>
+
+                                <span class="badge-status badge-pending">
+
+                                    @ticket.Status
+
+                                </span>
+
                                 break;
                         }
+
+                </div>
+
+
+                <!-- ROTA -->
+
+                <div class="tickets-mobile-route">
+
+                    <strong>
+                        @ticket.Flight?.OriginAirport?.IATACode
+                    </strong>
+
+                    <i class="bi
+                                      bi-arrow-right
+                                      text-lime
+                                      mx-2"></i>
+
+                    <strong>
+                        @ticket.Flight?.DestinationAirport?.IATACode
+                    </strong>
+
+                </div>
+
+
+                <!-- INFORMAÇÕES -->
+
+                <div class="tickets-mobile-meta">
+
+                    <div class="tickets-mobile-item">
+
+                        <i class="bi
+                                          bi-calendar3
+                                          text-lime"></i>
+
+                        <span>
+
+                            @(ticket.Flight != null
+                                                    ? ticket.Flight.DepartureTime.ToString("dd/MM/yyyy HH:mm")
+                                                    : "—")
+
+                    </span>
+
+                        </div>
+
+
+                        <div class="tickets-mobile-item">
+
+                            <i class="bi
+                                              bi-grid-3x3-gap
+                                              text-lime"></i>
+
+                            <span>
+                                Lugar @ticket.Seat?.Code
+                            </span>
+
+                        </div>
+
+
+                        <div class="tickets-mobile-item">
+
+                            <i class="bi
+                                              bi-bag-check
+                                              text-lime"></i>
+
+                            <span>
+
+                                Compra
+                                @ticket.PurchaseDate.ToString("dd/MM/yyyy")
+
+                            </span>
+
+                        </div>
+
                     </div>
 
-                    <div class="tickets-mobile-route">
-                        <strong>@ticket.Flight?.OriginAirport?.IATACode</strong>
-                        <i class="bi bi-arrow-right text-lime mx-2"></i>
-                        <strong>@ticket.Flight?.DestinationAirport?.IATACode</strong>
-                    </div>
 
-                    <div class="tickets-mobile-meta">
-                        <div class="tickets-mobile-item">
-                            <i class="bi bi-calendar3 text-lime"></i>
-                            <span>@ticket.Flight?.DepartureTime.ToString("dd/MM/yyyy HH:mm")</span>
-                        </div>
-                        <div class="tickets-mobile-item">
-                            <i class="bi bi-grid-3x3-gap text-lime"></i>
-                            <span>Lugar @ticket.Seat?.Code</span>
-                        </div>
-                        <div class="tickets-mobile-item">
-                            <i class="bi bi-bag-check text-lime"></i>
-                            <span>Compra @ticket.PurchaseDate.ToString("dd/MM/yyyy")</span>
-                        </div>
-                    </div>
+                    <!-- TOTAL -->
 
                     <div class="tickets-mobile-total">
-                        <span class="text-muted">Total</span>
-                        <span class="tickets-price">@ticket.TotalPrice.ToString("C")</span>
+
+                        <span class="text-muted">
+                            Total
+                        </span>
+
+                        <span class="tickets-price">
+
+                            @ticket.TotalPrice.ToString("C")
+
+                        </span>
+
                     </div>
 
+
+                    <!-- AÇÕES -->
+
                     <div class="d-flex gap-2 mt-3">
+
                         <a asp-action="DownloadTicketPdf"
                            asp-route-ticketId="@ticket.Id"
-                           class="btn btn-sm btn-outline-lime flex-grow-1">
-                            <i class="bi bi-download me-1"></i>PDF
+                           class="btn
+                                          btn-sm
+                                          btn-outline-lime
+                                          flex-grow-1">
+
+                            <i class="bi bi-download me-1"></i>
+
+                            PDF
+
                         </a>
+
+
                         <a href="https://wa.me/?text=@waMsg"
                            target="_blank"
-                           class="btn btn-sm btn-whatsapp flex-grow-1">
-                            <i class="bi bi-whatsapp me-1"></i>WhatsApp
+                           class="btn
+                                          btn-sm
+                                          btn-whatsapp
+                                          flex-grow-1">
+
+                            <i class="bi bi-whatsapp me-1"></i>
+
+                            WhatsApp
+
                         </a>
+
                     </div>
+
                 </div>
-            }
+                }
+
         </div>
+
+
+        <!-- PAGINAÇÃO -->
+        @if (totalPages > 1)
+        {
+            <div class="d-flex
+                                justify-content-between
+                                align-items-center
+                                flex-wrap
+                                gap-3
+                                mt-4">
+
+                <small class="text-muted">
+
+                    Página
+
+                    <strong>@currentPage</strong>
+
+                    de
+
+                    <strong>@totalPages</strong>
+
+                </small>
+
+
+                <nav aria-label="Paginação dos bilhetes">
+
+                    <ul class="pagination
+                                       pagination-sm
+                                       mb-0">
+
+                        <!-- ANTERIOR -->
+
+                        <li class="page-item
+                                    @(!hasPreviousPage
+                                                            ? "disabled"
+                                                            : "")">
+
+                    <a class="page-link"
+                       asp-action="MyTickets"
+                       asp-route-page="@(currentPage - 1)">
+
+                                <i class="bi bi-chevron-left"></i>
+
+                                Anterior
+
+                            </a>
+
+                        </li>
+
+
+                        <!-- NÚMEROS -->
+                @for (var i = 1;
+                                i <= totalPages;
+                                i++)
+                        {
+                            <li class="page-item
+                                            @(i == currentPage
+                                                                    ? "active"
+                                                                    : "")">
+
+                    <a class="page-link"
+                       asp-action="MyTickets"
+                       asp-route-page="@i">
+
+                                    @i
+
+                                </a>
+
+                            </li>
+                                }
+
+
+                    <!-- SEGUINTE -->
+
+                    <li class="page-item
+                                @(!hasNextPage
+                                                        ? "disabled"
+                                                        : "")">
+
+                    <a class="page-link"
+                       asp-action="MyTickets"
+                       asp-route-page="@(currentPage + 1)">
+
+                                Seguinte
+
+                                <i class="bi bi-chevron-right"></i>
+
+                            </a>
+
+                        </li>
+
+                    </ul>
+
+                </nav>
+
+            </div>
+        }
     }
+
 </div>

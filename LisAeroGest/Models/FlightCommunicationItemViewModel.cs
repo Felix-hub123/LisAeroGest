@@ -29,23 +29,64 @@
     /// </summary>
     public class FlightCommunicationHistoryViewModel
     {
-        // Filtros
+        // =========================================================
+        // FILTROS
+        // =========================================================
+
         public string? Search { get; set; }
 
         public string? Type { get; set; }
 
         public string? FlightNumber { get; set; }
 
-        // Estatísticas
+
+        // =========================================================
+        // ORDENAÇÃO
+        // =========================================================
+
+        public string SortOrder { get; set; } = "date_desc";
+
+
+        // =========================================================
+        // ESTATÍSTICAS
+        // =========================================================
+
         public int TotalCommunications { get; set; }
 
         public int TotalRecipients { get; set; }
 
         public int CommunicationsToday { get; set; }
 
-        // Lista
-        public List<FlightCommunicationItemViewModel> Communications { get; set; }
-            = new();
+
+        // =========================================================
+        // PAGINAÇÃO
+        // =========================================================
+
+        public int Page { get; set; } = 1;
+
+        public int PageSize { get; set; } = 10;
+
+        public int TotalPages { get; set; } = 1;
+
+        public bool HasPreviousPage => Page > 1;
+
+        public bool HasNextPage => Page < TotalPages;
+
+        public int FirstItem =>
+            TotalCommunications == 0
+                ? 0
+                : ((Page - 1) * PageSize) + 1;
+
+        public int LastItem =>
+            Math.Min(Page * PageSize, TotalCommunications);
+
+
+        // =========================================================
+        // LISTA
+        // =========================================================
+
+        public List<FlightCommunicationItemViewModel> Communications
+        { get; set; } = new();
     }
 
 

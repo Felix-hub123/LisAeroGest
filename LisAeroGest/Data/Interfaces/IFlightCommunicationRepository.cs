@@ -8,5 +8,7 @@ namespace LisAeroGest.Data.Interfaces
         Task<IEnumerable<FlightCommunication>> GetAllWithDetailsAsync();
 
         Task<FlightCommunication?> GetByIdWithDetailsAsync(int id);
+
+        IQueryable<FlightCommunication> GetAllWithDetailsQueryable();
     }
 }

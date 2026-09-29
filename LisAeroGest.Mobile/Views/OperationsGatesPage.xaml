@@ -524,7 +524,6 @@
                 <!-- =================================================
                      BOTÕES
                 ================================================== -->
-
                 <Grid
                     ColumnDefinitions="*,*"
                     ColumnSpacing="10">
@@ -533,13 +532,13 @@
                         Text="Cancelar"
                         Command="{Binding CancelGateChangeCommand}"
                         Style="{StaticResource SecondaryButtonStyle}"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" />
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
 
                     <Button
                         Grid.Column="1"
                         Text="Confirmar"
                         Command="{Binding ConfirmGateChangeCommand}"
-                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}" />
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
 
                 </Grid>
 

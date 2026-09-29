@@ -4,9 +4,13 @@
     ViewData["Title"] = "Histórico de Comunicações";
 }
 
+
 <div class="container-fluid py-4">
 
-    <!-- Cabeçalho -->
+    <!-- ======================================================= -->
+    <!-- CABEÇALHO -->
+    <!-- ======================================================= -->
+
     <div class="d-flex flex-column flex-lg-row
                 justify-content-between align-items-lg-center
                 gap-3 mb-4">
@@ -30,15 +34,22 @@
             <i class="bi bi-arrow-left me-1"></i>
             Voltar ao Dashboard
         </a>
+
     </div>
 
 
-    <!-- Estatísticas -->
+    <!-- ======================================================= -->
+    <!-- ESTATÍSTICAS -->
+    <!-- ======================================================= -->
+
     <div class="row g-3 mb-4">
 
         <div class="col-12 col-md-4">
+
             <div class="card border-0 shadow-sm h-100">
+
                 <div class="card-body">
+
                     <div class="d-flex align-items-center gap-3">
 
                         <div class="fs-2 text-primary">
@@ -56,14 +67,20 @@
                         </div>
 
                     </div>
+
                 </div>
+
             </div>
+
         </div>
 
 
         <div class="col-12 col-md-4">
+
             <div class="card border-0 shadow-sm h-100">
+
                 <div class="card-body">
+
                     <div class="d-flex align-items-center gap-3">
 
                         <div class="fs-2 text-success">
@@ -81,14 +98,20 @@
                         </div>
 
                     </div>
+
                 </div>
+
             </div>
+
         </div>
 
 
         <div class="col-12 col-md-4">
+
             <div class="card border-0 shadow-sm h-100">
+
                 <div class="card-body">
+
                     <div class="d-flex align-items-center gap-3">
 
                         <div class="fs-2 text-warning">
@@ -106,14 +129,20 @@
                         </div>
 
                     </div>
+
                 </div>
+
             </div>
+
         </div>
 
     </div>
 
 
-    <!-- Filtros -->
+    <!-- ======================================================= -->
+    <!-- FILTROS -->
+    <!-- ======================================================= -->
+
     <div class="card border-0 shadow-sm mb-4">
 
         <div class="card-body">
@@ -124,7 +153,10 @@
 
                 <div class="row g-3 align-items-end">
 
-                    <div class="col-12 col-lg-4">
+                    <!-- PESQUISA -->
+
+                    <div class="col-12 col-lg-3">
+
                         <label class="form-label fw-semibold">
                             Pesquisar
                         </label>
@@ -134,10 +166,14 @@
                                value="@Model.Search"
                                class="form-control"
                                placeholder="Mensagem, voo ou funcionário..." />
+
                     </div>
 
 
-                    <div class="col-12 col-md-4 col-lg-3">
+                    <!-- TIPO -->
+
+                    <div class="col-12 col-md-6 col-lg-2">
+
                         <label class="form-label fw-semibold">
                             Tipo
                         </label>
@@ -149,31 +185,67 @@
                                 Todos
                             </option>
 
-                            <option value="Info"
-                                    selected="@(Model.Type == "Info")">
-                                Informação
-                            </option>
+                            @if (Model.Type == "Info")
+                            {
+                                <option value="Info" selected>
+                                    Informação
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="Info">
+                                    Informação
+                                </option>
+                            }
 
-                            <option value="Gate"
-                                    selected="@(Model.Type == "Gate")">
-                                Porta
-                            </option>
+                            @if (Model.Type == "Gate")
+                            {
+                                <option value="Gate" selected>
+                                    Porta
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="Gate">
+                                    Porta
+                                </option>
+                            }
 
-                            <option value="Boarding"
-                                    selected="@(Model.Type == "Boarding")">
-                                Embarque
-                            </option>
+                            @if (Model.Type == "Boarding")
+                            {
+                                <option value="Boarding" selected>
+                                    Embarque
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="Boarding">
+                                    Embarque
+                                </option>
+                            }
 
-                            <option value="Delay"
-                                    selected="@(Model.Type == "Delay")">
-                                Atraso
-                            </option>
+                            @if (Model.Type == "Delay")
+                            {
+                                <option value="Delay" selected>
+                                    Atraso
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="Delay">
+                                    Atraso
+                                </option>
+                            }
 
                         </select>
+
                     </div>
 
 
-                    <div class="col-12 col-md-4 col-lg-3">
+                    <!-- VOO -->
+
+                    <div class="col-12 col-md-6 col-lg-2">
+
                         <label class="form-label fw-semibold">
                             Número do voo
                         </label>
@@ -183,29 +255,82 @@
                                value="@Model.FlightNumber"
                                class="form-control"
                                placeholder="Ex.: TP4653" />
+
                     </div>
 
 
-                    <div class="col-12 col-md-4 col-lg-2">
+                    <!-- ORDENAÇÃO -->
+
+                    <div class="col-12 col-md-6 col-lg-3">
+
+                        <label class="form-label fw-semibold">
+                            Ordenar por
+                        </label>
+
+                        <select asp-for="SortOrder"
+                                class="form-select">
+
+                            <option value="date_desc">
+                                Data — mais recente
+                            </option>
+
+                            <option value="date_asc">
+                                Data — mais antiga
+                            </option>
+
+                            <option value="flight_asc">
+                                Voo — A-Z
+                            </option>
+
+                            <option value="flight_desc">
+                                Voo — Z-A
+                            </option>
+
+                            <option value="employee_asc">
+                                Funcionário — A-Z
+                            </option>
+
+                            <option value="recipients_desc">
+                                Destinatários — maior primeiro
+                            </option>
+
+                            <option value="recipients_asc">
+                                Destinatários — menor primeiro
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- BOTÃO -->
+
+                    <div class="col-12 col-md-6 col-lg-2">
+
                         <div class="d-grid">
 
                             <button type="submit"
                                     class="btn btn-primary">
 
                                 <i class="bi bi-search me-1"></i>
-                                Filtrar
+                                Aplicar
+
                             </button>
 
                         </div>
+
                     </div>
 
                 </div>
 
             </form>
 
+
+            <!-- LIMPAR FILTROS -->
             @if (!string.IsNullOrWhiteSpace(Model.Search)
                         || !string.IsNullOrWhiteSpace(Model.Type)
-                        || !string.IsNullOrWhiteSpace(Model.FlightNumber))
+                        || !string.IsNullOrWhiteSpace(Model.FlightNumber)
+                        || Model.SortOrder != "date_desc")
             {
                 <div class="mt-3">
 
@@ -214,39 +339,63 @@
                        class="text-decoration-none">
 
                         <i class="bi bi-x-circle me-1"></i>
-                        Limpar filtros
+                        Limpar filtros e ordenação
+
                     </a>
 
                 </div>
             }
 
         </div>
+
     </div>
 
 
-    <!-- Histórico -->
+    <!-- ======================================================= -->
+    <!-- HISTÓRICO -->
+    <!-- ======================================================= -->
+
     <div class="card border-0 shadow-sm">
 
         <div class="card-header bg-white border-0 py-3">
 
-            <div class="d-flex justify-content-between
-                        align-items-center">
+            <div class="d-flex flex-column flex-md-row
+                        justify-content-between
+                        align-items-md-center gap-2">
 
                 <div>
-                    <h5 class="fw-bold mb-0">
+                    <h5 class="fw-bold mb-1">
                         Registos
                     </h5>
+
+                    @if (Model.TotalCommunications > 0)
+                    {
+                        <small class="text-muted">
+                            A mostrar
+                            <strong>@Model.FirstItem</strong>
+                            –
+                            <strong>@Model.LastItem</strong>
+                            de
+                            <strong>@Model.TotalCommunications</strong>
+                            comunicações
+                        </small>
+                    }
                 </div>
 
-                <span class="badge bg-light text-dark border">
-                    @Model.Communications.Count resultado(s)
-                </span>
+
+                @if (Model.TotalCommunications > 0)
+                {
+                    <span class="badge bg-light text-dark border">
+                        Página @Model.Page de @Model.TotalPages
+                    </span>
+                }
 
             </div>
 
         </div>
 
 
+        <!-- SEM RESULTADOS -->
         @if (Model.Communications.Count == 0)
         {
             <div class="card-body text-center py-5">
@@ -268,32 +417,44 @@
         }
         else
         {
+            <!-- ================================================= -->
+            <!-- TABELA -->
+            <!-- ================================================= -->
+
             <div class="table-responsive">
 
                 <table class="table table-hover
                                   align-middle mb-0">
 
                     <thead class="table-light">
+
                         <tr>
                             <th>Voo</th>
                             <th>Tipo</th>
                             <th>Mensagem</th>
                             <th>Funcionário</th>
+
                             <th class="text-center">
                                 Destinatários
                             </th>
+
                             <th>Data / Hora</th>
+
                             <th class="text-end">
                                 Ações
                             </th>
                         </tr>
+
                     </thead>
+
 
                     <tbody>
 
                         @foreach (var item in Model.Communications)
                         {
                             <tr>
+
+                                <!-- VOO -->
 
                                 <td>
                                     <span class="fw-bold">
@@ -302,35 +463,52 @@
                                 </td>
 
 
+                                <!-- TIPO -->
+
                                 <td>
+
                                     @switch (item.Type)
                                     {
                                         case "Gate":
+
                                             <span class="badge bg-primary">
                                                 Porta
                                             </span>
+
                                             break;
 
+
                                         case "Boarding":
+
                                             <span class="badge bg-success">
                                                 Embarque
                                             </span>
+
                                             break;
 
+
                                         case "Delay":
+
                                             <span class="badge bg-warning text-dark">
                                                 Atraso
                                             </span>
+
                                             break;
 
+
                                         default:
+
                                             <span class="badge bg-secondary">
                                                 Informação
                                             </span>
+
                                             break;
                                     }
+
                                 </td>
 
+
+                                <!-- MENSAGEM -->
 
                                 <td style="min-width: 250px;
                                                    max-width: 420px;">
@@ -346,10 +524,14 @@
                                 </td>
 
 
+                                <!-- FUNCIONÁRIO -->
+
                                 <td>
                                     @item.EmployeeName
                                 </td>
 
+
+                                <!-- DESTINATÁRIOS -->
 
                                 <td class="text-center">
 
@@ -359,12 +541,15 @@
                                                          border">
 
                                         <i class="bi bi-people me-1"></i>
+
                                         @item.RecipientsCount
 
                                     </span>
 
                                 </td>
 
+
+                                <!-- DATA -->
 
                                 <td class="text-nowrap">
 
@@ -378,6 +563,8 @@
 
                                 </td>
 
+
+                                <!-- AÇÕES -->
 
                                 <td class="text-end">
 
@@ -402,6 +589,184 @@
                 </table>
 
             </div>
+
+
+            <!-- ================================================= -->
+            <!-- PAGINAÇÃO -->
+            <!-- ================================================= -->
+            @if (Model.TotalPages > 1)
+            {
+                <div class="card-footer bg-white border-0 py-3">
+
+                    <div class="d-flex flex-column flex-md-row
+                                        justify-content-between
+                                        align-items-md-center gap-3">
+
+                        <small class="text-muted">
+
+                            Página
+                            <strong>@Model.Page</strong>
+                            de
+                            <strong>@Model.TotalPages</strong>
+
+                        </small>
+
+
+                        <nav aria-label="Paginação das comunicações">
+
+                            <ul class="pagination pagination-sm mb-0">
+
+
+                                <!-- ANTERIOR -->
+
+                                <li class="page-item
+                                                   @(!Model.HasPreviousPage
+                                                                                   ? "disabled"
+                                                                                   : "")">
+
+                            <a class="page-link"
+                               asp-controller="FlightCommunications"
+                               asp-action="Index"
+                               asp-route-page="@(Model.Page - 1)"
+                               asp-route-search="@Model.Search"
+                               asp-route-type="@Model.Type"
+                               asp-route-flightNumber="@Model.FlightNumber"
+                               asp-route-sortOrder="@Model.SortOrder">
+
+                                        <i class="bi bi-chevron-left"></i>
+                                        Anterior
+
+                                    </a>
+
+                                </li>
+
+
+                                <!-- PRIMEIRA PÁGINA -->
+                        @if (Model.Page > 3)
+                                {
+                                    <li class="page-item">
+
+                                        <a class="page-link"
+                                           asp-controller="FlightCommunications"
+                                           asp-action="Index"
+                                           asp-route-page="1"
+                                           asp-route-search="@Model.Search"
+                                           asp-route-type="@Model.Type"
+                                           asp-route-flightNumber="@Model.FlightNumber"
+                                           asp-route-sortOrder="@Model.SortOrder">
+
+                                            1
+
+                                        </a>
+
+                                    </li>
+
+
+                                    @if (Model.Page > 4)
+                                    {
+                                        <li class="page-item disabled">
+                                            <span class="page-link">
+                                                ...
+                                            </span>
+                                        </li>
+                                    }
+                                }
+
+
+                                <!-- PÁGINAS PRÓXIMAS -->
+                                @for (
+                                                        var i = Math.Max(1, Model.Page - 2);
+                                                        i <= Math.Min(
+                                                        Model.TotalPages,
+                                                        Model.Page + 2);
+                                                        i++)
+                                {
+                                    <li class="page-item
+                                                           @(i == Model.Page
+                                                                                           ? "active"
+                                                                                           : "")">
+
+                            <a class="page-link"
+                               asp-controller="FlightCommunications"
+                               asp-action="Index"
+                               asp-route-page="@i"
+                               asp-route-search="@Model.Search"
+                               asp-route-type="@Model.Type"
+                               asp-route-flightNumber="@Model.FlightNumber"
+                               asp-route-sortOrder="@Model.SortOrder">
+
+                                            @i
+
+                                        </a>
+
+                                    </li>
+                                                }
+
+
+                                <!-- ÚLTIMA PÁGINA -->
+                                @if (Model.Page < Model.TotalPages - 2)
+                                {
+                                    @if (Model.Page < Model.TotalPages - 3)
+                                    {
+                                        <li class="page-item disabled">
+
+                                            <span class="page-link">
+                                                ...
+                                            </span>
+
+                                        </li>
+                                    }
+
+                                    <li class="page-item">
+
+                                        <a class="page-link"
+                                           asp-controller="FlightCommunications"
+                                           asp-action="Index"
+                                           asp-route-page="@Model.TotalPages"
+                                           asp-route-search="@Model.Search"
+                                           asp-route-type="@Model.Type"
+                                           asp-route-flightNumber="@Model.FlightNumber"
+                                           asp-route-sortOrder="@Model.SortOrder">
+
+                                            @Model.TotalPages
+
+                                        </a>
+
+                                    </li>
+                                }
+
+
+                            <!-- SEGUINTE -->
+
+                            <li class="page-item
+                                    @(!Model.HasNextPage
+                                      ? "disabled"
+                                         : "")">
+
+                            <a class="page-link"
+                               asp-controller="FlightCommunications"
+                               asp-action="Index"
+                               asp-route-page="@(Model.Page + 1)"
+                               asp-route-search="@Model.Search"
+                               asp-route-type="@Model.Type"
+                               asp-route-flightNumber="@Model.FlightNumber"
+                               asp-route-sortOrder="@Model.SortOrder">
+
+                                        Seguinte
+                                        <i class="bi bi-chevron-right"></i>
+
+                                    </a>
+
+                                </li>
+
+                            </ul>
+
+                        </nav>
+
+                    </div>
+
+                </div>
+            }
         }
 
     </div>
