@@ -239,142 +239,134 @@
 </section>
 
 <!-- ═══ DESTINOS POPULARES ═══ -->
-@if (Model.PopularDestinations?.Any() == true)
-{
-    <section class="container mb-5">
+<!-- ═══ DESTINOS POPULARES ═══ -->
+<section class="container mb-5">
 
-        <div class="d-flex
-                        justify-content-between
-                        align-items-end
-                        flex-wrap
-                        gap-3
-                        mb-4">
+    <div class="d-flex
+                justify-content-between
+                align-items-end
+                flex-wrap
+                gap-3
+                mb-4">
 
-            <div>
+        <div>
 
-                <span class="text-lime
-                                 text-uppercase
-                                 fw-semibold
-                                 small">
+            <span class="text-lime
+                         text-uppercase
+                         fw-semibold
+                         small">
 
-                    Inspire-se
+                Inspire-se
 
-                </span>
+            </span>
 
-                <h2 class="fw-bold text-white mb-1">
+            <h2 class="fw-bold text-white mb-1">
 
-                    Destinos em destaque
+                Destinos em destaque
 
-                </h2>
+            </h2>
 
-                <p class="text-muted mb-0">
+            <p class="text-muted mb-0">
 
-                    Descubra alguns dos destinos
-                    disponíveis a partir de Lisboa.
+                Descubra alguns dos destinos
+                disponíveis a partir de Lisboa.
 
-                </p>
-
-            </div>
-
-
-            <a asp-controller="Shop"
-               asp-action="Index"
-               class="btn btn-outline-lime btn-sm">
-
-                Ver todos os voos
-
-                <i class="bi bi-arrow-right ms-1"></i>
-
-            </a>
+            </p>
 
         </div>
 
+        <a asp-controller="Shop"
+           asp-action="Index"
+           class="btn btn-outline-lime btn-sm">
 
-        <div class="row g-3">
+            Ver todos os voos
 
-            @foreach (var destination in destinations.Take(4))
-            {
-                <div class="col-12 col-sm-6 col-lg-3">
+            <i class="bi bi-arrow-right ms-1"></i>
 
-                    <a asp-controller="Shop"
-                       asp-action="Index"
-                       asp-route-destination="@destination.Code"
-                       class="text-decoration-none">
+        </a>
 
-                        <div class="position-relative
-                                            overflow-hidden
-                                            rounded-3
-                                            shadow-sm"
-                             style="height:220px;">
-
-                            <img src="@destination.ImageUrl"
-                                 alt="@destination.City"
-                                 loading="lazy"
-                                 class="w-100 h-100"
-                                 style="object-fit:cover;" />
+    </div>
 
 
-                            <div class="position-absolute
-                                                top-0
-                                                start-0
-                                                w-100
-                                                h-100"
-                                 style="
-                                             background:
-                                                 linear-gradient(
-                                                     to top,
-                                                     rgba(7,12,22,.95),
-                                                     rgba(7,12,22,.10)
-                                                 );
-                                         ">
-                            </div>
+    <div class="row g-3">
+
+        @foreach (var destination in destinations.Take(4))
+        {
+            <div class="col-12 col-sm-6 col-lg-3">
+
+                <a asp-controller="Shop"
+                   asp-action="Index"
+                   asp-route-destination="@destination.Code"
+                   class="text-decoration-none">
+
+                    <div class="position-relative
+                                    overflow-hidden
+                                    rounded-3
+                                    shadow-sm"
+                         style="height:220px;">
+
+                        <img src="@destination.ImageUrl"
+                             alt="@destination.City"
+                             class="w-100 h-100"
+                             style="object-fit:cover;" />
 
 
-                            <div class="position-absolute
-                                                bottom-0
-                                                start-0
-                                                w-100
-                                                p-3">
-
-                                <div class="d-flex
-                                                    justify-content-between
-                                                    align-items-end">
-
-                                    <div>
-
-                                        <span class="badge
-                                                             bg-dark
-                                                             bg-opacity-75
-                                                             mb-2">
-
-                                            @destination.Code
-
-                                        </span>
+                        <div class="position-absolute
+                                        top-0
+                                        start-0
+                                        w-100
+                                        h-100"
+                             style="
+                                     background:
+                                         linear-gradient(
+                                             to top,
+                                             rgba(7,12,22,.95),
+                                             rgba(7,12,22,.10)
+                                         );
+                                 ">
+                        </div>
 
 
-                                        <h5 class="text-white
-                                                           fw-bold
-                                                           mb-0">
+                        <div class="position-absolute
+                                        bottom-0
+                                        start-0
+                                        w-100
+                                        p-3">
 
-                                            @destination.City
+                            <div class="d-flex
+                                            justify-content-between
+                                            align-items-end">
 
-                                        </h5>
+                                <div>
 
+                                    <span class="badge
+                                                     bg-dark
+                                                     bg-opacity-75
+                                                     mb-2">
 
-                                        <small class="text-light opacity-75">
+                                        @destination.Code
 
-                                            @destination.Country
+                                    </span>
 
-                                        </small>
+                                    <h5 class="text-white
+                                                   fw-bold
+                                                   mb-0">
 
-                                    </div>
+                                        @destination.City
 
+                                    </h5>
 
-                                    <div class="text-lime fs-5">
+                                    <small class="text-light opacity-75">
 
-                                        <i class="bi bi-arrow-up-right"></i>
+                                        @destination.Country
 
-                                    </div>
+                                    </small>
+
+                                </div>
+
+                                <div class="text-lime fs-5">
+
+                                    <i class="bi bi-arrow-up-right"></i>
 
                                 </div>
 
@@ -382,12 +374,14 @@
 
                         </div>
 
-                    </a>
+                    </div>
 
-                </div>
-            }
+                </a>
 
-        </div>
+            </div>
+        }
+
+    </div>
 
     </section>
 }
