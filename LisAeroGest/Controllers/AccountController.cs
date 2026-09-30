@@ -92,102 +92,259 @@ namespace BilheticaAeronauticaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            // ================================================================
+            // 1. VALIDAR FORMULÁRIO
+            // ================================================================
+
             if (!ModelState.IsValid)
                 return View(model);
 
-            // 1. Validar se o email já existe
-            var existingUser = await _userHelper.GetUserByEmailAsync(model.Username!);
+
+            // ================================================================
+            // 2. VERIFICAR SE O EMAIL JÁ EXISTE
+            // ================================================================
+
+            var existingUser =
+                await _userHelper.GetUserByEmailAsync(
+                    model.Username!);
+
             if (existingUser != null)
             {
-                ModelState.AddModelError(string.Empty, "Este email já está registado.");
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Este email já está registado.");
+
                 return View(model);
             }
 
-            // 2. Usar o ConverterHelper para criar a entidade User
-            var user = _converterHelper.ToUser(model);
 
-            var result = await _userHelper.AddUserAsync(user, model.Password!);
+            // ================================================================
+            // 3. CRIAR UTILIZADOR
+            // ================================================================
+
+            var user =
+                _converterHelper.ToUser(model);
+
+            var result =
+                await _userHelper.AddUserAsync(
+                    user,
+                    model.Password!);
+
             if (!result.Succeeded)
             {
                 foreach (var error in result.Errors)
-                    ModelState.AddModelError(string.Empty, error.Description);
+                {
+                    ModelState.AddModelError(
+                        string.Empty,
+                        error.Description);
+                }
 
                 return View(model);
             }
 
-            // 3. Atribuir a role "Passenger"
-            await _userHelper.AddUserToRoleAsync(user, "Passenger");
 
             // ================================================================
-            // 4. 🔥 VERIFICAR SE EXISTE PASSAGEIRO CONVIDADO COM ESTE EMAIL
+            // 4. ATRIBUIR ROLE PASSENGER
             // ================================================================
-            var existingPassenger = await _passengerRepository.GetByEmailAsync(model.Username!);
 
-            if (existingPassenger != null && string.IsNullOrEmpty(existingPassenger.UserId))
+            await _userHelper.AddUserToRoleAsync(
+                user,
+                "Passenger");
+
+
+            // ================================================================
+            // 5. CRIAR OU ASSOCIAR PASSAGEIRO
+            // ================================================================
+
+            var existingPassenger =
+                await _passengerRepository.GetByEmailAsync(
+                    model.Username!);
+
+
+            // Passageiro convidado já existente
+            if (existingPassenger != null &&
+                string.IsNullOrEmpty(existingPassenger.UserId))
             {
-                // ✅ Associar o passageiro convidado ao novo utilizador
-                existingPassenger.UserId = user.Id;
-                existingPassenger.FirstName = model.FirstName ?? existingPassenger.FirstName;
-                existingPassenger.LastName = model.LastName ?? existingPassenger.LastName;
-                existingPassenger.DocumentNumber = model.DocumentNumber ?? existingPassenger.DocumentNumber;
-                existingPassenger.DocumentType = model.DocumentType ?? existingPassenger.DocumentType;
+                existingPassenger.UserId =
+                    user.Id;
 
-                await _passengerRepository.UpdateAsync(existingPassenger);
+                existingPassenger.FirstName =
+                    model.FirstName
+                    ?? existingPassenger.FirstName;
+
+                existingPassenger.LastName =
+                    model.LastName
+                    ?? existingPassenger.LastName;
+
+                existingPassenger.DocumentNumber =
+                    model.DocumentNumber
+                    ?? existingPassenger.DocumentNumber;
+
+                existingPassenger.DocumentType =
+                    model.DocumentType
+                    ?? existingPassenger.DocumentType;
+
+
+                await _passengerRepository.UpdateAsync(
+                    existingPassenger);
+
                 await _passengerRepository.SaveAsync();
-
-                // Log (opcional)
-                // _logger.LogInformation("Passageiro convidado {Email} associado ao utilizador {UserId}", model.Username, user.Id);
             }
+
+            // Passageiro ainda não existe
             else if (existingPassenger == null)
             {
-                // ✅ Se não existir passageiro, criar novo (utilizador normal)
-                var passenger = _converterHelper.ToPassenger(model, user.Id);
-                await _passengerRepository.AddAsync(passenger);
+                var passenger =
+                    _converterHelper.ToPassenger(
+                        model,
+                        user.Id);
+
+                await _passengerRepository.AddAsync(
+                    passenger);
+
                 await _passengerRepository.SaveAsync();
             }
-            // Se existingPassenger != null e já tem UserId, não faz nada (já está associado)
+
 
             // ================================================================
-            // 5. Gerar token e enviar email de confirmação
+            // 6. GERAR LINK DE CONFIRMAÇÃO
             // ================================================================
-            var token = await _userHelper.GenerateEmailConfirmationTokenAsync(user);
-            var confirmationLink = Url.Action(
-                "ConfirmEmail", "Account",
-                new { userId = user.Id, token },
-                protocol: HttpContext.Request.Scheme);
+
+            var token =
+                await _userHelper
+                    .GenerateEmailConfirmationTokenAsync(
+                        user);
+
+
+            var confirmationLink =
+                Url.Action(
+                    "ConfirmEmail",
+                    "Account",
+                    new
+                    {
+                        userId = user.Id,
+                        token
+                    },
+                    protocol:
+                        HttpContext.Request.Scheme);
+
+
+            // ================================================================
+            // 7. EMAIL DE CONFIRMAÇÃO
+            // ================================================================
 
             var emailBody = $@"
-            <h2>Bem-vindo ao LisAeroGest!</h2>
-            <p>Olá {user.FirstName},</p>
-            <p>Obrigado por se registar. Clique no link abaixo para confirmar o seu email:</p>
-            <p><a href='{confirmationLink}'>Confirmar Email</a></p>
-            <br/>
-            <p>LisAeroGest — Aeroporto de Lisboa</p>";
+        <div style='font-family:Arial,sans-serif;
+                    max-width:600px;
+                    margin:auto;
+                    padding:30px;'>
 
-            var response = await _mailHelper.SendEmailAsync(model.Username!, "Confirmação de Email — LisAeroGest", emailBody);
+            <h2 style='color:#1F5C99;'>
+                Bem-vindo ao LisAeroGest!
+            </h2>
 
-            if (!response.IsSuccess)
-            {
-                ModelState.AddModelError(string.Empty, "Utilizador criado, mas não foi possível enviar o email de confirmação.");
-                return View(model);
-            }
+            <p>
+                Olá {user.FirstName},
+            </p>
+
+            <p>
+                Obrigado por se registar no LisAeroGest.
+            </p>
+
+            <p>
+                Para ativar a sua conta,
+                confirme o seu endereço de email.
+            </p>
+
+            <p style='margin:30px 0;'>
+
+                <a href='{confirmationLink}'
+                   style='
+                       background:#c8e629;
+                       color:#10151f;
+                       padding:12px 24px;
+                       border-radius:8px;
+                       text-decoration:none;
+                       font-weight:bold;'>
+
+                    Confirmar Email
+
+                </a>
+
+            </p>
+
+            <p style='color:#666;font-size:13px;'>
+                Se não criou esta conta,
+                pode ignorar esta mensagem.
+            </p>
+
+            <hr style='border:0;
+                       border-top:1px solid #ddd;
+                       margin:25px 0;' />
+
+            <p style='color:#777;font-size:12px;'>
+                LisAeroGest — Aeroporto de Lisboa
+            </p>
+
+        </div>";
+
+
+            var emailResponse =
+                await _mailHelper.SendEmailAsync(
+                    model.Username!,
+                    "Confirmação de Email — LisAeroGest",
+                    emailBody);
+
 
             // ================================================================
-            // 6. Verificar se o utilizador veio do checkout convidado
+            // 8. LIMPAR EVENTUAL REGISTO PENDENTE
             // ================================================================
-            var pendingEmail = HttpContext.Session.GetString("PendingRegistration");
-            if (!string.IsNullOrEmpty(pendingEmail) && pendingEmail == model.Username)
-            {
-                // Limpar a sessão
-                HttpContext.Session.Remove("PendingRegistration");
 
-                // Redirecionar para a página de bilhetes com mensagem de boas-vindas
-                TempData["Success"] = "Conta criada com sucesso! Os seus bilhetes foram associados à sua conta.";
-                return RedirectToAction("MyTickets", "Shop");
+            var pendingEmail =
+                HttpContext.Session.GetString(
+                    "PendingRegistration");
+
+            if (!string.IsNullOrEmpty(pendingEmail) &&
+                string.Equals(
+                    pendingEmail,
+                    model.Username,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                HttpContext.Session.Remove(
+                    "PendingRegistration");
             }
 
-            ViewBag.Message = "Registo efetuado com sucesso! Verifique o seu email para confirmar a conta.";
-            return View("RegisterConfirmation");
+
+            // ================================================================
+            // 9. IR SEMPRE PARA A PÁGINA DE CONFIRMAÇÃO
+            // ================================================================
+
+            ViewBag.Email =
+                model.Username;
+
+
+            if (emailResponse.IsSuccess)
+            {
+                ViewBag.EmailSent =
+                    true;
+
+                ViewBag.Message =
+                    "A sua conta foi criada com sucesso. " +
+                    "Enviámos um email de confirmação para o endereço indicado.";
+            }
+            else
+            {
+                ViewBag.EmailSent =
+                    false;
+
+                ViewBag.Message =
+                    "A sua conta foi criada, mas não foi possível enviar " +
+                    "o email de confirmação neste momento.";
+            }
+
+
+            return View(
+                "RegisterConfirmation");
         }
 
         // ─── Confirmação de Email ─────────────────────────────────────────────
