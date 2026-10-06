@@ -1,4 +1,5 @@
 Aplicação Web
+
 A aplicação Web foi desenvolvida com ASP.NET Core MVC e disponibiliza diferentes funcionalidades consoante a role do utilizador.
 
 👨‍💼 Administrador
