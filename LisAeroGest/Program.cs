@@ -5,12 +5,12 @@ using LisAeroGest.Data.Repositories;
 using LisAeroGest.Helpers;
 using LisAeroGest.Hub;
 using LisAeroGest.Services;
+using LisAeroGest.Services.Integrations;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using QuestPDF.Infrastructure;
 using System.Text;
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -18,10 +18,10 @@ QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── Base de Dados (SQL Server em Dev vs PostgreSQL em Prod) ──────────────
+// ── Base de Dados ──────────────────────────────────────────────────────
 if (builder.Environment.IsDevelopment())
 {
-    // Registo PRINCIPAL
+    // Contexto principal da aplicação.
     builder.Services.AddDbContext<DataContext>(options =>
         options.UseSqlServer(
             builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -30,7 +30,7 @@ if (builder.Environment.IsDevelopment())
         )
     );
 
-    // Registo EXTRA — só para migrações
+    // Contexto utilizado pelas migrações de SQL Server.
     builder.Services.AddDbContext<DataContextSqlServer>(options =>
         options.UseSqlServer(
             builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -42,6 +42,7 @@ if (builder.Environment.IsDevelopment())
 else
 {
     AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
     var connectionString =
         builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -52,6 +53,7 @@ else
     else
     {
         var csb = new Npgsql.NpgsqlConnectionStringBuilder(connectionString);
+
         Console.WriteLine(">>> DATABASE CONFIGURATION");
         Console.WriteLine($">>> Host: {csb.Host}");
         Console.WriteLine($">>> Port: {csb.Port}");
@@ -60,7 +62,7 @@ else
         Console.WriteLine(">>> Password: [OCULTA]");
     }
 
-    // Registo PRINCIPAL — usado pela aplicação inteira (SeedDb, controllers, repositórios, etc.)
+    // Contexto principal da aplicação.
     builder.Services.AddDbContext<DataContext>(options =>
         options.UseNpgsql(
             connectionString,
@@ -69,8 +71,7 @@ else
         )
     );
 
-    // Registo EXTRA — usado só pelas ferramentas de migração (Add-Migration/Update-Database),
-    // para conseguirem filtrar corretamente as migrações do Postgres.
+    // Contexto utilizado pelas migrações de PostgreSQL.
     builder.Services.AddDbContext<DataContextPostgres>(options =>
         options.UseNpgsql(
             connectionString,
@@ -79,46 +80,48 @@ else
         )
     );
 }
-// ── Identity ─────────────────────────────────────────────────────────────────
+
+// ── Identity ───────────────────────────────────────────────────────────
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
-    // Configuração de password
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 6;
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = false;
 
-    // Confirmação de email obrigatória para login
     options.SignIn.RequireConfirmedEmail = true;
 
-    // Lockout
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
     options.Lockout.MaxFailedAccessAttempts = 5;
 
-
-    // Utilizador
     options.User.RequireUniqueEmail = true;
 })
 .AddEntityFrameworkStores<DataContext>()
 .AddDefaultTokenProviders();
 
-// ── Autenticação JWT + Cookie ─────────────────────────────────────────────────
+// ── Autenticação JWT + Cookie ───────────────────────────────────────────
 builder.Services.AddAuthentication(options =>
 {
-options.DefaultScheme = "MultiScheme";
-options.DefaultChallengeScheme = "MultiScheme";
+    options.DefaultScheme = "MultiScheme";
+    options.DefaultChallengeScheme = "MultiScheme";
 })
-// "MultiScheme" decide, pedido a pedido, se usa Cookie (browser) ou Bearer/JWT (app mobile).
 .AddPolicyScheme("MultiScheme", "Cookie ou Bearer", options =>
 {
-options.ForwardDefaultSelector = context =>
-{
-var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
-if (authHeader != null && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-return JwtBearerDefaults.AuthenticationScheme;
+    options.ForwardDefaultSelector = context =>
+    {
+        var authHeader =
+            context.Request.Headers["Authorization"].FirstOrDefault();
 
-return CookieAuthenticationDefaults.AuthenticationScheme;
-};
+        if (authHeader != null &&
+            authHeader.StartsWith(
+                "Bearer ",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return JwtBearerDefaults.AuthenticationScheme;
+        }
+
+        return CookieAuthenticationDefaults.AuthenticationScheme;
+    };
 })
 .AddCookie(options =>
 {
@@ -135,15 +138,18 @@ return CookieAuthenticationDefaults.AuthenticationScheme;
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
+
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
+
         IssuerSigningKey = new SymmetricSecurityKey(
-        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
     };
 });
 
-// Add services to the container.
+// ── Controllers e serviços ─────────────────────────────────────────────
 builder.Services.AddControllersWithViews();
+
 builder.Services.AddScoped<IAirportRepository, AirportRepository>();
 builder.Services.AddScoped<IAirlineRepository, AirlineRepository>();
 builder.Services.AddScoped<IGateRepository, GateRepository>();
@@ -154,32 +160,55 @@ builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<ISeatRepository, SeatRepository>();
 builder.Services.AddScoped<IBoardingPassRepository, BoardingPassRepository>();
 builder.Services.AddScoped<IForumTopicRepository, ForumTopicRepository>();
-builder.Services.AddScoped<IForumCommentRepository, ForumCommentRepository>(); 
+builder.Services.AddScoped<IForumCommentRepository, ForumCommentRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IFlightCommunicationRepository, FlightCommunicationRepository>();
+
 builder.Services.AddScoped<IUserHelper, UserHelper>();
 builder.Services.AddScoped<IBlobHelper, BlobHelper>();
 builder.Services.AddTransient<IMailHelper, MailHelper>();
 builder.Services.AddScoped<IImageHelper, ImageHelper>();
 builder.Services.AddScoped<IConverterHelper, ConverterHelper>();
+
 builder.Services.AddHttpClient<IWeatherService, WeatherService>();
+
 builder.Services.AddScoped<PdfService>();
 builder.Services.AddScoped<IFlightExportService, FlightExportService>();
 builder.Services.AddScoped<IQrCodeService, QrCodeService>();
+
 builder.Services.AddHttpClient<PayPalService>();
 builder.Services.AddScoped<IPayPalService, PayPalService>();
+
 builder.Services.AddHostedService<ReservationExpirationService>();
 builder.Services.AddHostedService<FlightStatusUpdaterService>();
+
 builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IAuditService, AuditService>();
-builder.Services.AddScoped<IAuditLogRepository,  AuditLogRepository>();
+builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+
 builder.Services.AddSignalR();
 builder.Services.AddSignalR();
-// ─── HttpClient (para OpenWeatherMap) ───────────────────────────────────────
+
 builder.Services.AddHttpClient();
 
-// ─── Session (para carrinho de bilhetes) ────────────────────────────────────
+// ── Integração com a companhia aérea ────────────────────────────────────
+builder.Services.AddHttpClient<AirlineApiClient>(client =>
+{
+    // Por enquanto, utilizamos a companhia simulada no computador local.
+    // A configuração permitirá substituir este endereço posteriormente.
+    var baseUrl =
+        builder.Configuration["AirlineIntegration:BaseUrl"]
+        ?? "https://localhost:7268/";
+
+    client.BaseAddress = new Uri(baseUrl, UriKind.Absolute);
+
+    // Tempo máximo de espera por uma resposta.
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+
+// ── Session ────────────────────────────────────────────────────────────
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -187,34 +216,33 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-var supportedCultures = new[] { new System.Globalization.CultureInfo("pt-PT") };
-
-builder.Services.Configure<Microsoft.AspNetCore.Builder.RequestLocalizationOptions>(options =>
+// ── Cultura ────────────────────────────────────────────────────────────
+var supportedCultures = new[]
 {
-    options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("pt-PT");
-    options.SupportedCultures = supportedCultures;
-    options.SupportedUICultures = supportedCultures;
-});
+    new System.Globalization.CultureInfo("pt-PT")
+};
+
+builder.Services.Configure<
+    Microsoft.AspNetCore.Builder.RequestLocalizationOptions>(options =>
+    {
+        options.DefaultRequestCulture =
+            new Microsoft.AspNetCore.Localization.RequestCulture("pt-PT");
+
+        options.SupportedCultures = supportedCultures;
+        options.SupportedUICultures = supportedCultures;
+    });
 
 var app = builder.Build();
 
-
-
-// Configure the HTTP request pipeline.
+// ── Pipeline HTTP ──────────────────────────────────────────────────────
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-
-
-
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 
 app.UseRequestLocalization();
 
@@ -223,10 +251,11 @@ app.UseRouting();
 app.UseSession();
 
 app.UseAuthentication();
-
 app.UseAuthorization();
 
+// ── Rotas ──────────────────────────────────────────────────────────────
 app.MapHub<NotificationHub>("/hubs/notifications");
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
@@ -253,13 +282,11 @@ app.MapControllerRoute(
     pattern: "termos",
     defaults: new { controller = "Home", action = "Terms" });
 
-
-
-
-// ── Seed da Base de Dados ─────────────────────────────────────────────────────
+// ── Seed da Base de Dados ───────────────────────────────────────────────
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+
     try
     {
         var seedDb = new SeedDb(
@@ -267,13 +294,16 @@ using (var scope = app.Services.CreateScope())
             services.GetRequiredService<UserManager<User>>(),
             services.GetRequiredService<RoleManager<IdentityRole>>()
         );
+
         await seedDb.SeedAsync();
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
+
         logger.LogError(ex, "Erro ao fazer seed da base de dados.");
     }
 }
 
 app.Run();
+;
