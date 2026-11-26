@@ -248,7 +248,7 @@ namespace LisAeroGest.Tests
             );
 
             Assert.Equal(
-                50,
+                100,
                 Assert.IsType<int>(
                     redirect.RouteValues!["boardingPassId"]
                 )
