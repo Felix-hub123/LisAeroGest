@@ -1,4 +1,4 @@
-using LisAeroGest.Controllers;
+Ôªøusing LisAeroGest.Controllers;
 using LisAeroGest.Data.Entities;
 using LisAeroGest.Data.Interfaces;
 using LisAeroGest.Helpers;
@@ -15,7 +15,7 @@ namespace LisAeroGest.Tests
         [Fact]
         public async Task ProcessCheckIn_TicketNotFound_ReturnsRedirect()
         {
-            // ARRANGE - Preparar o cen·rio
+            // ARRANGE - Preparar o cen√°rio
 
             int ticketId = 999;
 
@@ -63,7 +63,7 @@ namespace LisAeroGest.Tests
                 Mock.Of<ITempDataProvider>()
             );
 
-            // ACT - Executar o mÈtodo
+            // ACT - Executar o m√©todo
 
             var result = await controller.ProcessCheckIn(ticketId);
 
@@ -78,7 +78,7 @@ namespace LisAeroGest.Tests
             );
 
             Assert.Equal(
-                "Bilhete n„o encontrado.",
+                "Bilhete n√£o encontrado.",
                 controller.TempData["Error"]
             );
 
@@ -158,7 +158,7 @@ namespace LisAeroGest.Tests
             Assert.Equal("EmployeeCheckIn", redirect.ActionName);
 
             Assert.Equal(
-                "Este bilhete n„o est· pago ou j· tem check-in feito.",
+                "Este bilhete n√£o est√° pago ou j√° tem check-in feito.",
                 controller.TempData["Error"]
             );
 
