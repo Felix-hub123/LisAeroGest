@@ -179,9 +179,11 @@ builder.Services.AddScoped<IQrCodeService, QrCodeService>();
 builder.Services.AddHttpClient<PayPalService>();
 builder.Services.AddScoped<IPayPalService, PayPalService>();
 
-builder.Services.AddHostedService<ReservationExpirationService>();
-builder.Services.AddHostedService<FlightStatusUpdaterService>();
-
+if (builder.Configuration.GetValue<bool>("Features:EnableBackgroundServices", true))
+{
+    builder.Services.AddHostedService<ReservationExpirationService>();
+    builder.Services.AddHostedService<FlightStatusUpdaterService>();
+}
 builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
 
 builder.Services.AddHttpContextAccessor();
@@ -282,28 +284,30 @@ app.MapControllerRoute(
     pattern: "termos",
     defaults: new { controller = "Home", action = "Terms" });
 
-// ── Seed da Base de Dados ───────────────────────────────────────────────
-using (var scope = app.Services.CreateScope())
+// ── Seed da Base de Dados ────────────────────────────
+if (app.Configuration.GetValue<bool>("Features:EnableDatabaseSeed", true))
 {
-    var services = scope.ServiceProvider;
-
-    try
+    using (var scope = app.Services.CreateScope())
     {
-        var seedDb = new SeedDb(
-            services.GetRequiredService<DataContext>(),
-            services.GetRequiredService<UserManager<User>>(),
-            services.GetRequiredService<RoleManager<IdentityRole>>()
-        );
+        var services = scope.ServiceProvider;
 
-        await seedDb.SeedAsync();
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
+        try
+        {
+            var seedDb = new SeedDb(
+                services.GetRequiredService<DataContext>(),
+                services.GetRequiredService<UserManager<User>>(),
+                services.GetRequiredService<RoleManager<IdentityRole>>()
+            );
 
-        logger.LogError(ex, "Erro ao fazer seed da base de dados.");
+            await seedDb.SeedAsync();
+        }
+        catch (Exception ex)
+        {
+            var logger = services.GetRequiredService<ILogger<Program>>();
+
+            logger.LogError(ex, "Erro ao fazer seed da base de dados.");
+        }
     }
 }
 
 app.Run();
-;

@@ -1,4 +1,0 @@
-C:\LisAeroGest\LisAeroGest\wwwroot\destinations\london.jpg
-C:\LisAeroGest\LisAeroGest\wwwroot\destinations\madrid.jpg
-C:\LisAeroGest\LisAeroGest\wwwroot\destinations\newyork.jpg
-C:\LisAeroGest\LisAeroGest\wwwroot\destinations\paris.jpg

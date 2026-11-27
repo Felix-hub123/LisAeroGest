@@ -32,3 +32,6 @@ jobs:
 
       - name: Run Unit Tests
         run: dotnet test LisAeroGest.Tests/LisAeroGest.Tests.csproj -c Release --no-build
+
+      - name: Build Docker Image
+        run: docker build -t lisaerogest:ci .

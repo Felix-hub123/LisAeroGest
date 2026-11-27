@@ -7,3 +7,17 @@
 **/packages/
 **/*.user
 **/*.suo
+
+# Ficheiros sensíveis
+**/.env
+**/.env.*
+**/secrets.json
+**/*.pfx
+**/*.p12
+**/*.key
+**/*.pem
+
+# Backups de bases de dados
+**/*.bak
+**/*.mdf
+**/*.ldf
